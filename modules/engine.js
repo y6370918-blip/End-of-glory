@@ -72,6 +72,9 @@ function createEngine({
     return typeof value === "function" ? value(state) : value || null;
   };
 
+  target.hasState = (name) => Boolean(states[name]);
+  target.stateNames = () => Object.keys(states);
+
   target.view = (state, role) => {
     const viewSystem = systemRegistry.view;
     if (typeof viewSystem?.publicView !== "function")

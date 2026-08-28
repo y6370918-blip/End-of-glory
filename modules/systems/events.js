@@ -681,7 +681,7 @@ function createEventSystem(api) {
           operations: api.clone(selectedOperations),
       });
       state.pending_event = null;
-      api.log(state, `${api.factionRole(state.active)} 事件：${card.title}。`);
+      api.log(state, `事件：[[card:${card.id}]]。`);
       if (beginImmediateRpUse(state, card, wasPlayed, selectedOperations, immediateExtra))
           return;
       if (beginDesertionImmediateLoss(state, card))

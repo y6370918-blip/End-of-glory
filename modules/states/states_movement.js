@@ -65,9 +65,10 @@ function createMovementStates(api) {
           throw new Error("No movement units selected");
         if (!api.movementSelectionDestinations(state, selection.selected).includes(destination))
           throw new Error("Illegal first movement step");
+        api.snapshot(state, "逐格移动");
         api.beginGroupMovement(state, selection.selected);
         const unit = api.findUnit(state, state.ops.moving);
-        api.moveUnitOneSpace(state, unit, destination);
+        api.moveUnitOneSpace(state, unit, destination, { skip_undo: true });
       },
       cancel(state) {
         state.ops.move_selection = null;

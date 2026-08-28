@@ -22,6 +22,16 @@ const {
 } = require("./modules/core/constants.js");
 const { findUnit } = require("./modules/core/game-utils.js");
 const {
+  canonicalizeEventState,
+} = require("./modules/core/event-flow.js");
+const {
+  compactHistoryState,
+  decodeRollbackStates,
+  encodeRollbackStates,
+  rollbackSnapshot,
+  setRollbackSnapshots,
+} = require("./modules/core/history.js");
+const {
   clone,
   factionRole,
   other,
@@ -75,6 +85,7 @@ const moById = Object.fromEntries(
 );
 const CardZones = createCardZoneSystem({ data, AP, CP, cardById });
 const AUTO_CARD_CONSERVATION = !process.env.NODE_TEST_CONTEXT;
+let undoActionContext = null;
 function ensureState(state) {
   if (!state) return state;
   const previousVersion = Number(state.version) || 0;
@@ -1258,7 +1269,62 @@ function ensureState(state) {
       )
         Engine.populateVeteranUpgradePool(state, faction);
   }
-  state.version = 42;
+  if (previousVersion < 43) state.undo = [];
+  if (previousVersion < 44) {
+    const convertedUndo = [];
+    let undoSafe = Array.isArray(state.undo);
+    for (const entry of state.undo || []) {
+      if (!entry?.state || typeof entry.state !== "object") {
+        undoSafe = false;
+        break;
+      }
+      const logCursor = Number.isInteger(entry.log_cursor)
+        ? entry.log_cursor
+        : Array.isArray(entry.state.log)
+          ? entry.state.log.length
+          : null;
+      if (!Number.isInteger(logCursor)) {
+        undoSafe = false;
+        break;
+      }
+      convertedUndo.push({
+        label: entry.label || "撤销",
+        turn: entry.turn ?? entry.state.turn,
+        round: entry.round ?? entry.state.action_round,
+        actor: entry.actor ?? entry.state.active,
+        log_cursor: logCursor,
+        state: compactHistoryState(entry.state),
+      });
+    }
+    state.undo = undoSafe ? convertedUndo : [];
+
+    const legacyRollback = state.rollback || [];
+    const encodedRollback = decodeRollbackStates(state.rollback_state);
+    const rollbackSnapshots = [];
+    state.rollback = legacyRollback.map((entry, index) => {
+      const snapshotState = entry?.state || encodedRollback[index];
+      if (!snapshotState)
+        throw new Error(
+          `Cannot migrate rollback checkpoint: ${entry?.label || "unknown"}`,
+        );
+      rollbackSnapshots.push(compactHistoryState(snapshotState));
+      return {
+        turn: entry.turn ?? snapshotState.turn,
+        round: entry.round ?? snapshotState.action_round,
+        actor: entry.actor ?? snapshotState.active,
+        kind: entry.kind || "action",
+        label: entry.label || "检查点",
+        log_cursor: Number.isInteger(entry.log_cursor)
+          ? entry.log_cursor
+          : Array.isArray(entry.state?.log)
+            ? entry.state.log.length
+            : 0,
+      };
+    });
+    setRollbackSnapshots(state, rollbackSnapshots);
+    canonicalizeEventState(state);
+  }
+  state.version = 44;
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -1291,17 +1357,48 @@ function log(state, message) {
 }
 
 function snapshot(state, label) {
-  const copy = clone(state);
-  delete copy.undo;
-  delete copy.rollback;
-  state.undo.push({
+  if (undoActionContext?.state === state && undoActionContext.suppress)
+    return null;
+  if (undoActionContext?.state === state && undoActionContext.snapshotTaken) {
+    if (undoActionContext.deterministic) return undoActionContext.entry;
+    throw new Error("duplicate undo point");
+  }
+  const source = clone(
+    undoActionContext?.state === state && undoActionContext.before
+      ? undoActionContext.before
+      : state,
+  );
+  const entry = {
     label,
     turn: state.turn,
     round: state.action_round,
     actor: state.active,
-    state: copy,
-  });
-  if (state.undo.length > 24) state.undo.shift();
+    log_cursor: Array.isArray(source.log) ? source.log.length : 0,
+    state: compactHistoryState(source),
+  };
+  state.undo.push(entry);
+  if (undoActionContext?.state === state) {
+    undoActionContext.entry = entry;
+    undoActionContext.snapshotTaken = true;
+  }
+  return entry;
+}
+
+function clearUndo(state) {
+  if (Array.isArray(state?.undo)) state.undo.length = 0;
+  if (undoActionContext?.state === state) undoActionContext.entry = null;
+}
+
+function advanceRestoringState(state) {
+  const previous = undoActionContext;
+  undoActionContext = { state, suppress: true };
+  try {
+    Engine.advanceDeterministicStates(state, { restoring: true });
+    if (!Engine.hasState(state.state))
+      throw new Error(`Unregistered stable state after restore: ${state.state}`);
+  } finally {
+    undoActionContext = previous;
+  }
 }
 
 function undoAvailable(state) {
@@ -1320,26 +1417,38 @@ function undoAvailable(state) {
 function restoreSnapshot(state, entry) {
   const undo = state.undo;
   const rollback = state.rollback;
+  const rollbackState = state.rollback_state;
+  const log = Array.isArray(state.log) ? state.log : [];
+  const cursor = Number.isInteger(entry?.log_cursor)
+    ? entry.log_cursor
+    : Array.isArray(entry?.state?.log)
+      ? entry.state.log.length
+      : log.length;
   for (const key of Object.keys(state)) delete state[key];
   Object.assign(state, clone(entry.state));
   state.undo = undo;
   state.rollback = rollback;
+  state.rollback_state = rollbackState;
+  state.log = log.slice(0, cursor);
 }
 
 function checkpoint(state, kind, label) {
-  const copy = clone(state);
-  delete copy.undo;
-  delete copy.rollback;
+  const snapshots = decodeRollbackStates(state.rollback_state);
   state.rollback.push({
     turn: state.turn,
     round: state.action_round,
+    actor: state.active,
     kind,
     label,
     log_cursor: state.log.length,
-    state: copy,
   });
+  snapshots.push(compactHistoryState(state));
   const max = Number(state.options.max_rollback_points || 14);
-  while (state.rollback.length > max) state.rollback.shift();
+  while (state.rollback.length > max) {
+    state.rollback.shift();
+    snapshots.shift();
+  }
+  setRollbackSnapshots(state, snapshots);
 }
 
 function set_up_historical_scenario() {
@@ -1483,6 +1592,7 @@ function set_up_historical_scenario() {
   setup_piece("fr", "法国新兵山地scu", "Belfort");
   setup_piece("fr", "法国外籍新兵scu", "Verdun");
   setup_piece("ge", "德国新兵", "Dusseldorf");
+  setup_piece("ge", "德国新兵", "Dusseldorf");
   setup_piece("ge", "德国骑兵scu", "Dusseldorf");
   setup_piece("ge", "G克卢克", "Dusseldorf");
   setup_piece("ge", "德国新兵", "Essen");
@@ -1505,6 +1615,7 @@ function set_up_historical_scenario() {
   setup_piece("ge", "德国骑兵scu", "Wiltz");
   setup_piece("ge", "德国新兵", "Luxembourg");
   setup_piece("ge", "德国新兵", "Luxembourg");
+  setup_piece("ge", "德国新兵scu", "Luxembourg");
   setup_piece("ge", "德国新兵", "Metz");
   setup_piece("ge", "符腾堡新兵", "Metz");
   setup_piece("ge", "德国新兵scu", "Metz");
@@ -1595,7 +1706,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 42,
+    version: 44,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -1612,6 +1723,7 @@ function createState(seed, options = {}) {
     log: [],
     undo: [],
     rollback: [],
+    rollback_state: encodeRollbackStates([]),
     supply_warnings: null,
     supply_warning_editor: null,
     pending_supply_warning_review: null,
@@ -1751,6 +1863,9 @@ const Engine = createEngine({
   core: { clone, factionRole, findUnit, other, roleFaction, unique },
   adapters: {
     checkpoint,
+    clearUndo,
+    rollbackSnapshot,
+    setRollbackSnapshots,
     log,
     random,
     restoreSnapshot,
@@ -1836,6 +1951,8 @@ const {
   clampVp,
   clearCombatEvents,
   combatCardsView,
+  combatCardLegal,
+  postCombatCardLegal,
   revealCommittedCombatCards,
   combatModifiers,
   diazHqSpaces,
@@ -1930,55 +2047,70 @@ const {
 } = Engine;
 
 exports.action = function (state, current, action, arg) {
-  const loadedVersion = Number(state?.version) || 0;
   ensureState(state);
-  if (loadedVersion < 36)
-    Engine.advanceDeterministicStates(state, { restoring: true });
+  advanceRestoringState(state);
   if (!state || state.state === "game_over") return state;
   if (!actionAllowed(state, current)) return state;
   const offered = buildActionView(clone(state), current);
   const primitiveArg = arg === null ? undefined : arg;
   if (!ActionProtocol.allows(offered.actions, action, primitiveArg))
     return state;
-  if (action === "undo") {
-    if (!undoAvailable(state)) return state;
-    const entry = state.undo.pop();
-    restoreSnapshot(state, entry);
-    ensureState(state);
-    Engine.advanceDeterministicStates(state, { restoring: true });
-    if (AUTO_CARD_CONSERVATION) assertCardConservation(state);
-    return state;
-  }
-  if (action === "propose_rollback") {
-    try {
-      beginRollbackProposal(state, arg);
-    } catch (error) {
-      log(state, `Illegal action: ${error.message}`);
-    }
-    return state;
-  }
-  if (action === "flag_supply_warnings") {
-    try {
-      beginSupplyWarningEditor(state);
-    } catch (error) {
-      log(state, `Illegal action: ${error.message}`);
-    }
-    return state;
-  }
+  const stateBefore = state.state;
+  const activeBefore = state.active;
+  const seedBefore = state.seed;
+  const before = clone(state);
+  undoActionContext = {
+    state,
+    before,
+    entry: null,
+    snapshotTaken: false,
+    deterministic: false,
+  };
   try {
-    if (!Engine.dispatch(state, action, arg, current)) return state;
+    if (action === "undo") {
+      undoActionContext.suppress = true;
+      if (!undoAvailable(state))
+        throw new Error("Undo point is no longer available");
+      const entry = state.undo.pop();
+      restoreSnapshot(state, entry);
+      ensureState(state);
+    } else if (action === "propose_rollback") {
+      undoActionContext.suppress = true;
+      beginRollbackProposal(state, arg);
+      clearUndo(state);
+    } else if (action === "flag_supply_warnings") {
+      undoActionContext.suppress = true;
+      beginSupplyWarningEditor(state);
+    } else if (!Engine.dispatch(state, action, arg, current)) {
+      throw new Error("Offered action has no state handler");
+    }
+    undoActionContext.deterministic = true;
     Engine.advanceDeterministicStates(state);
+    undoActionContext.deterministic = false;
+    if (!Engine.hasState(state.state))
+      throw new Error(`Unregistered stable state: ${state.state}`);
+    const changedPlayer =
+      [AP, CP].includes(activeBefore) &&
+      [AP, CP].includes(state.active) &&
+      activeBefore !== state.active;
+    if (changedPlayer || state.seed !== seedBefore) clearUndo(state);
+    if (AUTO_CARD_CONSERVATION || state.options?.assert_card_conservation)
+      assertCardConservation(state);
   } catch (error) {
-    log(state, `Illegal action: ${error.message}`);
+    for (const key of Object.keys(state)) delete state[key];
+    Object.assign(state, before);
+    const detail = `${stateBefore}/${action}/${String(primitiveArg)}`;
+    const wrapped = new Error(`Action failed (${detail}): ${error.message}`);
+    wrapped.cause = error;
+    throw wrapped;
+  } finally {
+    undoActionContext = null;
   }
-  if (AUTO_CARD_CONSERVATION) assertCardConservation(state);
   return state;
 };
 exports.view = function (state, current) {
-  const loadedVersion = Number(state?.version) || 0;
   ensureState(state);
-  if (loadedVersion < 36)
-    Engine.advanceDeterministicStates(state, { restoring: true });
+  advanceRestoringState(state);
   return Engine.view(state, current);
 };
 
@@ -2006,7 +2138,12 @@ exports.query = function (state, current, query) {
   }
   if (query === "combat_preview") return clone(state.combat);
   if (query === "rollback")
-    return ViewExplanations.rollbackEntries(state, current);
+    return ViewExplanations.rollbackEntries(
+      state,
+      current,
+      20,
+      (index) => rollbackSnapshot(state, index),
+    );
   return null;
 };
 
@@ -2054,6 +2191,14 @@ exports.analysis = Engine.registerAnalysis(
 
 exports._test = {
   advanceDeterministicStates: Engine.advanceDeterministicStates,
+  checkpoint,
+  clearUndo,
+  decodeRollbackStates,
+  engineStateNames: Engine.stateNames,
+  encodeRollbackStates,
+  restoreSnapshot,
+  rollbackSnapshot,
+  snapshot,
   assertCardConservation,
   cardZoneInventory,
   clampVp,
@@ -2114,6 +2259,8 @@ exports._test = {
   prepareCombatCardDispositions,
   resolveCombatCardDisposition,
   combatCardsView,
+  combatCardLegal,
+  postCombatCardLegal,
   revealCommittedCombatCards,
   finishCombatSequence,
   finishCombatLosses,

@@ -76,7 +76,10 @@
 		<main data-min-zoom="0.2" data-max-zoom="2" data-pan-speed="1">
 			<div id="mapwrap">
 				<div id="map">
-					<img id="map-image" src="assets/map.webp" srcset="assets/map.webp 4562w, assets/map.png 6082w" sizes="4562px" alt="荣耀终结游戏地图" draggable="false" />
+					<picture>
+						<source media="(max-width: 800px)" srcset="assets/map.webp" type="image/webp" />
+						<img id="map-image" src="assets/map.webp" srcset="assets/map.webp 4562w, assets/map.png 6082w" sizes="4562px" alt="荣耀终结游戏地图" draggable="false" />
+					</picture>
 					<div id="space-layer" class="map-layer"></div>
 					<div id="control-layer" class="map-layer"></div>
 					<div id="marker-layer" class="map-layer"></div>

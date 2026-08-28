@@ -1,5 +1,10 @@
 "use strict";
 
+const {
+  canonicalizeEventState,
+  isEventState,
+} = require("../core/event-flow.js");
+
 function createDeterministicSystem(api) {
   function stateActions(state) {
     const builder = new api.ActionProtocol.ActionBuilder();
@@ -9,7 +14,7 @@ function createDeterministicSystem(api) {
 
   function mandatoryEventUnitSelection(state, actions) {
     const pending = state.pending_event;
-    if (state.state !== "event" || !pending) return null;
+    if (!isEventState(state.state) || !pending) return null;
     if ([
       "reinforcement_rebuild",
       "precombat_restore",
@@ -33,6 +38,7 @@ function createDeterministicSystem(api) {
   function advanceDeterministicStates(state, options = {}) {
     for (let guard = 0; guard < 64; ++guard) {
       if (!state || state.state === "game_over") return;
+      canonicalizeEventState(state);
 
       if (state.state === "retreat") {
         if (api.prepareDefaultRetreatGroup(state)) continue;
@@ -132,7 +138,7 @@ function createDeterministicSystem(api) {
         return;
       }
 
-      if (state.state === "event") {
+      if (isEventState(state.state)) {
         let actions = stateActions(state);
         if (state.pending_event?.kind === "veteran_upgrade" &&
             actions.replacement_to_eliminated === 1 &&
@@ -156,13 +162,15 @@ function createDeterministicSystem(api) {
         const automatic = mandatoryEventUnitSelection(state, actions);
         if (automatic?.length) {
           for (const id of automatic) {
-            if (state.state !== "event") break;
+            canonicalizeEventState(state);
+            if (!isEventState(state.state)) break;
             const current = stateActions(state).select_event_unit || [];
             if (current.includes(id))
               api.stateEngine.dispatch(state, "select_event_unit", id);
           }
           actions = stateActions(state);
-          if (state.state === "event" && actions.event_units_confirm === 1)
+          canonicalizeEventState(state);
+          if (isEventState(state.state) && actions.event_units_confirm === 1)
             api.stateEngine.dispatch(state, "event_units_confirm");
           continue;
         }

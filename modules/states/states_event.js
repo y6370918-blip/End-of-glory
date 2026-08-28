@@ -1,5 +1,10 @@
 "use strict";
 
+const {
+  EVENT_KINDS,
+  GENERIC_EVENT_STATE,
+} = require("../core/event-flow.js");
+
 function createEventStates(api) {
   const {
     advanceWhiteFeatherSr,
@@ -187,8 +192,12 @@ function createEventStates(api) {
       return card?.title || "事件。";
     },
     event_choose(state, id) {
-      if (["front_maintenance", "front_investment"].includes(state.pending_event?.kind))
-        api.snapshot(state, "战线支付");
+      api.snapshot(
+        state,
+        ["front_maintenance", "front_investment"].includes(state.pending_event?.kind)
+          ? "战线支付"
+          : "事件选择",
+      );
       eventChoice(state, id);
     },
     spend_flip(state, id) {
@@ -210,7 +219,6 @@ function createEventStates(api) {
         (candidate) => candidate.kind === "upgrade" && candidate.unit === id,
       );
       if (!option) throw new Error("Illegal immediate RP upgrade");
-      api.snapshot(state, "老兵升级");
       (combatTemporary ? spendCombatFrRp : spendImmediateRp)(state, `upgrade:${id}:${option.key}`);
     },
     spend_rebuild(state, id) {
@@ -221,11 +229,11 @@ function createEventStates(api) {
         (candidate) => candidate.kind === "rebuild" && candidate.unit === id,
       );
       if (!option) throw new Error("Illegal immediate RP rebuild");
-      api.snapshot(state, "单位重建");
       (combatTemporary ? spendCombatFrRp : spendImmediateRp)(state, `rebuild:${id}:${option.key}`);
     },
     spend_option(state, token) {
-      api.snapshot(state, "补员支付");
+      const [kind] = String(token).split(":");
+      if (!["upgrade", "rebuild"].includes(kind)) api.snapshot(state, "补员支付");
       if (state.pending_event?.kind === "combat_fr_rp") spendCombatFrRp(state, token);
       else spendImmediateRp(state, token);
     },
@@ -279,12 +287,16 @@ function createEventStates(api) {
         (candidate) => candidate !== id,
       );
     },
-    confirm_mo_penalty_loss: commitMoPenaltyLoss,
+    confirm_mo_penalty_loss(state) {
+      api.snapshot(state, "确认MO处罚损失");
+      commitMoPenaltyLoss(state);
+    },
     reinforcement_to_reserve(state) {
       const pending = state.pending_event;
       if (pending?.kind === "aef_replacements") {
         if (pending.stage !== "place" || pending.index >= pending.units.length)
           throw new Error("No AEF replacement is awaiting placement");
+        api.snapshot(state, "事件部署到预备区");
         pending.placements.push({ destination: "reserve" });
         pending.index += 1;
         return;
@@ -299,6 +311,7 @@ function createEventStates(api) {
         );
         if (unit?.type !== "corps")
           throw new Error("Only an SCU may rebuild into the reserve box");
+        api.snapshot(state, "事件重建到预备区");
         pending.rebuild_placements.push({ id, destination: "reserve" });
         pending.rebuild_index += 1;
         return;
@@ -309,6 +322,7 @@ function createEventStates(api) {
         !current?.reserve_optional
       )
         throw new Error("This reinforcement cannot enter the reserve box");
+      api.snapshot(state, "事件部署到预备区");
       pending.placements.push({
         id: reinforcementPlacementId(state, current),
         piece: current.piece,
@@ -330,8 +344,12 @@ function createEventStates(api) {
         throw new Error("Too many event units selected");
       pending.selected_units.push(id);
       const refreshed = eventUnitActionCandidates(state);
-      if (eventUnitSelectionAutoContinues(state, refreshed))
-        event.event_units_confirm(state);
+      if (eventUnitSelectionAutoContinues(state, refreshed)) {
+        pending.selected_units.pop();
+        api.snapshot(state, "确认事件单位");
+        pending.selected_units.push(id);
+        event.event_units_confirm(state, { skip_undo: true });
+      }
     },
     deselect_event_unit(state, id) {
       const pending = state.pending_event;
@@ -368,11 +386,13 @@ function createEventStates(api) {
         throw new Error("August Guns reposition is not active");
       if (pending.selected_units?.length)
         throw new Error("Place or deselect the selected units first");
+      api.snapshot(state, "确认八月炮火部署");
       finishEvent(state, cardById[pending.card]);
     },
-    event_units_confirm(state) {
+    event_units_confirm(state, options = {}) {
       const pending = state.pending_event;
       if (!pending) throw new Error("No pending event");
+      if (!options.skip_undo) api.snapshot(state, "确认事件单位");
       if (pending.kind === "reinforcement_rebuild") {
         const legal = new Set(reinforcementRebuildCandidates(state, pending));
         const selected = (pending.selected_units || []).slice();
@@ -395,6 +415,7 @@ function createEventStates(api) {
       const pending = state.pending_event;
       const card = pending && cardById[pending.card];
       if (pending?.kind === "salient") {
+        api.snapshot(state, "放置突出部");
         commitSalient(state, space);
         return;
       }
@@ -411,6 +432,7 @@ function createEventStates(api) {
           return;
         }
         if (pending.stage === "forward_target") {
+          api.snapshot(state, "MO处罚前移");
           commitMoPenaltyForwardMove(state, pending, space);
           return;
         }
@@ -425,18 +447,22 @@ function createEventStates(api) {
         throw new Error("The MO penalty is not selecting a space");
       }
       if (pending?.kind === "combat_hq_reinforcement") {
+        api.snapshot(state, "战斗HQ增援");
         resolveCombatHqReinforcement(state, space);
         return;
       }
       if (pending?.kind === "combat_fr_rp" && pending.mode === "hq") {
+        api.snapshot(state, "部署贝当HQ");
         placeCombatFrRpHq(state, space);
         return;
       }
       if (pending?.kind === "hq_relocation") {
+        api.snapshot(state, "战后HQ重新部署");
         relocateCombatHq(state, pending, space);
         return;
       }
       if (pending?.kind === "hq_return") {
+        api.snapshot(state, "HQ返场");
         placeReturningHq(state, pending, space);
         return;
       }
@@ -492,15 +518,18 @@ function createEventStates(api) {
           !aefPortSpaces(state, pending).includes(space)
         )
           throw new Error("Illegal AEF port");
+        api.snapshot(state, "AEF补员部署");
         pending.placements.push({ destination: "map", space });
         pending.index += 1;
         return;
       }
       if (pending?.kind === "replacement_rebuild") {
+        api.snapshot(state, "单位重建位置");
         commitReplacementRebuild(state, space);
         return;
       }
       if (pending?.kind === "veteran_upgrade") {
+        api.snapshot(state, "老兵替换位置");
         commitVeteranUpgrade(state, space);
         return;
       }
@@ -511,6 +540,7 @@ function createEventStates(api) {
         if (!reinforcementRebuildSpaces(state, pending).includes(space))
           throw new Error("Illegal reinforcement rebuild space");
         const id = pending.selected_units[pending.rebuild_index || 0];
+        api.snapshot(state, "事件重建位置");
         pending.rebuild_placements.push({ id, destination: "map", space });
         pending.rebuild_index += 1;
         return;
@@ -524,16 +554,19 @@ function createEventStates(api) {
         if (!navalPostFortificationSpaces(state, pending).includes(space))
           throw new Error("Illegal naval fortification space");
         pending.post_fortification_spaces ||= [];
+        api.snapshot(state, "事件工事位置");
         pending.post_fortification_spaces.push(space);
         return;
       }
       if (["reinforcement", "scheduled_return"].includes(pending?.kind)) {
         if (pending.kind === "reinforcement" && pending.exchange) {
+          api.snapshot(state, "皮亚韦替换位置");
           commitPiaveExchangeDestination(state, pending, space);
           return;
         }
         if (!reinforcementSpaces(state, pending).includes(space))
           throw new Error("Illegal reinforcement space");
+        api.snapshot(state, pending.kind === "reinforcement" ? "事件增援位置" : "延迟单位返场");
         const current = pending.queue[pending.index];
         pending.placements.push({
           id:
@@ -551,6 +584,7 @@ function createEventStates(api) {
         return;
       }
       if (pending?.kind === "hindenburg_line") {
+        api.snapshot(state, "兴登堡防线位置");
         selectHindenburgSpace(state, space);
         return;
       }
@@ -566,6 +600,7 @@ function createEventStates(api) {
           !optionalDeploySpaces(state, pending).includes(space)
         )
           throw new Error("Illegal optional reinforcement space");
+        api.snapshot(state, "可选增援位置");
         pending.placements.push({ space });
         pending.index += 1;
         return;
@@ -578,6 +613,7 @@ function createEventStates(api) {
         );
         if (index < 0)
           throw new Error("White Feather reserve corps is no longer available");
+        api.snapshot(state, "白羽毛战略调动");
         const [unit] = state.reserves.ap.splice(index, 1);
         hydrateUnit(unit);
         unit.location = space;
@@ -588,10 +624,12 @@ function createEventStates(api) {
         return;
       }
       if (pending?.kind === "august_reposition") {
+        api.snapshot(state, "八月炮火重新部署");
         commitAugustGunsReposition(state, pending, space);
         return;
       }
       if (pending?.kind === "august_belgian_relocation") {
+        api.snapshot(state, "比利时单位重新部署");
         commitAugustBelgianRelocation(state, pending, space);
         return;
       }
@@ -607,6 +645,8 @@ function createEventStates(api) {
     event_confirm(state) {
       const pending = state.pending_event;
       const card = pending && cardById[pending.card];
+      if (!pending) throw new Error("No pending event");
+      api.snapshot(state, "确认事件");
       if (pending?.kind === "mo_penalty") {
         if (pending.stage !== "confirm")
           throw new Error("Select every forced attack first");
@@ -1207,7 +1247,10 @@ function createEventStates(api) {
         if (pending.space) actions.event_confirm = 1;
       } else actions.event_confirm = 1;
   };
-  return { event };
+  return Object.fromEntries([
+    [GENERIC_EVENT_STATE, event],
+    ...EVENT_KINDS.map((kind) => [`event_${kind}`, event]),
+  ]);
 }
 
 module.exports = { createEventStates };

@@ -136,7 +136,7 @@ function createTurnSystem(api) {
   }
 
   function startActionRound(state) {
-      state.undo.length = 0;
+      api.clearUndo(state);
       api.clearCombatEvents(state, "action_round");
       api.refreshBesieged(state);
       state.phase = "行动阶段";
@@ -160,13 +160,16 @@ function createTurnSystem(api) {
           unit.attack_eligible = false;
       }
       api.checkpoint(state, "action-round", `T${state.turn} AR${state.action_round}`);
-      api.log(state, `T${state.turn} 行动轮 ${state.action_round}：同盟国行动。`);
+      api.log(state, "");
+      if (state.action_round === 1)
+          api.log(state, ".h2 行动阶段");
+      api.log(state, `.h3cp 行动轮 ${state.action_round}`);
   }
 
   function continueNextFactionAction(state) {
       // A unilateral undo is local to one player's current action.  Crossing
       // this boundary requires the existing mutual rollback workflow.
-      state.undo.length = 0;
+      api.clearUndo(state);
       if (state.active === api.CP) {
           if (state.action_round >= (api.data.title.action_rounds || 6)) {
               resolveFactionAttrition(state, api.CP);
@@ -184,7 +187,8 @@ function createTurnSystem(api) {
               actor: api.AP,
               used_combat_cards: [],
           };
-          api.log(state, `T${state.turn} 行动轮 ${state.action_round}：协约国行动。`);
+          api.log(state, "");
+          api.log(state, `.h3ap 行动轮 ${state.action_round}`);
           return;
       }
       api.cleanupEmptyFortifications(state);

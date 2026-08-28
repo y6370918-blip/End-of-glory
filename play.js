@@ -193,10 +193,7 @@ function showActionHints(hints, event, titleText) {
 	const anchor = event?.currentTarget?.getBoundingClientRect?.()
 	const x = Number.isFinite(event?.clientX) ? event.clientX : anchor?.left + anchor?.width / 2
 	const y = Number.isFinite(event?.clientY) ? event.clientY : anchor?.top + anchor?.height / 2
-	const width = menu.offsetWidth
-	const height = menu.offsetHeight
-	menu.style.left = `${Math.max(6, Math.min((x || 0) - width / 2, window.innerWidth - width - 6))}px`
-	menu.style.top = `${Math.max(48, Math.min((y || 48) - 12, window.innerHeight - height - 34))}px`
+	positionTransientMenu(menu, x, y, 48)
 	return true
 }
 
@@ -208,6 +205,31 @@ function hideActivationMenu() {
 function hideCardMenu() {
 	const menu = byId("card-popup")
 	if (menu) menu.hidden = true
+}
+
+function visibleViewportBounds() {
+	const viewport = window.visualViewport
+	return {
+		left: viewport?.offsetLeft || 0,
+		top: viewport?.offsetTop || 0,
+		width: viewport?.width || window.innerWidth,
+		height: viewport?.height || window.innerHeight
+	}
+}
+
+function positionTransientMenu(menu, x, y, minimumTop = 5) {
+	const viewport = visibleViewportBounds()
+	const gap = 6
+	const width = Math.min(menu.offsetWidth, viewport.width - gap * 2)
+	const height = Math.min(menu.offsetHeight, viewport.height - gap * 2)
+	const left = Math.max(viewport.left + gap, Math.min((x || viewport.left) - width / 2, viewport.left + viewport.width - width - gap))
+	const top = Math.max(viewport.top + minimumTop, Math.min((y || viewport.top + minimumTop) - 12, viewport.top + viewport.height - height - gap))
+	Object.assign(menu.style, { left: `${left}px`, top: `${top}px` })
+}
+
+function closeTransientMenus() {
+	hideActivationMenu()
+	hideCardMenu()
 }
 
 function effectiveCard(card) {
@@ -253,10 +275,7 @@ function showCardMenu(event, card) {
 		}
 	})
 	menu.hidden = false
-	const width = menu.offsetWidth
-	const height = menu.offsetHeight
-	menu.style.left = `${Math.max(5, Math.min(event.clientX - width / 2, window.innerWidth - width - 5))}px`
-	menu.style.top = `${Math.max(5, Math.min(event.clientY - 12, window.innerHeight - height - 40))}px`
+	positionTransientMenu(menu, event.clientX, event.clientY)
 	event.stopPropagation()
 	return true
 }
@@ -278,10 +297,7 @@ function showTargetMenu(entries, event, titleText) {
 	const anchor = event?.currentTarget?.getBoundingClientRect?.()
 	const x = Number.isFinite(event?.clientX) ? event.clientX : anchor?.left + anchor?.width / 2
 	const y = Number.isFinite(event?.clientY) ? event.clientY : anchor?.top + anchor?.height / 2
-	const width = menu.offsetWidth
-	const height = menu.offsetHeight
-	menu.style.left = `${Math.max(6, Math.min((x || 0) - width / 2, window.innerWidth - width - 6))}px`
-	menu.style.top = `${Math.max(48, Math.min((y || 48) - 12, window.innerHeight - height - 34))}px`
+	positionTransientMenu(menu, x, y, 48)
 	return true
 }
 
@@ -2128,6 +2144,10 @@ function highlightLogReference(kind, value, enabled) {
 }
 
 function activateLogReference(kind, value) {
+	if (window.innerWidth <= 800) {
+		const sidebar = document.querySelector("body > aside")
+		if (sidebar) sidebar.hidden = true
+	}
 	if (kind === "card") return showCard(cardById[Number(value)])
 	if (kind === "mo") {
 		showInfo("score")
@@ -2156,8 +2176,16 @@ function appendLogText(element, text) {
 		const token = document.createElement(kind === "die" ? "span" : "button")
 		token.className = `log-ref log-${kind}`
 		if (kind === "space") token.textContent = spaceById[value]?.name || value
-		else if (kind === "unit") token.textContent = eventUnitLabel(value)
-		else if (kind === "card") token.textContent = cardById[Number(value)]?.title || value
+		else if (kind === "unit") {
+			token.textContent = eventUnitLabel(value)
+			const faction = unitById.get(value)?.faction || (view.units || []).find((unit) => unit.id === value)?.faction
+			if (faction) token.classList.add(`${faction}-unit`)
+		}
+		else if (kind === "card") {
+			const card = cardById[Number(value)]
+			token.textContent = card?.title || value
+			if (card?.faction) token.classList.add(`${card.faction}-card`)
+		}
 		else if (kind === "mo") token.textContent = currentMoEntry(value)?.name || value
 		else {
 			const [faction, die] = value.split(":")
@@ -2179,31 +2207,68 @@ function appendLogText(element, text) {
 	element.append(document.createTextNode(text.slice(start)))
 }
 
-function onLog(text) {
+let logGroupFaction = null
+let logGroupIndex = 0
+
+function resetLogGroup() {
+	logGroupFaction = null
+	logGroupIndex = 0
+}
+
+function onLog(text, index = 0) {
 	const element = document.createElement("div")
 	let content = String(text || "")
+	if (Number.isInteger(index) && index < logGroupIndex) resetLogGroup()
+
 	if (content.startsWith(">>")) {
-		element.className = "ii detail"
+		element.className = "i detail align"
 		content = content.slice(2).trimStart()
 	} else if (content.startsWith(">")) {
 		element.className = "i detail"
 		content = content.slice(1).trimStart()
+	}
+
+	if (content.startsWith("*") && !content.startsWith("**")) {
+		content = content.slice(1).trimStart()
+		element.classList.add("bold")
+	}
+
+	if (content.startsWith("!")) {
+		content = `❗ ${content.slice(1)}`
+	} else if (content.startsWith("#ap")) {
+		content = content.slice(3).trimStart()
+		element.className = "h4"
+		logGroupFaction = "ap"
+		logGroupIndex = Number.isInteger(index) ? index : 0
+	} else if (content.startsWith("#cp")) {
+		content = content.slice(3).trimStart()
+		element.className = "h4"
+		logGroupFaction = "cp"
+		logGroupIndex = Number.isInteger(index) ? index : 0
 	} else if (content.startsWith(".h1")) {
+		resetLogGroup()
 		element.className = "h1"
 		content = content.slice(3).trimStart()
 	} else if (content.startsWith(".h2")) {
-		element.className = "h3"
+		resetLogGroup()
+		element.className = "h2"
 		content = content.slice(3).trimStart()
+	} else if (content.startsWith(".h3ap")) {
+		resetLogGroup()
+		element.className = "h3 ap"
+		content = content.slice(6).trimStart()
+	} else if (content.startsWith(".h3cp")) {
+		resetLogGroup()
+		element.className = "h3 cp"
+		content = content.slice(6).trimStart()
 	} else if (content.startsWith(".h3")) {
+		resetLogGroup()
 		element.className = "h3"
-		content = content.slice(3).trimStart()
-	} else if (content.startsWith("#ap")) {
-		element.className = "group ap"
-		content = content.slice(3).trimStart()
-	} else if (content.startsWith("#cp")) {
-		element.className = "group cp"
 		content = content.slice(3).trimStart()
 	}
+
+	if (!content) resetLogGroup()
+	if (logGroupFaction) element.classList.add("group", logGroupFaction)
 	appendLogText(element, content)
 	return element
 }
@@ -2244,6 +2309,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const ordered = [
 		mainMenu,
 		byId("chat_button"),
+		byId("log_button"),
 		byId("zoom_button"),
 		byId("stack-menu"),
 		byId("info-menu"),
@@ -2260,7 +2326,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		byId("zoom_button").title = "地图缩放"
 		byId("zoom_button").setAttribute("aria-label", "地图缩放")
 	}
-	if (byId("log_button")) byId("log_button").hidden = true
+	if (byId("log_button")) {
+		byId("log_button").title = "日志"
+		byId("log_button").setAttribute("aria-label", "日志")
+	}
 
 	const preferenceKey = window.params?.title_id || "end-of-glory"
 	initializeInfoWindows()
@@ -2297,5 +2366,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (!event.target.closest("#activation-popup, .piece-stack")) blurStack()
 	})
 	byId("card-popup").addEventListener("mouseleave", hideCardMenu)
+	byId("activation-popup").addEventListener("pointerdown", (event) => event.stopPropagation())
+	byId("card-popup").addEventListener("pointerdown", (event) => event.stopPropagation())
+	window.visualViewport?.addEventListener("resize", closeTransientMenus)
+	window.visualViewport?.addEventListener("scroll", closeTransientMenus)
+	window.addEventListener("orientationchange", closeTransientMenus)
 	onUpdate()
 })

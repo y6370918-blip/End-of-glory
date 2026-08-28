@@ -122,7 +122,8 @@ function createActionSystem(api) {
       const card = api.cardById[Number(id)];
       if (!card || card.faction !== state.active)
           throw new Error("Invalid card");
-      api.snapshot(state, `${card.title} / ${use}`);
+      if (!(use === "event" && state.naval.resolving))
+          api.snapshot(state, `${card.title} / ${use}`);
       if (!state.naval.resolving && state.state === "action_card")
           recordActionHistory(state, use, card.id);
       if (!state.naval.resolving && state.state === "action_card") {
@@ -148,14 +149,14 @@ function createActionSystem(api) {
               selected_unit: null,
           };
           state.state = "sr";
-          api.log(state, `${card.title} 用于战略调动。`);
+          api.log(state, `[[card:${card.id}]] — 战略调动 (${state.sr.remaining})`);
           return;
       }
       if (use === "rp") {
           for (const [nation, amount] of Object.entries(usedCard.rp))
               state.rp[state.active][nation] += amount;
           placeUsedCard(state, card, use);
-          api.log(state, `${card.title} 用于补员。`);
+          api.log(state, `[[card:${card.id}]] — 补员`);
           api.nextFactionAction(state);
           return;
       }
@@ -238,10 +239,18 @@ function createActionSystem(api) {
       if (!entry)
           throw new Error("Rollback checkpoint is no longer available");
       const rollback = state.rollback.slice();
+      const rollbackStates = Array.from(
+          { length: rollback.length },
+          (_, index) => api.rollbackSnapshot(state, index),
+      );
+      const snapshotState = rollbackStates[proposal.index];
+      if (!snapshotState)
+          throw new Error("Rollback checkpoint state is unavailable");
       const message = `已回滚到：${entry.label}`;
-      api.restoreSnapshot(state, entry);
+      api.restoreSnapshot(state, { ...entry, state: snapshotState });
       api.ensureState(state);
       state.rollback = rollback.slice(0, proposal.index);
+      api.setRollbackSnapshots(state, rollbackStates.slice(0, proposal.index));
       state.rollback_proposal = null;
       state.rollback_confirmation = {
           message,

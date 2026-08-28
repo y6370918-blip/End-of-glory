@@ -1,8 +1,27 @@
+# Local dependencies and transient output
 node_modules/
+*.log
 .preview*.html
 .preview_state*.js
 tmp/
 coverage/
 playwright-report/
 test-results/
-*.log
+
+# Development-only tests and tooling
+tests/
+tools/
+eslint.config.js
+playwright.config.js
+tsconfig.json
+
+# Build inputs and audit/import output. Runtime uses the committed data.js.
+data/
+
+# Original artwork and OCR sources. Runtime-ready assets remain under assets/.
+assets/source-recovered/
+国旗/
+算子单位图标/
+游戏地图和卡牌和表格/
+chi_sim.traineddata
+eng.traineddata

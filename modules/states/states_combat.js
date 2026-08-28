@@ -30,7 +30,7 @@ function createCombatStates(api) {
     const continuing = Boolean(pending.advance_group?.length);
     if (!api.advanceCanEnter(state, ids, destination))
       throw new Error("Advance is no longer legal");
-    if (!continuing && !pending.advanced_ids.length) state.undo.length = 0;
+    if (!continuing && !pending.advanced_ids.length) api.clearUndo(state);
     api.snapshot(state, "Post-combat advance");
     for (const unit of units) api.advanceUnitInto(state, pending, unit, destination);
     if (api.intactFort(state, destination) &&
@@ -499,6 +499,7 @@ function createCombatStates(api) {
           : (pending.choices || [Number(pending.steps || 1)]);
         if (distances.some((steps) => api.retreatUnitHasRoute(state, id, steps)))
           throw new Error("A unit may be eliminated only when it has no legal retreat");
+        api.snapshot(state, "无法撤退消灭");
         api.eliminateUnit(state, id, "无法撤退");
         pending.units = pending.units.filter((unitId) => unitId !== id);
         pending.selected_units = (pending.selected_units || []).filter((unitId) => unitId !== id);
@@ -512,7 +513,7 @@ function createCombatStates(api) {
         const firstRetreatStep = !Object.values(pending.paths || {}).some(
           (path) => Array.isArray(path) && path.length > 1,
         );
-        if (firstRetreatStep) state.undo.length = 0;
+        if (firstRetreatStep) api.clearUndo(state);
         api.snapshot(state, "撤退一步");
         for (const id of ids) {
           const unit = api.findUnit(state, id);
@@ -646,7 +647,10 @@ function createCombatStates(api) {
           )
             throw new Error("The advancing group may not stop overstacked");
           api.finishAdvanceGroup(state);
-        } else api.finishCombatSequence(state);
+        } else {
+          if (!(pending.advanced_ids || []).length) api.clearUndo(state);
+          api.finishCombatSequence(state);
+        }
       },
     },
 

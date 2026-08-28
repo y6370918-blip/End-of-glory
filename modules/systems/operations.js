@@ -530,7 +530,9 @@ function createOperationsSystem(api) {
           pending_activation: null,
       };
       state.state = "ops_activate";
-      api.log(state, `${api.factionRole(state.active)} 使用 ${card?.title || "1 OP"} 进行行动。`);
+      api.log(state, card
+          ? `[[card:${card.id}]] — 行动点 (${printedOps})`
+          : `1 OP — 行动点 (${printedOps})`);
   }
 
   function finishOps(state) {
@@ -896,6 +898,7 @@ function createOperationsSystem(api) {
   function returnSchlieffenUnit(state, id) {
       if (!schlieffenOverstackCandidates(state).includes(id))
           throw new Error("This Schlieffen corps does not have to return");
+      api.snapshot(state, "施里芬超堆叠返回");
       const index = state.units.findIndex((candidate) => candidate.id === id);
       const [unit] = state.units.splice(index, 1);
       const origin = unit.location;
@@ -1193,7 +1196,6 @@ function createOperationsSystem(api) {
           routesByUnit[unit.id] = routes;
           endpointsByUnit[unit.id] = [...new Set(routes.map((route) => route.at(-1)))];
       }
-      api.snapshot(state, "开始编队移动");
       state.ops.moving = ids[0];
       state.ops.movement = {
           unit: ids[0],
@@ -1371,11 +1373,11 @@ function createOperationsSystem(api) {
           state.turn <= 3 &&
               movement.activation_kind === "move" &&
               !movement.began_in_fort_limited_supply[unit.id];
-      api.log(state, `${api.pieceById[unit.piece]?.name || unit.id}：${[
+      api.log(state, `[[unit:${unit.id}]]：${[
           movement.origin,
           ...movement.path,
       ]
-          .map((space) => api.spaceById[space]?.name || space)
+          .map((space) => `[[space:${space}]]`)
           .join(" → ")}。`);
   }
 
@@ -1410,7 +1412,7 @@ function createOperationsSystem(api) {
       state.state = resumeOpsExecutionState(state);
   }
 
-  function moveUnitOneSpace(state, unit, requested) {
+  function moveUnitOneSpace(state, unit, requested, options = {}) {
       if (Array.isArray(requested)) {
           if (requested.length !== 1)
               throw new Error("Movement must be executed one space at a time");
@@ -1431,7 +1433,7 @@ function createOperationsSystem(api) {
           throw new Error("This faction cannot use the connection");
       if (!movementStepDestinations(state).includes(requested))
           throw new Error("Illegal movement step");
-      api.snapshot(state, "逐格移动");
+      if (!options.skip_undo) api.snapshot(state, "逐格移动");
       const enteredApItaly = activeUnits.some((movingUnit) => movingUnit.nation === "ah" &&
           api.spaceById[requested]?.nation === "it" &&
           state.control[requested] === api.AP);
@@ -1619,6 +1621,7 @@ function createOperationsSystem(api) {
           throw new Error("This activation has already constructed fieldworks");
       if (!constructionAvailable(state, space))
           throw new Error("No fieldworks can be built here");
+      api.snapshot(state, "修筑");
       const terrain = api.spaceById[space]?.terrain;
       const level = state.trenches[space] || 0;
       const maximum = constructionMaximumTrench(state, space);
@@ -1675,6 +1678,7 @@ function createOperationsSystem(api) {
       const corps = selected.find((unit) => unit.type === "corps");
       if (!army || !corps)
           throw new Error("Combination requires a reduced army and a corps");
+      api.snapshot(state, "组合单位");
       army.reduced = false;
       api.eliminateUnit(state, corps.id, "Combination");
       api.log(state, `${api.spaceById[army.location]?.name}：减员 LCU 与 SCU 完成组合。`);

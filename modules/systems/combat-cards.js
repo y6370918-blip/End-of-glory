@@ -91,6 +91,7 @@ function createCombatCardSystem(api) {
       const window = state.combat_window;
       if (!window || window.cards_revealed)
           return;
+      api.clearUndo(state);
       for (const id of window.cards || []) {
           const card = api.cardById[id];
           const owner = window.card_owners?.[id] || combatCardOwner(state, card);

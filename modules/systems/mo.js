@@ -532,8 +532,7 @@ function createMoSystem(api) {
       state.mo.review ||= { confirmed: [] };
       if (state.mo.review.confirmed.includes(faction))
           throw new Error("MO already confirmed");
-      if (faction === api.AP)
-          api.snapshot(state, "确认强制进攻");
+      api.clearUndo(state);
       for (const nation of api.MO_NATIONS[faction])
           for (const id of state.mo.current[nation] || [])
               if (!moIsResolved(state, nation, id)) {

@@ -1539,7 +1539,7 @@ function createCombatSystem(api) {
       // Dice have been rolled and the combat result is now public information.
       // Ordinary undo must never cross this information boundary; later
       // post-combat advances create their own, newer snapshots.
-      state.undo.length = 0;
+      api.clearUndo(state);
       // Mutual rollback must obey the same public-information boundary. A new
       // action-round checkpoint will be created after this combat is complete.
       state.rollback.length = 0;
@@ -1581,9 +1581,16 @@ function createCombatSystem(api) {
       state.active = state.combat.pending_side;
       state.state = "combat_losses";
       state.combat_window = null;
-      api.log(state, `.h2 战斗：[[space:${target}]]`);
-      api.log(state, `#${state.combat.attacker}进攻方：${attackers.map((id) => `[[unit:${id}]]`).join("、")}（${origins.map((space) => `[[space:${space}]]`).join("、")}）`);
-      api.log(state, `#${api.other(state.combat.attacker)}防守方：${defendingIds.map((id) => `[[unit:${id}]]`).join("、") || "要塞"}${fortStrength ? `，要塞 ${fortStrength}` : ""}`);
+      api.log(state, "");
+      api.log(state, `#${state.combat.attacker} 战斗：[[space:${target}]]`);
+      api.log(state, "*进攻方：");
+      for (const origin of origins) {
+          const originAttackers = attackers.filter((id) => state.units.find((unit) => unit.id === id)?.location === origin);
+          if (originAttackers.length)
+              api.log(state, `>> ${originAttackers.map((id) => `[[unit:${id}]]`).join("、")}（[[space:${origin}]]）`);
+      }
+      api.log(state, "*防守方：");
+      api.log(state, `>> ${defendingIds.map((id) => `[[unit:${id}]]`).join("、") || "要塞"}${fortStrength ? `，要塞 ${fortStrength}` : ""}`);
       for (const line of api.combatModifierLines(modifiers))
           api.log(state, `> ${line.label}${line.kind === "card" ? ` [[card:${line.card}]]` : ` ${line.amount >= 0 ? "+" : ""}${line.amount}`}`);
       api.log(state, `>> 进攻 [[die:${state.combat.attacker}:${attackRawRoll}]]${attackDrm ? `${attackDrm >= 0 ? "+" : ""}${attackDrm}` : ""}=${attackRoll}，${attackTable} ${attackFinalColumn.value}列，造成 ${defenseLoss} 损失。`);
@@ -2053,6 +2060,7 @@ function createCombatSystem(api) {
           : null;
       if (combat)
           state.active = combat.attacker;
+      api.log(state, "");
       state.pending_retreat = null;
       state.combat = null;
       state.post_combat_window = null;
@@ -2634,6 +2642,7 @@ function createCombatSystem(api) {
       if (rules.prohibit_advance?.includes("both") ||
           rules.prohibit_advance?.includes(combat.attacker) ||
           rules.cancel_advance?.includes(combat.attacker)) {
+          api.clearUndo(state);
           finishCombatSequence(state);
           return;
       }
@@ -2650,6 +2659,7 @@ function createCombatSystem(api) {
           ? Math.max(1, ...completedRetreatLengths)
           : Number(pending.advance_max_steps || pending.steps || 1);
       if (!pending.units.length || api.unitsAt(state, pending.target, api.other(combat.attacker)).length) {
+          api.clearUndo(state);
           finishCombatSequence(state);
           return;
       }

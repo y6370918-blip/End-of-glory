@@ -710,7 +710,12 @@ function createViewSystem(api) {
                   editing: true,
               }
               : api.clone(state.supply_warnings),
-          rollback: api.ViewExplanations.rollbackEntries(state, current),
+          rollback: api.ViewExplanations.rollbackEntries(
+              state,
+              current,
+              20,
+              (index) => api.rollbackSnapshot(state, index),
+          ),
           rollback_proposal: state.rollback_proposal
               ? {
                   proposer: state.rollback_proposal.proposer,

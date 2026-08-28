@@ -80,11 +80,11 @@ function createTurnStates(api) {
         builder.enable("decline_front_mo");
       },
       commit_front_mo(state, id) {
-        api.snapshot(state, "承诺战线MO");
+        api.clearUndo(state);
         api.commitFrontMo(state, id);
       },
       decline_front_mo(state) {
-        api.snapshot(state, "不承诺战线MO");
+        api.clearUndo(state);
         api.declineFrontMo(state);
       },
     },
@@ -103,15 +103,15 @@ function createTurnStates(api) {
         }
       },
       naval_event(state, card) {
-        api.snapshot(state, "海军暗出");
+        api.clearUndo(state);
         api.navalChoice(state, { kind: "event", card });
       },
       naval_fleet(state, card) {
-        api.snapshot(state, "海军暗出");
+        api.clearUndo(state);
         api.navalChoice(state, { kind: "fleet", card });
       },
       naval_empty_fleet(state) {
-        api.snapshot(state, "海军暗出");
+        api.clearUndo(state);
         api.navalChoice(state, { kind: "fleet", card: null });
       },
     },
@@ -178,11 +178,9 @@ function createTurnStates(api) {
         api.spendReplacement(state, { kind: "flip", unit });
       },
       spend_upgrade(state, unit) {
-        api.snapshot(state, "补员");
         api.spendReplacement(state, { kind: "upgrade", unit });
       },
       spend_rebuild(state, unit) {
-        api.snapshot(state, "补员");
         api.spendReplacement(state, { kind: "rebuild", unit });
       },
       spend_front(state, track) {
@@ -191,7 +189,7 @@ function createTurnStates(api) {
       },
       spend_option(state, token) {
         const [kind, unit, key] = String(token).split(":");
-        api.snapshot(state, "补员");
+        if (!["upgrade", "rebuild"].includes(kind)) api.snapshot(state, "补员");
         api.spendReplacement(state, { kind, unit, key });
       },
       mo_front_loss(state, id) {

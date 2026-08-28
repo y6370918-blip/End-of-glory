@@ -5,6 +5,7 @@ function createActivationStates(api) {
     ops_activate: {
       message: (state) => `${state.ops?.remaining ?? 0} OP`,
       prompt(state, builder) {
+        if (!state.ops) return;
         const selected = state.ops?.preactivation_sr_selected;
         if (selected) {
           builder.addAll("sr_destination", api.schlieffenSrDestinations(state, selected));

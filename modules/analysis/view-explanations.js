@@ -258,8 +258,15 @@ function actionHints(state, faction, actions, context) {
   return result;
 }
 
-function rollbackEntries(state, role = null, maximumLogs = 20) {
+function rollbackEntries(
+  state,
+  role = null,
+  maximumLogs = 20,
+  snapshotAt = null,
+) {
   return (state.rollback || []).map((entry, index) => {
+    const snapshot =
+      typeof snapshotAt === "function" ? snapshotAt(index) : entry.state || {};
     const cursor = Number.isInteger(entry.log_cursor)
       ? entry.log_cursor
       : Array.isArray(entry.state?.log)
@@ -277,7 +284,7 @@ function rollbackEntries(state, role = null, maximumLogs = 20) {
       log_cursor: cursor,
       removed_logs: removed.slice(-maximumLogs),
       omitted_logs: omitted,
-      changes: semanticDiff(entry.state || {}, state, role),
+      changes: semanticDiff(snapshot || {}, state, role),
     };
   });
 }
