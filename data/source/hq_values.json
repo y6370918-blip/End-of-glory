@@ -1,0 +1,22 @@
+{
+  "component-001": [0, 1, 5],
+  "component-002": [0, 1, 5],
+  "component-003": [1, 0, 5],
+  "component-004": [1, 1, 5],
+  "component-005": [0, 1, 5],
+  "component-006": [1, 1, 5],
+  "component-007": [1, 0, 5],
+  "component-008": [1, 1, 5],
+  "component-009": [1, 0, 5],
+  "component-010": [0, 1, 5],
+  "component-011": [1, 0, 5],
+  "component-012": [1, 1, 5],
+  "component-013": [1, 1, 5],
+  "component-025": [0, 1, 5],
+  "component-029": [1, 0, 5],
+  "component-036": [1, 0, 5],
+  "component-040": [1, 0, 5],
+  "component-085": [1, 1, 5],
+  "component-087": [1, 0, 5],
+  "component-088": [1, 0, 5]
+}

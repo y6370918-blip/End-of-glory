@@ -1,0 +1,376 @@
+{
+  "fr": [
+    {
+      "id": "fr-4",
+      "kind": "task",
+      "nation": "fr",
+      "code": "4",
+      "name": "战斗结束后成功挺进",
+      "attacks": 1,
+      "requirement": "advance_after_combat",
+      "image_source": "算子单位图标/强制进攻标记/法国MO4.png"
+    },
+    {
+      "id": "fr-5",
+      "kind": "passive",
+      "nation": "fr",
+      "code": "5",
+      "name": "未与美军堆叠的法国进攻标记损失 1 FR:RP",
+      "attacks": 0,
+      "passive": "fr_attack_without_us_rp_loss",
+      "image_source": "算子单位图标/强制进攻标记/法国MO5.png"
+    },
+    {
+      "id": "fr-6",
+      "kind": "task",
+      "nation": "fr",
+      "code": "6",
+      "name": "放置 2 个进攻标记，且一次进攻 +1 DRM",
+      "attacks": 2,
+      "attack_drm_uses": 1,
+      "attack_drm": 1,
+      "image_source": "算子单位图标/强制进攻标记/法国MO6.png"
+    },
+    {
+      "id": "fr-7",
+      "kind": "task",
+      "nation": "fr",
+      "code": "7",
+      "name": "一次进攻中有德国 LCU 被消灭",
+      "attacks": 1,
+      "requirement": "destroy_enemy_army",
+      "target": "ge",
+      "image_source": "算子单位图标/强制进攻标记/法国MO7.png"
+    },
+    {
+      "id": "fr-9",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "fr",
+      "code": "9",
+      "name": "放置 1 个进攻标记，进攻左移一列",
+      "attacks": 1,
+      "attack_column_uses": 1,
+      "attack_column": -1,
+      "image_source": "算子单位图标/强制进攻标记/法国MO9.png"
+    },
+    {
+      "id": "fr-10",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "fr",
+      "code": "10",
+      "name": "放置 2 个进攻标记",
+      "attacks": 2,
+      "image_source": "算子单位图标/强制进攻标记/法国MO10.png"
+    },
+    {
+      "id": "fr-11",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "fr",
+      "code": "11",
+      "name": "进攻未摧毁要塞、战壕、山地或跨河目标",
+      "attacks": 1,
+      "attack_condition": {
+        "any": ["intact_fort", "trench", "mountain", "river"]
+      },
+      "image_source": "算子单位图标/强制进攻标记/法国MO11.png"
+    }
+  ],
+  "br": [
+    {
+      "id": "br-1",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "br",
+      "code": "1",
+      "name": "与法国 LCU 联合或堆叠进攻，进攻 -1 DRM",
+      "attacks": 1,
+      "attack_condition": {
+        "mixed_with": "fr",
+        "mixed_type": "army"
+      },
+      "attack_drm_uses": 1,
+      "attack_drm": -1,
+      "image_source": "算子单位图标/强制进攻标记/英国MO1.png"
+    },
+    {
+      "id": "br-2",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "br",
+      "code": "2",
+      "name": "进攻要塞、战壕、港口或沼泽目标",
+      "attacks": 1,
+      "attack_condition": {
+        "any": ["intact_fort", "trench", "port", "swamp"]
+      },
+      "image_source": "算子单位图标/强制进攻标记/英国MO2.png"
+    },
+    {
+      "id": "br-3",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "br",
+      "code": "3",
+      "name": "一次进攻中有德国 LCU 被消灭",
+      "attacks": 1,
+      "requirement": "destroy_enemy_army",
+      "target": "ge",
+      "image_source": "算子单位图标/强制进攻标记/英国MO3.png"
+    },
+    {
+      "id": "br-4",
+      "kind": "task",
+      "nation": "br",
+      "code": "4",
+      "name": "放置 2 个进攻标记，且一次进攻 +1 DRM",
+      "attacks": 2,
+      "attack_drm_uses": 1,
+      "attack_drm": 1,
+      "image_source": "算子单位图标/强制进攻标记/英国MO4.png"
+    },
+    {
+      "id": "br-5",
+      "kind": "none",
+      "nation": "br",
+      "code": "5",
+      "name": "无强制进攻",
+      "attacks": 0,
+      "requires_event": "ap_劳合乔治",
+      "image_source": "算子单位图标/强制进攻标记/英国MO5.png"
+    },
+    {
+      "id": "br-6",
+      "kind": "task",
+      "nation": "br",
+      "code": "6",
+      "name": "必须推进土耳其战线（崩溃后视为无）",
+      "attacks": 0,
+      "requirement": "advance_front",
+      "front": "turkish",
+      "requires_all_events": [
+        "cp_土耳其参战",
+        "ap_丘吉尔"
+      ],
+      "collapse_position": 9,
+      "image_source": "算子单位图标/强制进攻标记/英国MO6.png"
+    },
+    {
+      "id": "br-7",
+      "kind": "task",
+      "nation": "br",
+      "code": "7",
+      "name": "战斗结束后成功挺进",
+      "attacks": 1,
+      "requirement": "advance_after_combat",
+      "image_source": "算子单位图标/强制进攻标记/英国MO7.png"
+    },
+    {
+      "id": "br-8",
+      "kind": "task",
+      "nation": "br",
+      "code": "8",
+      "name": "LCU 参与进攻并以 SCU 火力表开火",
+      "attacks": 1,
+      "attack_condition": {
+        "own_army": true
+      },
+      "attack_table": "corps",
+      "requires_event": "cp_英国炮弹短缺_MO解锁",
+      "image_source": "算子单位图标/强制进攻标记/英国MO8.png"
+    }
+  ],
+  "it": [
+    {
+      "id": "it-1",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "it",
+      "code": "1",
+      "name": "通过阿尔卑斯连线进攻",
+      "attacks": 1,
+      "attack_condition": {
+        "connection": "alpine"
+      },
+      "image_source": "算子单位图标/强制进攻标记/意大利MO1.png"
+    },
+    {
+      "id": "it-2",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "it",
+      "code": "2",
+      "name": "进攻未摧毁要塞、山地或跨河目标",
+      "attacks": 1,
+      "attack_condition": {
+        "any": ["intact_fort", "mountain", "river"]
+      },
+      "image_source": "算子单位图标/强制进攻标记/意大利MO2.png"
+    },
+    {
+      "id": "it-3",
+      "kind": "task",
+      "nation": "it",
+      "code": "3",
+      "name": "一次进攻中有意大利 LCU 被消灭",
+      "attacks": 1,
+      "requirement": "lose_friendly_army",
+      "image_source": "算子单位图标/强制进攻标记/意大利MO3.png"
+    }
+  ],
+  "us": [
+    {
+      "id": "us-1",
+      "kind": "task",
+      "nation": "us",
+      "code": "1",
+      "name": "本场进攻胜利，奖励 1 US:RP",
+      "attacks": 1,
+      "requirement": "attack_win",
+      "reward_rp": 1,
+      "image_source": "算子单位图标/强制进攻标记/美国MO1.png"
+    },
+    {
+      "id": "us-2",
+      "kind": "task",
+      "nation": "us",
+      "code": "2",
+      "name": "防御胜利，战斗后该堆叠可立即进攻",
+      "attacks": 0,
+      "requirement": "defense_win_counterattack",
+      "image_source": "算子单位图标/强制进攻标记/美国MO2.png"
+    }
+  ],
+  "ge": [
+    {
+      "id": "ge-1",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "ge",
+      "code": "1",
+      "name": "进攻未摧毁要塞、战壕、跨河或沼泽目标",
+      "attacks": 1,
+      "attack_condition": {
+        "any": ["intact_fort", "trench", "river", "swamp"]
+      },
+      "image_source": "算子单位图标/强制进攻标记/德国MO1.png"
+    },
+    {
+      "id": "ge-2",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "ge",
+      "code": "2",
+      "name": "双方均有 LCU 参与的一次防御胜利",
+      "attacks": 0,
+      "requirement": "defense_win",
+      "combat_condition": {
+        "both_armies": true
+      },
+      "image_source": "算子单位图标/强制进攻标记/德国MO2.png"
+    },
+    {
+      "id": "ge-3",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "ge",
+      "code": "3",
+      "name": "放置 2 个进攻标记并进攻不同地区",
+      "attacks": 2,
+      "distinct_targets": true,
+      "image_source": "算子单位图标/强制进攻标记/德国MO3.png"
+    },
+    {
+      "id": "ge-5",
+      "kind": "task",
+      "nation": "ge",
+      "code": "5",
+      "name": "本次战斗 +1 DRM",
+      "attacks": 1,
+      "attack_drm_uses": 1,
+      "attack_drm": 1,
+      "image_source": "算子单位图标/强制进攻标记/德国MO5.png"
+    },
+    {
+      "id": "ge-6",
+      "kind": "passive",
+      "nation": "ge",
+      "code": "6",
+      "name": "无强制进攻；德国进攻 +1 DRM",
+      "attacks": 0,
+      "passive": "national_attack_drm",
+      "drm": 1,
+      "image_source": "算子单位图标/强制进攻标记/德国MO6.png"
+    },
+    {
+      "id": "ge-7",
+      "kind": "passive",
+      "nation": "ge",
+      "code": "7",
+      "name": "无强制进攻；德国防御 +1 DRM",
+      "attacks": 0,
+      "passive": "national_defense_drm",
+      "drm": 1,
+      "image_source": "算子单位图标/强制进攻标记/德国MO7.png"
+    },
+    {
+      "id": "ge-8",
+      "kind": "task",
+      "nation": "ge",
+      "code": "8",
+      "name": "一次进攻中有法国 LCU 被消灭",
+      "attacks": 1,
+      "requirement": "destroy_enemy_army",
+      "target": "fr",
+      "image_source": "算子单位图标/强制进攻标记/德国MO8.png"
+    },
+    {
+      "id": "ge-10",
+      "kind": "task",
+      "nation": "ge",
+      "code": "10",
+      "name": "必须推进俄国战线，EAST:RP 花费 -1（条约后视为无）",
+      "attacks": 0,
+      "requirement": "advance_front",
+      "front": "russian",
+      "requires_event": "cp_坦能堡的英雄",
+      "investment_discount": 1,
+      "unless_event": "cp_布列斯特_立托夫斯克条约",
+      "image_source": "算子单位图标/强制进攻标记/德国MO10.png"
+    }
+  ],
+  "ah": [
+    {
+      "id": "ah-1",
+      "kind": "none",
+      "nation": "ah",
+      "code": "1",
+      "name": "无强制进攻",
+      "attacks": 0,
+      "image_source": "算子单位图标/强制进攻标记/奥匈MO1.png"
+    },
+    {
+      "id": "ah-2",
+      "initial_bag": true,
+      "kind": "task",
+      "nation": "ah",
+      "code": "2",
+      "name": "一次进攻或防御胜利",
+      "attacks": 0,
+      "requirement": "combat_win",
+      "image_source": "算子单位图标/强制进攻标记/奥匈MO2.png"
+    },
+    {
+      "id": "ah-3",
+      "kind": "task",
+      "nation": "ah",
+      "code": "3",
+      "name": "移动或挺进协约国控制的意大利地区",
+      "attacks": 0,
+      "requirement": "enter_enemy_italy",
+      "image_source": "算子单位图标/强制进攻标记/奥匈MO3.png"
+    }
+  ]
+}

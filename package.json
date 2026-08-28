@@ -1,0 +1,40 @@
+{
+	"name": "end-of-glory",
+	"version": "1.0.0",
+	"private": true,
+	"description": "End of Glory - Rally the Troops game module",
+	"main": "rules.js",
+	"type": "commonjs",
+	"scripts": {
+		"build:data": "node tools/build_data.mjs",
+		"audit:map": "node tools/map_audit.mjs",
+		"audit:map:confirmed": "node tools/map_audit.mjs --require-confirmed",
+		"audit:map:render": "python tools/render_space_audit.py",
+		"audit:connections": "node tools/audit_connections.mjs",
+		"build:assets": "node tools/run_build_assets.mjs",
+		"import:tts": "node tools/import_tts.mjs",
+		"ocr:cards": "node tools/ocr_cards.mjs",
+		"build": "npm run build:assets && npm run build:data",
+		"preview": "node tools/dev_server.mjs",
+		"editor:map": "node --watch tools/map_editor_server.mjs",
+		"preview:build": "node tools/build_preview.mjs",
+		"test": "node --test",
+		"test:campaign": "node tools/run_campaign_tests.mjs",
+		"test:e2e": "playwright test --grep-invert=@visual",
+		"test:visual": "playwright test --grep=@visual",
+		"typecheck": "tsc -p tsconfig.json",
+		"lint": "eslint ."
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.19.0",
+		"@playwright/test": "^1.62.1",
+		"@types/node": "^22.0.0",
+		"eslint": "^9.19.0",
+		"happy-dom": "^20.11.2",
+		"tesseract.js": "^7.0.0",
+		"typescript": "^6.0.2"
+	}
+}

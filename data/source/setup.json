@@ -1,0 +1,6 @@
+{
+  "historical": {
+    "setup_source": "rules.js",
+    "note": "Historical units, reserve boxes, and upgrade pools are set explicitly by set_up_historical_scenario()."
+  }
+}

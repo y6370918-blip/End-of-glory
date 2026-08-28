@@ -1,0 +1,2923 @@
+{
+  "schema": 1,
+  "cards": [
+    {
+      "id": 600,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 0
+      },
+      "image": "cards/ap/600.webp",
+      "image_2x": "cards/ap/600@2x.webp"
+    },
+    {
+      "id": 601,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 1
+      },
+      "image": "cards/ap/601.webp",
+      "image_2x": "cards/ap/601@2x.webp"
+    },
+    {
+      "id": 602,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 2
+      },
+      "image": "cards/ap/602.webp",
+      "image_2x": "cards/ap/602@2x.webp"
+    },
+    {
+      "id": 603,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 3
+      },
+      "image": "cards/ap/603.webp",
+      "image_2x": "cards/ap/603@2x.webp"
+    },
+    {
+      "id": 604,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 4
+      },
+      "image": "cards/ap/604.webp",
+      "image_2x": "cards/ap/604@2x.webp"
+    },
+    {
+      "id": 605,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 5
+      },
+      "image": "cards/ap/605.webp",
+      "image_2x": "cards/ap/605@2x.webp"
+    },
+    {
+      "id": 606,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 6
+      },
+      "image": "cards/ap/606.webp",
+      "image_2x": "cards/ap/606@2x.webp"
+    },
+    {
+      "id": 607,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 7
+      },
+      "image": "cards/ap/607.webp",
+      "image_2x": "cards/ap/607@2x.webp"
+    },
+    {
+      "id": 608,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 8
+      },
+      "image": "cards/ap/608.webp",
+      "image_2x": "cards/ap/608@2x.webp"
+    },
+    {
+      "id": 609,
+      "faction": "ap",
+      "grid": {
+        "row": 0,
+        "column": 9
+      },
+      "image": "cards/ap/609.webp",
+      "image_2x": "cards/ap/609@2x.webp"
+    },
+    {
+      "id": 610,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 0
+      },
+      "image": "cards/ap/610.webp",
+      "image_2x": "cards/ap/610@2x.webp"
+    },
+    {
+      "id": 611,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 1
+      },
+      "image": "cards/ap/611.webp",
+      "image_2x": "cards/ap/611@2x.webp"
+    },
+    {
+      "id": 612,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 2
+      },
+      "image": "cards/ap/612.webp",
+      "image_2x": "cards/ap/612@2x.webp"
+    },
+    {
+      "id": 613,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 3
+      },
+      "image": "cards/ap/613.webp",
+      "image_2x": "cards/ap/613@2x.webp"
+    },
+    {
+      "id": 614,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 4
+      },
+      "image": "cards/ap/614.webp",
+      "image_2x": "cards/ap/614@2x.webp"
+    },
+    {
+      "id": 615,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 5
+      },
+      "image": "cards/ap/615.webp",
+      "image_2x": "cards/ap/615@2x.webp"
+    },
+    {
+      "id": 616,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 6
+      },
+      "image": "cards/ap/616.webp",
+      "image_2x": "cards/ap/616@2x.webp"
+    },
+    {
+      "id": 617,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 7
+      },
+      "image": "cards/ap/617.webp",
+      "image_2x": "cards/ap/617@2x.webp"
+    },
+    {
+      "id": 618,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 8
+      },
+      "image": "cards/ap/618.webp",
+      "image_2x": "cards/ap/618@2x.webp"
+    },
+    {
+      "id": 619,
+      "faction": "ap",
+      "grid": {
+        "row": 1,
+        "column": 9
+      },
+      "image": "cards/ap/619.webp",
+      "image_2x": "cards/ap/619@2x.webp"
+    },
+    {
+      "id": 620,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 0
+      },
+      "image": "cards/ap/620.webp",
+      "image_2x": "cards/ap/620@2x.webp"
+    },
+    {
+      "id": 621,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 1
+      },
+      "image": "cards/ap/621.webp",
+      "image_2x": "cards/ap/621@2x.webp"
+    },
+    {
+      "id": 622,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 2
+      },
+      "image": "cards/ap/622.webp",
+      "image_2x": "cards/ap/622@2x.webp"
+    },
+    {
+      "id": 623,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 3
+      },
+      "image": "cards/ap/623.webp",
+      "image_2x": "cards/ap/623@2x.webp"
+    },
+    {
+      "id": 624,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 4
+      },
+      "image": "cards/ap/624.webp",
+      "image_2x": "cards/ap/624@2x.webp"
+    },
+    {
+      "id": 625,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 5
+      },
+      "image": "cards/ap/625.webp",
+      "image_2x": "cards/ap/625@2x.webp"
+    },
+    {
+      "id": 626,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 6
+      },
+      "image": "cards/ap/626.webp",
+      "image_2x": "cards/ap/626@2x.webp"
+    },
+    {
+      "id": 627,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 7
+      },
+      "image": "cards/ap/627.webp",
+      "image_2x": "cards/ap/627@2x.webp"
+    },
+    {
+      "id": 628,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 8
+      },
+      "image": "cards/ap/628.webp",
+      "image_2x": "cards/ap/628@2x.webp"
+    },
+    {
+      "id": 629,
+      "faction": "ap",
+      "grid": {
+        "row": 2,
+        "column": 9
+      },
+      "image": "cards/ap/629.webp",
+      "image_2x": "cards/ap/629@2x.webp"
+    },
+    {
+      "id": 630,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 0
+      },
+      "image": "cards/ap/630.webp",
+      "image_2x": "cards/ap/630@2x.webp"
+    },
+    {
+      "id": 631,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 1
+      },
+      "image": "cards/ap/631.webp",
+      "image_2x": "cards/ap/631@2x.webp"
+    },
+    {
+      "id": 632,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 2
+      },
+      "image": "cards/ap/632.webp",
+      "image_2x": "cards/ap/632@2x.webp"
+    },
+    {
+      "id": 633,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 3
+      },
+      "image": "cards/ap/633.webp",
+      "image_2x": "cards/ap/633@2x.webp"
+    },
+    {
+      "id": 634,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 4
+      },
+      "image": "cards/ap/634.webp",
+      "image_2x": "cards/ap/634@2x.webp"
+    },
+    {
+      "id": 635,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 5
+      },
+      "image": "cards/ap/635.webp",
+      "image_2x": "cards/ap/635@2x.webp"
+    },
+    {
+      "id": 636,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 6
+      },
+      "image": "cards/ap/636.webp",
+      "image_2x": "cards/ap/636@2x.webp"
+    },
+    {
+      "id": 637,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 7
+      },
+      "image": "cards/ap/637.webp",
+      "image_2x": "cards/ap/637@2x.webp"
+    },
+    {
+      "id": 638,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 8
+      },
+      "image": "cards/ap/638.webp",
+      "image_2x": "cards/ap/638@2x.webp"
+    },
+    {
+      "id": 639,
+      "faction": "ap",
+      "grid": {
+        "row": 3,
+        "column": 9
+      },
+      "image": "cards/ap/639.webp",
+      "image_2x": "cards/ap/639@2x.webp"
+    },
+    {
+      "id": 640,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 0
+      },
+      "image": "cards/ap/640.webp",
+      "image_2x": "cards/ap/640@2x.webp"
+    },
+    {
+      "id": 641,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 1
+      },
+      "image": "cards/ap/641.webp",
+      "image_2x": "cards/ap/641@2x.webp"
+    },
+    {
+      "id": 642,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 2
+      },
+      "image": "cards/ap/642.webp",
+      "image_2x": "cards/ap/642@2x.webp"
+    },
+    {
+      "id": 643,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 3
+      },
+      "image": "cards/ap/643.webp",
+      "image_2x": "cards/ap/643@2x.webp"
+    },
+    {
+      "id": 644,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 4
+      },
+      "image": "cards/ap/644.webp",
+      "image_2x": "cards/ap/644@2x.webp"
+    },
+    {
+      "id": 645,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 5
+      },
+      "image": "cards/ap/645.webp",
+      "image_2x": "cards/ap/645@2x.webp"
+    },
+    {
+      "id": 646,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 6
+      },
+      "image": "cards/ap/646.webp",
+      "image_2x": "cards/ap/646@2x.webp"
+    },
+    {
+      "id": 647,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 7
+      },
+      "image": "cards/ap/647.webp",
+      "image_2x": "cards/ap/647@2x.webp"
+    },
+    {
+      "id": 648,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 8
+      },
+      "image": "cards/ap/648.webp",
+      "image_2x": "cards/ap/648@2x.webp"
+    },
+    {
+      "id": 649,
+      "faction": "ap",
+      "grid": {
+        "row": 4,
+        "column": 9
+      },
+      "image": "cards/ap/649.webp",
+      "image_2x": "cards/ap/649@2x.webp"
+    },
+    {
+      "id": 650,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 0
+      },
+      "image": "cards/ap/650.webp",
+      "image_2x": "cards/ap/650@2x.webp"
+    },
+    {
+      "id": 651,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 1
+      },
+      "image": "cards/ap/651.webp",
+      "image_2x": "cards/ap/651@2x.webp"
+    },
+    {
+      "id": 652,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 2
+      },
+      "image": "cards/ap/652.webp",
+      "image_2x": "cards/ap/652@2x.webp"
+    },
+    {
+      "id": 653,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 3
+      },
+      "image": "cards/ap/653.webp",
+      "image_2x": "cards/ap/653@2x.webp"
+    },
+    {
+      "id": 654,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 4
+      },
+      "image": "cards/ap/654.webp",
+      "image_2x": "cards/ap/654@2x.webp"
+    },
+    {
+      "id": 655,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 5
+      },
+      "image": "cards/ap/655.webp",
+      "image_2x": "cards/ap/655@2x.webp"
+    },
+    {
+      "id": 656,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 6
+      },
+      "image": "cards/ap/656.webp",
+      "image_2x": "cards/ap/656@2x.webp"
+    },
+    {
+      "id": 657,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 7
+      },
+      "image": "cards/ap/657.webp",
+      "image_2x": "cards/ap/657@2x.webp"
+    },
+    {
+      "id": 658,
+      "faction": "ap",
+      "grid": {
+        "row": 5,
+        "column": 8
+      },
+      "image": "cards/ap/658.webp",
+      "image_2x": "cards/ap/658@2x.webp"
+    },
+    {
+      "id": 700,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 0
+      },
+      "image": "cards/cp/700.webp",
+      "image_2x": "cards/cp/700@2x.webp"
+    },
+    {
+      "id": 701,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 1
+      },
+      "image": "cards/cp/701.webp",
+      "image_2x": "cards/cp/701@2x.webp"
+    },
+    {
+      "id": 702,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 2
+      },
+      "image": "cards/cp/702.webp",
+      "image_2x": "cards/cp/702@2x.webp"
+    },
+    {
+      "id": 703,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 3
+      },
+      "image": "cards/cp/703.webp",
+      "image_2x": "cards/cp/703@2x.webp"
+    },
+    {
+      "id": 704,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 4
+      },
+      "image": "cards/cp/704.webp",
+      "image_2x": "cards/cp/704@2x.webp"
+    },
+    {
+      "id": 705,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 5
+      },
+      "image": "cards/cp/705.webp",
+      "image_2x": "cards/cp/705@2x.webp"
+    },
+    {
+      "id": 706,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 6
+      },
+      "image": "cards/cp/706.webp",
+      "image_2x": "cards/cp/706@2x.webp"
+    },
+    {
+      "id": 707,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 7
+      },
+      "image": "cards/cp/707.webp",
+      "image_2x": "cards/cp/707@2x.webp"
+    },
+    {
+      "id": 708,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 8
+      },
+      "image": "cards/cp/708.webp",
+      "image_2x": "cards/cp/708@2x.webp"
+    },
+    {
+      "id": 709,
+      "faction": "cp",
+      "grid": {
+        "row": 0,
+        "column": 9
+      },
+      "image": "cards/cp/709.webp",
+      "image_2x": "cards/cp/709@2x.webp"
+    },
+    {
+      "id": 710,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 0
+      },
+      "image": "cards/cp/710.webp",
+      "image_2x": "cards/cp/710@2x.webp"
+    },
+    {
+      "id": 711,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 1
+      },
+      "image": "cards/cp/711.webp",
+      "image_2x": "cards/cp/711@2x.webp"
+    },
+    {
+      "id": 712,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 2
+      },
+      "image": "cards/cp/712.webp",
+      "image_2x": "cards/cp/712@2x.webp"
+    },
+    {
+      "id": 713,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 3
+      },
+      "image": "cards/cp/713.webp",
+      "image_2x": "cards/cp/713@2x.webp"
+    },
+    {
+      "id": 714,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 4
+      },
+      "image": "cards/cp/714.webp",
+      "image_2x": "cards/cp/714@2x.webp"
+    },
+    {
+      "id": 715,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 5
+      },
+      "image": "cards/cp/715.webp",
+      "image_2x": "cards/cp/715@2x.webp"
+    },
+    {
+      "id": 716,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 6
+      },
+      "image": "cards/cp/716.webp",
+      "image_2x": "cards/cp/716@2x.webp"
+    },
+    {
+      "id": 717,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 7
+      },
+      "image": "cards/cp/717.webp",
+      "image_2x": "cards/cp/717@2x.webp"
+    },
+    {
+      "id": 718,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 8
+      },
+      "image": "cards/cp/718.webp",
+      "image_2x": "cards/cp/718@2x.webp"
+    },
+    {
+      "id": 719,
+      "faction": "cp",
+      "grid": {
+        "row": 1,
+        "column": 9
+      },
+      "image": "cards/cp/719.webp",
+      "image_2x": "cards/cp/719@2x.webp"
+    },
+    {
+      "id": 720,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 0
+      },
+      "image": "cards/cp/720.webp",
+      "image_2x": "cards/cp/720@2x.webp"
+    },
+    {
+      "id": 721,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 1
+      },
+      "image": "cards/cp/721.webp",
+      "image_2x": "cards/cp/721@2x.webp"
+    },
+    {
+      "id": 722,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 2
+      },
+      "image": "cards/cp/722.webp",
+      "image_2x": "cards/cp/722@2x.webp"
+    },
+    {
+      "id": 723,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 3
+      },
+      "image": "cards/cp/723.webp",
+      "image_2x": "cards/cp/723@2x.webp"
+    },
+    {
+      "id": 724,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 4
+      },
+      "image": "cards/cp/724.webp",
+      "image_2x": "cards/cp/724@2x.webp"
+    },
+    {
+      "id": 725,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 5
+      },
+      "image": "cards/cp/725.webp",
+      "image_2x": "cards/cp/725@2x.webp"
+    },
+    {
+      "id": 726,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 6
+      },
+      "image": "cards/cp/726.webp",
+      "image_2x": "cards/cp/726@2x.webp"
+    },
+    {
+      "id": 727,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 7
+      },
+      "image": "cards/cp/727.webp",
+      "image_2x": "cards/cp/727@2x.webp"
+    },
+    {
+      "id": 728,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 8
+      },
+      "image": "cards/cp/728.webp",
+      "image_2x": "cards/cp/728@2x.webp"
+    },
+    {
+      "id": 729,
+      "faction": "cp",
+      "grid": {
+        "row": 2,
+        "column": 9
+      },
+      "image": "cards/cp/729.webp",
+      "image_2x": "cards/cp/729@2x.webp"
+    },
+    {
+      "id": 730,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 0
+      },
+      "image": "cards/cp/730.webp",
+      "image_2x": "cards/cp/730@2x.webp"
+    },
+    {
+      "id": 731,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 1
+      },
+      "image": "cards/cp/731.webp",
+      "image_2x": "cards/cp/731@2x.webp"
+    },
+    {
+      "id": 732,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 2
+      },
+      "image": "cards/cp/732.webp",
+      "image_2x": "cards/cp/732@2x.webp"
+    },
+    {
+      "id": 733,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 3
+      },
+      "image": "cards/cp/733.webp",
+      "image_2x": "cards/cp/733@2x.webp"
+    },
+    {
+      "id": 734,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 4
+      },
+      "image": "cards/cp/734.webp",
+      "image_2x": "cards/cp/734@2x.webp"
+    },
+    {
+      "id": 735,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 5
+      },
+      "image": "cards/cp/735.webp",
+      "image_2x": "cards/cp/735@2x.webp"
+    },
+    {
+      "id": 736,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 6
+      },
+      "image": "cards/cp/736.webp",
+      "image_2x": "cards/cp/736@2x.webp"
+    },
+    {
+      "id": 737,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 7
+      },
+      "image": "cards/cp/737.webp",
+      "image_2x": "cards/cp/737@2x.webp"
+    },
+    {
+      "id": 738,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 8
+      },
+      "image": "cards/cp/738.webp",
+      "image_2x": "cards/cp/738@2x.webp"
+    },
+    {
+      "id": 739,
+      "faction": "cp",
+      "grid": {
+        "row": 3,
+        "column": 9
+      },
+      "image": "cards/cp/739.webp",
+      "image_2x": "cards/cp/739@2x.webp"
+    },
+    {
+      "id": 740,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 0
+      },
+      "image": "cards/cp/740.webp",
+      "image_2x": "cards/cp/740@2x.webp"
+    },
+    {
+      "id": 741,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 1
+      },
+      "image": "cards/cp/741.webp",
+      "image_2x": "cards/cp/741@2x.webp"
+    },
+    {
+      "id": 742,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 2
+      },
+      "image": "cards/cp/742.webp",
+      "image_2x": "cards/cp/742@2x.webp"
+    },
+    {
+      "id": 743,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 3
+      },
+      "image": "cards/cp/743.webp",
+      "image_2x": "cards/cp/743@2x.webp"
+    },
+    {
+      "id": 744,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 4
+      },
+      "image": "cards/cp/744.webp",
+      "image_2x": "cards/cp/744@2x.webp"
+    },
+    {
+      "id": 745,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 5
+      },
+      "image": "cards/cp/745.webp",
+      "image_2x": "cards/cp/745@2x.webp"
+    },
+    {
+      "id": 746,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 6
+      },
+      "image": "cards/cp/746.webp",
+      "image_2x": "cards/cp/746@2x.webp"
+    },
+    {
+      "id": 747,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 7
+      },
+      "image": "cards/cp/747.webp",
+      "image_2x": "cards/cp/747@2x.webp"
+    },
+    {
+      "id": 748,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 8
+      },
+      "image": "cards/cp/748.webp",
+      "image_2x": "cards/cp/748@2x.webp"
+    },
+    {
+      "id": 749,
+      "faction": "cp",
+      "grid": {
+        "row": 4,
+        "column": 9
+      },
+      "image": "cards/cp/749.webp",
+      "image_2x": "cards/cp/749@2x.webp"
+    },
+    {
+      "id": 750,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 0
+      },
+      "image": "cards/cp/750.webp",
+      "image_2x": "cards/cp/750@2x.webp"
+    },
+    {
+      "id": 751,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 1
+      },
+      "image": "cards/cp/751.webp",
+      "image_2x": "cards/cp/751@2x.webp"
+    },
+    {
+      "id": 752,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 2
+      },
+      "image": "cards/cp/752.webp",
+      "image_2x": "cards/cp/752@2x.webp"
+    },
+    {
+      "id": 753,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 3
+      },
+      "image": "cards/cp/753.webp",
+      "image_2x": "cards/cp/753@2x.webp"
+    },
+    {
+      "id": 754,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 4
+      },
+      "image": "cards/cp/754.webp",
+      "image_2x": "cards/cp/754@2x.webp"
+    },
+    {
+      "id": 755,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 5
+      },
+      "image": "cards/cp/755.webp",
+      "image_2x": "cards/cp/755@2x.webp"
+    },
+    {
+      "id": 756,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 6
+      },
+      "image": "cards/cp/756.webp",
+      "image_2x": "cards/cp/756@2x.webp"
+    },
+    {
+      "id": 757,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 7
+      },
+      "image": "cards/cp/757.webp",
+      "image_2x": "cards/cp/757@2x.webp"
+    },
+    {
+      "id": 758,
+      "faction": "cp",
+      "grid": {
+        "row": 5,
+        "column": 8
+      },
+      "image": "cards/cp/758.webp",
+      "image_2x": "cards/cp/758@2x.webp"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "1ad929d0ed37d849",
+      "source": "assets/source-recovered/1ad929d0ed37d849.png",
+      "name": "1ad929d0ed37d849",
+      "image": "pieces/1ad929d0ed37d849.webp",
+      "sha256": "1ad929d0ed37d8497354d5a28cfbf46eb2f046e42bfd254f38fd47b909297282"
+    },
+    {
+      "id": "2604d6ea2e73191e",
+      "source": "assets/source-recovered/2604d6ea2e73191e.png",
+      "name": "2604d6ea2e73191e",
+      "image": "pieces/2604d6ea2e73191e.webp",
+      "sha256": "2604d6ea2e73191e3f0ea2a786686df520800adff50dd6ff7ec47a647191209e"
+    },
+    {
+      "id": "26c8561ea0710015",
+      "source": "assets/source-recovered/26c8561ea0710015.png",
+      "name": "26c8561ea0710015",
+      "image": "pieces/26c8561ea0710015.webp",
+      "sha256": "26c8561ea07100159894cbf053816549fb2ab1031cfe3d22170c6b1c3d9b65ea"
+    },
+    {
+      "id": "2bd3df97a6c02c17",
+      "source": "assets/source-recovered/2bd3df97a6c02c17.png",
+      "name": "2bd3df97a6c02c17",
+      "image": "pieces/2bd3df97a6c02c17.webp",
+      "sha256": "2bd3df97a6c02c17ea37c376e714cdc5f982292d680fd63e16dd4b772a00c5cf"
+    },
+    {
+      "id": "2eb7dd45753f788c",
+      "source": "assets/source-recovered/2eb7dd45753f788c.png",
+      "name": "2eb7dd45753f788c",
+      "image": "pieces/2eb7dd45753f788c.webp",
+      "sha256": "2eb7dd45753f788c05ef3c0664c1ff02e79400758e7b7b44663d55c4e91f6541"
+    },
+    {
+      "id": "3517936695733e7f",
+      "source": "assets/source-recovered/3517936695733e7f.png",
+      "name": "3517936695733e7f",
+      "image": "pieces/3517936695733e7f.webp",
+      "sha256": "3517936695733e7fcaab2c58a8a4f8abd6d001e354dfef3d8aada8de720b37c1"
+    },
+    {
+      "id": "4add965ce5c9e607",
+      "source": "assets/source-recovered/4add965ce5c9e607.png",
+      "name": "4add965ce5c9e607",
+      "image": "pieces/4add965ce5c9e607.webp",
+      "sha256": "4add965ce5c9e607b1dec1701b5c4dd7713e64b87436146fe0e45820907f76f5"
+    },
+    {
+      "id": "6cbc9f5f85f09cf4",
+      "source": "assets/source-recovered/6cbc9f5f85f09cf4.png",
+      "name": "6cbc9f5f85f09cf4",
+      "image": "pieces/6cbc9f5f85f09cf4.webp",
+      "sha256": "6cbc9f5f85f09cf4dc7949aab9d1b7179cc5ef8303686433d871d4f9cd661586"
+    },
+    {
+      "id": "93cbb515ada585f9",
+      "source": "assets/source-recovered/93cbb515ada585f9.png",
+      "name": "93cbb515ada585f9",
+      "image": "pieces/93cbb515ada585f9.webp",
+      "sha256": "93cbb515ada585f9cddcf978926b1fa6f565af674620ce6c5ec950f9f5f93e64"
+    },
+    {
+      "id": "9f29d927d5d2ec4d",
+      "source": "assets/source-recovered/9f29d927d5d2ec4d.png",
+      "name": "9f29d927d5d2ec4d",
+      "image": "pieces/9f29d927d5d2ec4d.webp",
+      "sha256": "9f29d927d5d2ec4dc63a7e48af6ad45ceae05441e1a66519af134e7e7ec4c4d4"
+    },
+    {
+      "id": "b91eb72846c92981",
+      "source": "assets/source-recovered/b91eb72846c92981.png",
+      "name": "b91eb72846c92981",
+      "image": "pieces/b91eb72846c92981.webp",
+      "sha256": "b91eb72846c929818b00c895ee68dda6d899569d519010a3fdc155c40e8d36f1"
+    },
+    {
+      "id": "b9e29b2b66877455",
+      "source": "assets/source-recovered/b9e29b2b66877455.png",
+      "name": "b9e29b2b66877455",
+      "image": "pieces/b9e29b2b66877455.webp",
+      "sha256": "b9e29b2b668774551634afe726c29f87828758102040aae5044076e7e9c05ae7"
+    },
+    {
+      "id": "cdc4bacfb03d7c4d",
+      "source": "assets/source-recovered/cdc4bacfb03d7c4d.png",
+      "name": "cdc4bacfb03d7c4d",
+      "image": "pieces/cdc4bacfb03d7c4d.webp",
+      "sha256": "cdc4bacfb03d7c4d6da56bb29a56eae9f8ee1f9e38a7c0fddf6b7ffceb69f356"
+    },
+    {
+      "id": "d4836580213510c5",
+      "source": "assets/source-recovered/d4836580213510c5.png",
+      "name": "d4836580213510c5",
+      "image": "pieces/d4836580213510c5.webp",
+      "sha256": "d4836580213510c5f81a54bb5cd1ff345ad205115c3c809a894a6c7dc658859c"
+    },
+    {
+      "id": "da147fb39ce9ef1f",
+      "source": "assets/source-recovered/da147fb39ce9ef1f.png",
+      "name": "da147fb39ce9ef1f",
+      "image": "pieces/da147fb39ce9ef1f.webp",
+      "sha256": "da147fb39ce9ef1fdf9e8f372cf81299a1b0b52c7ae6122a8f654b5b08a04299"
+    },
+    {
+      "id": "e560841a9f80cbbe",
+      "source": "算子单位图标/事件标记/U艇.png",
+      "name": "U艇",
+      "image": "pieces/e560841a9f80cbbe.webp",
+      "sha256": "e560841a9f80cbbe8642154a914eedcb321b4d7f820e4481de5186d0ab6a5088"
+    },
+    {
+      "id": "e7489ac4a63e060c",
+      "source": "算子单位图标/事件标记/丘吉尔.png",
+      "name": "丘吉尔",
+      "image": "pieces/e7489ac4a63e060c.webp",
+      "sha256": "e7489ac4a63e060c607c956b35d288ceb0bc1530cdce9ed97b2d9e160a82f9db"
+    },
+    {
+      "id": "3eb1c6360db72531",
+      "source": "算子单位图标/事件标记/保加利亚参战.png",
+      "name": "保加利亚参战",
+      "image": "pieces/3eb1c6360db72531.webp",
+      "sha256": "3eb1c6360db725312d65dc563d4bbce5da35569f95f6ecc1c37a8cdeb783949a"
+    },
+    {
+      "id": "07d5d01db3e76d99",
+      "source": "算子单位图标/事件标记/全体投入战斗.png",
+      "name": "全体投入战斗",
+      "image": "pieces/07d5d01db3e76d99.webp",
+      "sha256": "07d5d01db3e76d999dcef50680ec28a34577560ab5989f97c7f346279490eff0"
+    },
+    {
+      "id": "ab9104d2790921c6",
+      "source": "算子单位图标/事件标记/兴登堡防线.png",
+      "name": "兴登堡防线",
+      "image": "pieces/ab9104d2790921c6.webp",
+      "sha256": "ab9104d2790921c63b1ff25d3932bbe147c872445be0435277e3fef3471eea71"
+    },
+    {
+      "id": "0ac1e783512030a6",
+      "source": "算子单位图标/事件标记/卡多尔纳.png",
+      "name": "卡多尔纳",
+      "image": "pieces/0ac1e783512030a6.webp",
+      "sha256": "0ac1e783512030a6b978ca322b116b30777022ee86552155c9e6b7fa17478bb8"
+    },
+    {
+      "id": "23805a61137258cb",
+      "source": "算子单位图标/事件标记/处刑地.png",
+      "name": "处刑地",
+      "image": "pieces/23805a61137258cb.webp",
+      "sha256": "23805a61137258cb2ea0120044891f700931a2e6d42434411c7f636b4aa31945"
+    },
+    {
+      "id": "7f10c3e12ad87c1d",
+      "source": "算子单位图标/事件标记/德军最高统帅部.png",
+      "name": "德军最高统帅部",
+      "image": "pieces/7f10c3e12ad87c1d.webp",
+      "sha256": "7f10c3e12ad87c1dd22deb02fa05cc39c3a0e122c845231aafec0419ffb6d85e"
+    },
+    {
+      "id": "c8d5da5e026885d6",
+      "source": "算子单位图标/事件标记/德国战争工业.png",
+      "name": "德国战争工业",
+      "image": "pieces/c8d5da5e026885d6.webp",
+      "sha256": "c8d5da5e026885d6d37b1d3a75d82e686ab481426569f438d48c387488e1f8cc"
+    },
+    {
+      "id": "5239c333da21921f",
+      "source": "算子单位图标/事件标记/意大利参战.png",
+      "name": "意大利参战",
+      "image": "pieces/5239c333da21921f.webp",
+      "sha256": "5239c333da21921f7cb18cca83c947356f8a07c9dcfbd8ede3be3628b62a2f58"
+    },
+    {
+      "id": "c465d05775655977",
+      "source": "算子单位图标/事件标记/护航.png",
+      "name": "护航",
+      "image": "pieces/c465d05775655977.webp",
+      "sha256": "c465d057756559777e558fd44e2ecfe07412f3d570d419734930208cdb70adac"
+    },
+    {
+      "id": "bebbeaa9a7fcf4f3",
+      "source": "算子单位图标/事件标记/法军兵变.png",
+      "name": "法军兵变",
+      "image": "pieces/bebbeaa9a7fcf4f3.webp",
+      "sha256": "bebbeaa9a7fcf4f3ae9e2e043942ba3877280e7e60e4ad79b2a13469e75cdb5f"
+    },
+    {
+      "id": "ad5fb2878c6f5bc7",
+      "source": "算子单位图标/事件标记/潜艇战.png",
+      "name": "潜艇战",
+      "image": "pieces/ad5fb2878c6f5bc7.webp",
+      "sha256": "ad5fb2878c6f5bc7a58626a78e1012808ff0bbb6340155f5e30024a32305a389"
+    },
+    {
+      "id": "f4f0a0774c8eee47",
+      "source": "算子单位图标/事件标记/福克灾难.png",
+      "name": "福克灾难",
+      "image": "pieces/f4f0a0774c8eee47.webp",
+      "sha256": "f4f0a0774c8eee471897e21c368260debd96aa95e638ac68d4d34c0103cb15bf"
+    },
+    {
+      "id": "21b63dba84dbe302",
+      "source": "算子单位图标/事件标记/突出部.png",
+      "name": "突出部",
+      "image": "pieces/21b63dba84dbe302.webp",
+      "sha256": "21b63dba84dbe30229361533450101af8d193239a815aa0af0aa2c72f37b67d7"
+    },
+    {
+      "id": "1c48c676e5db5aa2",
+      "source": "算子单位图标/事件标记/索姆河.png",
+      "name": "索姆河",
+      "image": "pieces/1c48c676e5db5aa2.webp",
+      "sha256": "1c48c676e5db5aa26e6fff0992f304a2e2933f2ecc4b177b1841b6fb0901d778"
+    },
+    {
+      "id": "ea793173e55ca28a",
+      "source": "算子单位图标/事件标记/艾伦比.png",
+      "name": "艾伦比",
+      "image": "pieces/ea793173e55ca28a.webp",
+      "sha256": "ea793173e55ca28abe86e198bfa9b3531a9e4af6498f0d7a3ed761ea1ba66d78"
+    },
+    {
+      "id": "3de49b831df08ade",
+      "source": "算子单位图标/事件标记/英国战争援助.png",
+      "name": "英国战争援助",
+      "image": "pieces/3de49b831df08ade.webp",
+      "sha256": "3de49b831df08adeb2105fc5d9f0868331a094b82bb49dd10bc5a550b8e9d6b4"
+    },
+    {
+      "id": "51002e0552e5339a",
+      "source": "算子单位图标/事件标记/麦克斯亲王.png",
+      "name": "麦克斯亲王",
+      "image": "pieces/51002e0552e5339a.webp",
+      "sha256": "51002e0552e5339a529db52fc8dc4252c66bba05cb39039189bdc5df0b2ab6b5"
+    },
+    {
+      "id": "fb1c717b78ec0377",
+      "source": "算子单位图标/事件标记/齐柏林飞艇.png",
+      "name": "齐柏林飞艇",
+      "image": "pieces/fb1c717b78ec0377.webp",
+      "sha256": "fb1c717b78ec0377008af9604816d2a0d47adb84114b14345a01f5242522621b"
+    },
+    {
+      "id": "d4d120ecc897ff4c",
+      "source": "算子单位图标/奥匈战斗单位/奥匈新兵.png",
+      "name": "奥匈新兵",
+      "image": "pieces/d4d120ecc897ff4c.webp",
+      "sha256": "d4d120ecc897ff4c03a2006ef0920710c564200893fe320ef533b7183ca99b91"
+    },
+    {
+      "id": "cbad8e9c985f8338",
+      "source": "算子单位图标/奥匈战斗单位/奥匈新兵b.png",
+      "name": "奥匈新兵b",
+      "image": "pieces/cbad8e9c985f8338.webp",
+      "sha256": "cbad8e9c985f83383aa70787a8eda235d5cd58ac4da1a98871b78c7c842d9679"
+    },
+    {
+      "id": "0d269ccb547589a3",
+      "source": "算子单位图标/奥匈战斗单位/奥匈新兵scu.png",
+      "name": "奥匈新兵scu",
+      "image": "pieces/0d269ccb547589a3.webp",
+      "sha256": "0d269ccb547589a3b042d393dcc83d855d68818e8c1d410898e88a997c2754b2"
+    },
+    {
+      "id": "f4a298cd6e71a7aa",
+      "source": "算子单位图标/奥匈战斗单位/奥匈新兵scub.png",
+      "name": "奥匈新兵scub",
+      "image": "pieces/f4a298cd6e71a7aa.webp",
+      "sha256": "f4a298cd6e71a7aabd6829daf7ab44c1480e91b9492d79cacda20389783cfa22"
+    },
+    {
+      "id": "f18d56492cf9cf45",
+      "source": "算子单位图标/奥匈战斗单位/奥匈新兵山地scu.png",
+      "name": "奥匈新兵山地scu",
+      "image": "pieces/f18d56492cf9cf45.webp",
+      "sha256": "f18d56492cf9cf45fcfcd360549bcefb0aa4139e72b9c9721ae55887a9222926"
+    },
+    {
+      "id": "c6b13150246f56ba",
+      "source": "算子单位图标/奥匈战斗单位/奥匈新兵山地scub.png",
+      "name": "奥匈新兵山地scub",
+      "image": "pieces/c6b13150246f56ba.webp",
+      "sha256": "c6b13150246f56badfdb8294735b4f4b73431e9009f58604b59d13252be3fc2b"
+    },
+    {
+      "id": "ed79bd3bb84b2dc6",
+      "source": "算子单位图标/将领/G克卢克.png",
+      "name": "G克卢克",
+      "image": "pieces/ed79bd3bb84b2dc6.webp",
+      "sha256": "ed79bd3bb84b2dc6b8212415fbe9e780ccb4dda3db090760d6e7e7c40dc6d904"
+    },
+    {
+      "id": "4342d1c4d398d31b",
+      "source": "算子单位图标/将领/G博罗耶维奇.png",
+      "name": "G博罗耶维奇",
+      "image": "pieces/4342d1c4d398d31b.webp",
+      "sha256": "4342d1c4d398d31bd07256a0f507a9f17338bfc045733ba7adfc9dfd16260996"
+    },
+    {
+      "id": "99afa6e8ea672298",
+      "source": "算子单位图标/将领/G卡尔多纳.png",
+      "name": "G卡尔多纳",
+      "image": "pieces/99afa6e8ea672298.webp",
+      "sha256": "99afa6e8ea672298a5b9818e991df52685052635d7af7eaac418a2a80f39e896"
+    },
+    {
+      "id": "b213b59597312d5a",
+      "source": "算子单位图标/将领/G尼维尔.png",
+      "name": "G尼维尔",
+      "image": "pieces/b213b59597312d5a.webp",
+      "sha256": "b213b59597312d5a6e2df47139050b77577c6ed9f9f98879e8093f1dac66d543"
+    },
+    {
+      "id": "7c4043f61f403172",
+      "source": "算子单位图标/将领/G弗伦奇.png",
+      "name": "G弗伦奇",
+      "image": "pieces/7c4043f61f403172.webp",
+      "sha256": "7c4043f61f403172ada58cd2080fe433bf1e5dd8f4aea420f58c95891e006b52"
+    },
+    {
+      "id": "2532f947d2904717",
+      "source": "算子单位图标/将领/G德斯佩雷.png",
+      "name": "G德斯佩雷",
+      "image": "pieces/2532f947d2904717.webp",
+      "sha256": "2532f947d2904717855ab205770a68649572a7058ead5f3dc9b5aaf5d39c3ce3"
+    },
+    {
+      "id": "e7b2e338f6ce76e6",
+      "source": "算子单位图标/将领/G普鲁雷希特.png",
+      "name": "G普鲁雷希特",
+      "image": "pieces/e7b2e338f6ce76e6.webp",
+      "sha256": "e7b2e338f6ce76e61d2d3e47f1f3ec8b96f9eb96025292caa1a980a7ddf6b32e"
+    },
+    {
+      "id": "6ea655f371b4bb8b",
+      "source": "算子单位图标/将领/G法金汉.png",
+      "name": "G法金汉",
+      "image": "pieces/6ea655f371b4bb8b.webp",
+      "sha256": "6ea655f371b4bb8b1d4265f577b9f19a432595d4c2d7814145547e08ae3250bf"
+    },
+    {
+      "id": "d4140c5cdcff348c",
+      "source": "算子单位图标/将领/G潘兴.png",
+      "name": "G潘兴",
+      "image": "pieces/d4140c5cdcff348c.webp",
+      "sha256": "d4140c5cdcff348ce51962e1b03cf78b8266ba5f81b972425db32c1c46e7fa7b"
+    },
+    {
+      "id": "ab922ec5766a2532",
+      "source": "算子单位图标/将领/G皇储威廉.png",
+      "name": "G皇储威廉",
+      "image": "pieces/ab922ec5766a2532.webp",
+      "sha256": "ab922ec5766a2532d40adc4ebc6e7bd7da3f7f62de8a32d9d453986910588cc8"
+    },
+    {
+      "id": "ce2959e0e9c0e377",
+      "source": "算子单位图标/将领/G福煦.png",
+      "name": "G福煦",
+      "image": "pieces/ce2959e0e9c0e377.webp",
+      "sha256": "ce2959e0e9c0e37780792dfcf265a76ca03c8d0660fc92897844bc9276a803d2"
+    },
+    {
+      "id": "ae0c9ffefdbf6305",
+      "source": "算子单位图标/将领/G罗森贝格.png",
+      "name": "G罗森贝格",
+      "image": "pieces/ae0c9ffefdbf6305.webp",
+      "sha256": "ae0c9ffefdbf63051f347ccd8f472f548f3404bc0f7ebd8744e772bac25c8529"
+    },
+    {
+      "id": "23bc5e07ae520045",
+      "source": "算子单位图标/将领/G胡蒂尔.png",
+      "name": "G胡蒂尔",
+      "image": "pieces/23bc5e07ae520045.webp",
+      "sha256": "23bc5e07ae52004518346e03030bbfa1794ee4a0fe611448f13c6d2dede6ee87"
+    },
+    {
+      "id": "7c2889cc8c9d4ea9",
+      "source": "算子单位图标/将领/G贝当.png",
+      "name": "G贝当",
+      "image": "pieces/7c2889cc8c9d4ea9.webp",
+      "sha256": "7c2889cc8c9d4ea9e0177494edc984c5cb33d1e68d02c8d22efa06538355c019"
+    },
+    {
+      "id": "652deecefaa4282a",
+      "source": "算子单位图标/将领/G迪亚兹.png",
+      "name": "G迪亚兹",
+      "image": "pieces/652deecefaa4282a.webp",
+      "sha256": "652deecefaa4282a41801cfe884a3bdb50265cec813b0735b6544dc21a3e236e"
+    },
+    {
+      "id": "149c92fd2d5c127e",
+      "source": "算子单位图标/将领/G阿尔贝特.png",
+      "name": "G阿尔贝特",
+      "image": "pieces/149c92fd2d5c127e.webp",
+      "sha256": "149c92fd2d5c127ed676753dfa5f880fb1270f944743bf53e02dcc264fb6bdda"
+    },
+    {
+      "id": "5806c4f996fa6731",
+      "source": "算子单位图标/将领/G霞飞.png",
+      "name": "G霞飞",
+      "image": "pieces/5806c4f996fa6731.webp",
+      "sha256": "5806c4f996fa673155ed01c82af6a2de66a92b1f90598a4a1c5927be1af63b69"
+    },
+    {
+      "id": "264901abf3fb36b0",
+      "source": "算子单位图标/将领/G黑格.png",
+      "name": "G黑格",
+      "image": "pieces/264901abf3fb36b0.webp",
+      "sha256": "264901abf3fb36b0b941b72f6b5f43fd6c7c1b6b19e16591d058be5abed23c3e"
+    },
+    {
+      "id": "7a95731a0d264c9d",
+      "source": "算子单位图标/将领/冯贝洛.png",
+      "name": "冯贝洛",
+      "image": "pieces/7a95731a0d264c9d.webp",
+      "sha256": "7a95731a0d264c9d9d9506ac2a009fc79dc0f62f899b1f29db4b5af4ea1e59e1"
+    },
+    {
+      "id": "d67224f43780358e",
+      "source": "算子单位图标/将领/普卢默HQ.png",
+      "name": "普卢默HQ",
+      "image": "pieces/d67224f43780358e.webp",
+      "sha256": "d67224f43780358e02b560d9c96753172563ce91b6d6cb8eed2f69b1ed31780f"
+    },
+    {
+      "id": "36cde8965a2e0625",
+      "source": "算子单位图标/强制进攻标记/奥匈MO1.png",
+      "name": "奥匈MO1",
+      "image": "pieces/36cde8965a2e0625.webp",
+      "sha256": "36cde8965a2e06254414d06a8273cfef03322a6f617bc9ac931ab037e8fd1573"
+    },
+    {
+      "id": "6f1fc19ba55a0204",
+      "source": "算子单位图标/强制进攻标记/奥匈MO2.png",
+      "name": "奥匈MO2",
+      "image": "pieces/6f1fc19ba55a0204.webp",
+      "sha256": "6f1fc19ba55a0204b66d3324cb11564b02ddc3d28410e07bb0d139a1d7698c23"
+    },
+    {
+      "id": "8c07a613a3aaed35",
+      "source": "算子单位图标/强制进攻标记/奥匈MO3.png",
+      "name": "奥匈MO3",
+      "image": "pieces/8c07a613a3aaed35.webp",
+      "sha256": "8c07a613a3aaed35cc6473ee4dc4521700b4ee08ba471854d9382035281f1795"
+    },
+    {
+      "id": "d744e22249c605e9",
+      "source": "算子单位图标/强制进攻标记/奥匈MOB.png",
+      "name": "奥匈MOB",
+      "image": "pieces/d744e22249c605e9.webp",
+      "sha256": "d744e22249c605e9af44a20287316b8b4e42d99b8d4e7116b84597ef5f707e9e"
+    },
+    {
+      "id": "4dfb74261610a24f",
+      "source": "算子单位图标/强制进攻标记/德国MO1.png",
+      "name": "德国MO1",
+      "image": "pieces/4dfb74261610a24f.webp",
+      "sha256": "4dfb74261610a24f08cd14ed118a3be0e622080d0faae0b7d5a0eae385c3761c"
+    },
+    {
+      "id": "2d57f0cec3de28c5",
+      "source": "算子单位图标/强制进攻标记/德国MO10.png",
+      "name": "德国MO10",
+      "image": "pieces/2d57f0cec3de28c5.webp",
+      "sha256": "2d57f0cec3de28c5331512e5d79a7442acb2345ff2ba835dd4a9beb06563b294"
+    },
+    {
+      "id": "63c1345ba332a783",
+      "source": "算子单位图标/强制进攻标记/德国MO2.png",
+      "name": "德国MO2",
+      "image": "pieces/63c1345ba332a783.webp",
+      "sha256": "63c1345ba332a783681886948e425dc4379ee21aa3689c77bffedf9fe43783eb"
+    },
+    {
+      "id": "451bae29db38ddc6",
+      "source": "算子单位图标/强制进攻标记/德国MO3.png",
+      "name": "德国MO3",
+      "image": "pieces/451bae29db38ddc6.webp",
+      "sha256": "451bae29db38ddc6e8fcca6de34d86a7c04a5bb6438597e21e9f708d46ea059d"
+    },
+    {
+      "id": "0333b251d977c6ea",
+      "source": "算子单位图标/强制进攻标记/德国MO5.png",
+      "name": "德国MO5",
+      "image": "pieces/0333b251d977c6ea.webp",
+      "sha256": "0333b251d977c6eac989ea2165d95c30cf099e3bfd26600e64e0a64485b4f9d8"
+    },
+    {
+      "id": "d6887ac8655ef2de",
+      "source": "算子单位图标/强制进攻标记/德国MO6.png",
+      "name": "德国MO6",
+      "image": "pieces/d6887ac8655ef2de.webp",
+      "sha256": "d6887ac8655ef2de09fd451654279ad5c1c04b8186d54c88ca54dbc222fce106"
+    },
+    {
+      "id": "2fbdadbb79ad88aa",
+      "source": "算子单位图标/强制进攻标记/德国MO7.png",
+      "name": "德国MO7",
+      "image": "pieces/2fbdadbb79ad88aa.webp",
+      "sha256": "2fbdadbb79ad88aac389a09fa9ba834f66a7960262b7369b564b3a7038b7a5b3"
+    },
+    {
+      "id": "8773e5cac172f839",
+      "source": "算子单位图标/强制进攻标记/德国MO8.png",
+      "name": "德国MO8",
+      "image": "pieces/8773e5cac172f839.webp",
+      "sha256": "8773e5cac172f839e1b0ce781dd0ac40c640d28692fc094dbb08be4837414a3b"
+    },
+    {
+      "id": "808b2dc3509abd1d",
+      "source": "算子单位图标/强制进攻标记/德国MOB.png",
+      "name": "德国MOB",
+      "image": "pieces/808b2dc3509abd1d.webp",
+      "sha256": "808b2dc3509abd1dbb5e5d04b2e1c6e0008517e704a18a5c20c6c5eeb82be56f"
+    },
+    {
+      "id": "96087e8a977461a4",
+      "source": "算子单位图标/强制进攻标记/意大利MO1.png",
+      "name": "意大利MO1",
+      "image": "pieces/96087e8a977461a4.webp",
+      "sha256": "96087e8a977461a4af1bf178de3367b31375e8e089d5a02b09c8b8c6269c9183"
+    },
+    {
+      "id": "b3023a31b95828a9",
+      "source": "算子单位图标/强制进攻标记/意大利MO2.png",
+      "name": "意大利MO2",
+      "image": "pieces/b3023a31b95828a9.webp",
+      "sha256": "b3023a31b95828a9fb64778bac9338c30776a422ea2a30e4d73b8ec119557efb"
+    },
+    {
+      "id": "f2db1d762c5bd1b7",
+      "source": "算子单位图标/强制进攻标记/意大利MO3.png",
+      "name": "意大利MO3",
+      "image": "pieces/f2db1d762c5bd1b7.webp",
+      "sha256": "f2db1d762c5bd1b7bcbb3438f99a8476acdc5ffc0f88732e999f666fb1e785c7"
+    },
+    {
+      "id": "d7b5f15364e3fa56",
+      "source": "算子单位图标/强制进攻标记/意大利MOB.png",
+      "name": "意大利MOB",
+      "image": "pieces/d7b5f15364e3fa56.webp",
+      "sha256": "d7b5f15364e3fa56df392a6714b7ff17ba19c507016e2c8350284fd6b57036b3"
+    },
+    {
+      "id": "23289d97aa0352c1",
+      "source": "算子单位图标/强制进攻标记/法国MO10.png",
+      "name": "法国MO10",
+      "image": "pieces/23289d97aa0352c1.webp",
+      "sha256": "23289d97aa0352c1375db6417b3ed6470944650ab4f48a1e2b5176e299055729"
+    },
+    {
+      "id": "28365e8f8ede64b0",
+      "source": "算子单位图标/强制进攻标记/法国MO11.png",
+      "name": "法国MO11",
+      "image": "pieces/28365e8f8ede64b0.webp",
+      "sha256": "28365e8f8ede64b06b98521b4db3b8b03d8872b67696f5c746448684af0bc7bb"
+    },
+    {
+      "id": "3c1b12a5cb6a6772",
+      "source": "算子单位图标/强制进攻标记/法国MO4.png",
+      "name": "法国MO4",
+      "image": "pieces/3c1b12a5cb6a6772.webp",
+      "sha256": "3c1b12a5cb6a67722b7d6b6607b6bfbb5438371acdf159c0dc3a7599b1536f48"
+    },
+    {
+      "id": "48ffabaf82fe283a",
+      "source": "算子单位图标/强制进攻标记/法国MO5.png",
+      "name": "法国MO5",
+      "image": "pieces/48ffabaf82fe283a.webp",
+      "sha256": "48ffabaf82fe283a0330158f05f4b8177d54f6a3c516494ebf07f1640e535c12"
+    },
+    {
+      "id": "a3fc59764627a9fb",
+      "source": "算子单位图标/强制进攻标记/法国MO6.png",
+      "name": "法国MO6",
+      "image": "pieces/a3fc59764627a9fb.webp",
+      "sha256": "a3fc59764627a9fb7eba638477507a0c4f964dea3d0e00dc286b661096b17906"
+    },
+    {
+      "id": "f9137ca2b737b76d",
+      "source": "算子单位图标/强制进攻标记/法国MO7.png",
+      "name": "法国MO7",
+      "image": "pieces/f9137ca2b737b76d.webp",
+      "sha256": "f9137ca2b737b76d3e676baaaddd59c949da17e2ed3312793c6f7f97740b8c47"
+    },
+    {
+      "id": "465a7f90fd0fc94a",
+      "source": "算子单位图标/强制进攻标记/法国MO9.png",
+      "name": "法国MO9",
+      "image": "pieces/465a7f90fd0fc94a.webp",
+      "sha256": "465a7f90fd0fc94a6098f41f313166e76240cf8b03d4cb51ba57f4276757186b"
+    },
+    {
+      "id": "fdf079d7ab631f22",
+      "source": "算子单位图标/强制进攻标记/法国MOB.png",
+      "name": "法国MOB",
+      "image": "pieces/fdf079d7ab631f22.webp",
+      "sha256": "fdf079d7ab631f22ef154812354d9e462ce9276d18d7a0e4d3e11841e9554a8b"
+    },
+    {
+      "id": "8a3df139b731e3a4",
+      "source": "算子单位图标/强制进攻标记/美国MO1.png",
+      "name": "美国MO1",
+      "image": "pieces/8a3df139b731e3a4.webp",
+      "sha256": "8a3df139b731e3a4a146b5c59f9cb4e3f1c813e5b3653a108f686c3b21f535ac"
+    },
+    {
+      "id": "24945006c75eb0ca",
+      "source": "算子单位图标/强制进攻标记/美国MO2.png",
+      "name": "美国MO2",
+      "image": "pieces/24945006c75eb0ca.webp",
+      "sha256": "24945006c75eb0ca6c1ff087da38078d13b42bfb49584e8d967db9cc76b88d11"
+    },
+    {
+      "id": "93d1f0b3602eed72",
+      "source": "算子单位图标/强制进攻标记/美国MOB.png",
+      "name": "美国MOB",
+      "image": "pieces/93d1f0b3602eed72.webp",
+      "sha256": "93d1f0b3602eed726655d0f065cda25b62dba445130844a812fe1c1e148c4d3b"
+    },
+    {
+      "id": "eba87550c3665e37",
+      "source": "算子单位图标/强制进攻标记/英国MO1.png",
+      "name": "英国MO1",
+      "image": "pieces/eba87550c3665e37.webp",
+      "sha256": "eba87550c3665e37e850da71bb7643b29ca71f6c593c102975e1e2ac67096452"
+    },
+    {
+      "id": "bc9346c4bb3d188a",
+      "source": "算子单位图标/强制进攻标记/英国MO2.png",
+      "name": "英国MO2",
+      "image": "pieces/bc9346c4bb3d188a.webp",
+      "sha256": "bc9346c4bb3d188a3461d9accd76c63a1bb6060380fe3cd435981bf406e24a51"
+    },
+    {
+      "id": "f0d5f6a6a5e7f89f",
+      "source": "算子单位图标/强制进攻标记/英国MO3.png",
+      "name": "英国MO3",
+      "image": "pieces/f0d5f6a6a5e7f89f.webp",
+      "sha256": "f0d5f6a6a5e7f89fc683b755cdb050e0d1d0fb985f91ef52dd9dcb021460cd14"
+    },
+    {
+      "id": "45ed400fb1f0c9c0",
+      "source": "算子单位图标/强制进攻标记/英国MO4.png",
+      "name": "英国MO4",
+      "image": "pieces/45ed400fb1f0c9c0.webp",
+      "sha256": "45ed400fb1f0c9c0c845241686d3fe78f75077fd410bc1046b3cde6afadba787"
+    },
+    {
+      "id": "3e6787c081df2ee4",
+      "source": "算子单位图标/强制进攻标记/英国MO5.png",
+      "name": "英国MO5",
+      "image": "pieces/3e6787c081df2ee4.webp",
+      "sha256": "3e6787c081df2ee4182bbca4e53625dae2be72bab96020e01b8737a56a9e25b2"
+    },
+    {
+      "id": "a721df988deaa748",
+      "source": "算子单位图标/强制进攻标记/英国MO6.png",
+      "name": "英国MO6",
+      "image": "pieces/a721df988deaa748.webp",
+      "sha256": "a721df988deaa748433915aeee2087df9bcf08560f9863d6483b0404742284b2"
+    },
+    {
+      "id": "359351ec7a761882",
+      "source": "算子单位图标/强制进攻标记/英国MO7.png",
+      "name": "英国MO7",
+      "image": "pieces/359351ec7a761882.webp",
+      "sha256": "359351ec7a7618826880f2797dd73eeae776235e7c3bac4a2d469f7e5b5d8ba2"
+    },
+    {
+      "id": "7d16689ee4086a45",
+      "source": "算子单位图标/强制进攻标记/英国MO8.png",
+      "name": "英国MO8",
+      "image": "pieces/7d16689ee4086a45.webp",
+      "sha256": "7d16689ee4086a459751864144dad595c0134d6d0bbfd6a83e3eef3e3be7bf40"
+    },
+    {
+      "id": "43c42124ddfa404f",
+      "source": "算子单位图标/强制进攻标记/英国MOB.png",
+      "name": "英国MOB",
+      "image": "pieces/43c42124ddfa404f.webp",
+      "sha256": "43c42124ddfa404f29dac71a551df5b575e4ae6555ff22c56f2501386a471318"
+    },
+    {
+      "id": "93d36c7fc9735b5b",
+      "source": "算子单位图标/德国战斗单位/巴伐利亚新兵.png",
+      "name": "巴伐利亚新兵",
+      "image": "pieces/93d36c7fc9735b5b.webp",
+      "sha256": "93d36c7fc9735b5bf286ebb64dfb44f213b6a1201fc55fb7ece9ef5066c24751"
+    },
+    {
+      "id": "a028ca247f22e8cc",
+      "source": "算子单位图标/德国战斗单位/巴伐利亚新兵b.png",
+      "name": "巴伐利亚新兵b",
+      "image": "pieces/a028ca247f22e8cc.webp",
+      "sha256": "a028ca247f22e8cc77d172f8bea20ffcdeb0bab89060642546ba6a5b6603b87d"
+    },
+    {
+      "id": "540023b9107912c1",
+      "source": "算子单位图标/德国战斗单位/巴伐利亚新兵scu.png",
+      "name": "巴伐利亚新兵scu",
+      "image": "pieces/540023b9107912c1.webp",
+      "sha256": "540023b9107912c1b0f40a2fbf9be3741a0ad018df4856c58cd3032cafffbd80"
+    },
+    {
+      "id": "330dfa443dd921d2",
+      "source": "算子单位图标/德国战斗单位/巴伐利亚新兵scub.png",
+      "name": "巴伐利亚新兵scub",
+      "image": "pieces/330dfa443dd921d2.webp",
+      "sha256": "330dfa443dd921d23e34c8ebdbc5a6df6b5060c4d52b6cf548cc14613b9838fa"
+    },
+    {
+      "id": "ed2216238c1376c3",
+      "source": "算子单位图标/德国战斗单位/巴伐利亚新兵骑兵scu.png",
+      "name": "巴伐利亚新兵骑兵scu",
+      "image": "pieces/ed2216238c1376c3.webp",
+      "sha256": "ed2216238c1376c3dfb71fe633974f1185125aac73fd806f9fd66e204f2ee078"
+    },
+    {
+      "id": "169b0ca239d67d50",
+      "source": "算子单位图标/德国战斗单位/巴伐利亚新兵骑兵scub.png",
+      "name": "巴伐利亚新兵骑兵scub",
+      "image": "pieces/169b0ca239d67d50.webp",
+      "sha256": "169b0ca239d67d50de7672bdcec7f6822a225a5c17383fa4e84490bb2922e9c1"
+    },
+    {
+      "id": "c48e78e0d16e96b1",
+      "source": "算子单位图标/德国战斗单位/德国东线.png",
+      "name": "德国东线",
+      "image": "pieces/c48e78e0d16e96b1.webp",
+      "sha256": "c48e78e0d16e96b13a470cc7a277b1bd7907600577c6eb4764cb260f66aec8ec"
+    },
+    {
+      "id": "b33aaab3f73d3941",
+      "source": "算子单位图标/德国战斗单位/德国东线b.png",
+      "name": "德国东线b",
+      "image": "pieces/b33aaab3f73d3941.webp",
+      "sha256": "b33aaab3f73d394119c74d69c67564b076db5ed35649762d4be6bc3f6f0d0133"
+    },
+    {
+      "id": "62600da49b956718",
+      "source": "算子单位图标/德国战斗单位/德国东线scu.png",
+      "name": "德国东线scu",
+      "image": "pieces/62600da49b956718.webp",
+      "sha256": "62600da49b956718eddb7e4e963e072e3dc1f6da24497aebeb36d70ae574f978"
+    },
+    {
+      "id": "97544d19fca56e8d",
+      "source": "算子单位图标/德国战斗单位/德国东线scub.png",
+      "name": "德国东线scub",
+      "image": "pieces/97544d19fca56e8d.webp",
+      "sha256": "97544d19fca56e8db3648c647a94b168ddb34b7ca33ab3ebd4d072b5ac6e067f"
+    },
+    {
+      "id": "cf5e9fd9d5ce694d",
+      "source": "算子单位图标/德国战斗单位/德国意大利.png",
+      "name": "德国意大利",
+      "image": "pieces/cf5e9fd9d5ce694d.webp",
+      "sha256": "cf5e9fd9d5ce694dec400ed42de4d146f82b7b14f4b676eebc193b4af3ff427f"
+    },
+    {
+      "id": "6122801d771e54ca",
+      "source": "算子单位图标/德国战斗单位/德国意大利b.png",
+      "name": "德国意大利b",
+      "image": "pieces/6122801d771e54ca.webp",
+      "sha256": "6122801d771e54cad32c533c668b9f698fc3aa53f62d32bb130ac44ac990812f"
+    },
+    {
+      "id": "1f1e8f3d57688319",
+      "source": "算子单位图标/德国战斗单位/德国意大利新兵.png",
+      "name": "德国意大利新兵",
+      "image": "pieces/1f1e8f3d57688319.webp",
+      "sha256": "1f1e8f3d5768831911d7314016d1be1370aac973ff6da897ed2a1df3afddce41"
+    },
+    {
+      "id": "4295e9c0328f94fc",
+      "source": "算子单位图标/德国战斗单位/德国意大利新兵b.png",
+      "name": "德国意大利新兵b",
+      "image": "pieces/4295e9c0328f94fc.webp",
+      "sha256": "4295e9c0328f94fc2ae0105253d8b47e5177c71c873dc754bd7a4ec855210d2b"
+    },
+    {
+      "id": "d07fa0978742f3a9",
+      "source": "算子单位图标/德国战斗单位/德国新兵.png",
+      "name": "德国新兵",
+      "image": "pieces/d07fa0978742f3a9.webp",
+      "sha256": "d07fa0978742f3a98c5cefa131e73b43de4b3dedb61630435fe63ecbc1fc4d63"
+    },
+    {
+      "id": "6eb35a5fda62b97e",
+      "source": "算子单位图标/德国战斗单位/德国新兵b.png",
+      "name": "德国新兵b",
+      "image": "pieces/6eb35a5fda62b97e.webp",
+      "sha256": "6eb35a5fda62b97ea6c65e7a4053b5fcc067842e59a1d787ee460e5d46d33ae7"
+    },
+    {
+      "id": "9c34b735bafbac62",
+      "source": "算子单位图标/德国战斗单位/德国新兵scu.png",
+      "name": "德国新兵scu",
+      "image": "pieces/9c34b735bafbac62.webp",
+      "sha256": "9c34b735bafbac622f9bc63add321926a204ab745c995d45df4ec190ea02ece8"
+    },
+    {
+      "id": "ef3b5ccbe9217ed7",
+      "source": "算子单位图标/德国战斗单位/德国新兵scub.png",
+      "name": "德国新兵scub",
+      "image": "pieces/ef3b5ccbe9217ed7.webp",
+      "sha256": "ef3b5ccbe9217ed72e16499c17206b81ab0380421dc912923e1d724e05aa683a"
+    },
+    {
+      "id": "774befe6636a8018",
+      "source": "算子单位图标/德国战斗单位/德国老兵.png",
+      "name": "德国老兵",
+      "image": "pieces/774befe6636a8018.webp",
+      "sha256": "774befe6636a80180eba36e019ee2edc6d037a008e0243ba2ae049e207c3180e"
+    },
+    {
+      "id": "b8bc62a32d4a4a0a",
+      "source": "算子单位图标/德国战斗单位/德国老兵b.png",
+      "name": "德国老兵b",
+      "image": "pieces/b8bc62a32d4a4a0a.webp",
+      "sha256": "b8bc62a32d4a4a0a1cf129e5f2df21a1dcaaf87e76941393ef13ee7a33af44ed"
+    },
+    {
+      "id": "d12903d611ff7f75",
+      "source": "算子单位图标/德国战斗单位/德国老兵scu.png",
+      "name": "德国老兵scu",
+      "image": "pieces/d12903d611ff7f75.webp",
+      "sha256": "d12903d611ff7f75e310c4b7b63b5e1152c801f77cad9a1b818efd0e07ec5f40"
+    },
+    {
+      "id": "ed92f7572502b625",
+      "source": "算子单位图标/德国战斗单位/德国老兵scub.png",
+      "name": "德国老兵scub",
+      "image": "pieces/ed92f7572502b625.webp",
+      "sha256": "ed92f7572502b6255ca38240b01c9cafb27352324cc0f23320e3185e08f2b690"
+    },
+    {
+      "id": "999ed9d6c2b46685",
+      "source": "算子单位图标/德国战斗单位/德国骑兵scu.png",
+      "name": "德国骑兵scu",
+      "image": "pieces/999ed9d6c2b46685.webp",
+      "sha256": "999ed9d6c2b46685d27b8d79ea169ee41f8b693456535112cf553e009a2595ef"
+    },
+    {
+      "id": "41a6189b23710f59",
+      "source": "算子单位图标/德国战斗单位/德国骑兵scub.png",
+      "name": "德国骑兵scub",
+      "image": "pieces/41a6189b23710f59.webp",
+      "sha256": "41a6189b23710f59fd6f537bf402f69b51302be040b56644ffddcb707049e97d"
+    },
+    {
+      "id": "db61a1374e08850e",
+      "source": "算子单位图标/德国战斗单位/普鲁士新兵.png",
+      "name": "普鲁士新兵",
+      "image": "pieces/db61a1374e08850e.webp",
+      "sha256": "db61a1374e08850e81caecb905aaf8d15e14aae3f700c3f804e9621129bfecd0"
+    },
+    {
+      "id": "42ecebc51f9e3c2b",
+      "source": "算子单位图标/德国战斗单位/普鲁士新兵b.png",
+      "name": "普鲁士新兵b",
+      "image": "pieces/42ecebc51f9e3c2b.webp",
+      "sha256": "42ecebc51f9e3c2b033125db5d7b0311bae35aee40578b794f115b87965dc45b"
+    },
+    {
+      "id": "f3eab1ef1d631f37",
+      "source": "算子单位图标/德国战斗单位/普鲁士新兵scu.png",
+      "name": "普鲁士新兵scu",
+      "image": "pieces/f3eab1ef1d631f37.webp",
+      "sha256": "f3eab1ef1d631f3740a2e9b6a1af7c47e0521b1e536ee2d180d0cac21a045861"
+    },
+    {
+      "id": "504bf7940d372e27",
+      "source": "算子单位图标/德国战斗单位/普鲁士新兵scub.png",
+      "name": "普鲁士新兵scub",
+      "image": "pieces/504bf7940d372e27.webp",
+      "sha256": "504bf7940d372e271096479f9d1ed420a914885040da52da8ffebd73eabe4425"
+    },
+    {
+      "id": "36f8f6611bcf7223",
+      "source": "算子单位图标/德国战斗单位/普鲁士骑兵scu.png",
+      "name": "普鲁士骑兵scu",
+      "image": "pieces/36f8f6611bcf7223.webp",
+      "sha256": "36f8f6611bcf72230555ce7cb1a6ccb8466155259372852e6e36132723e2f072"
+    },
+    {
+      "id": "71fa0bcf7630e3b3",
+      "source": "算子单位图标/德国战斗单位/普鲁士骑兵scub.png",
+      "name": "普鲁士骑兵scub",
+      "image": "pieces/71fa0bcf7630e3b3.webp",
+      "sha256": "71fa0bcf7630e3b3e682ea84c2038f3b7a36de9e55fa11f727bc7a2969cda6ea"
+    },
+    {
+      "id": "d76755a4b475f444",
+      "source": "算子单位图标/德国战斗单位/符腾堡新兵.png",
+      "name": "符腾堡新兵",
+      "image": "pieces/d76755a4b475f444.webp",
+      "sha256": "d76755a4b475f4445eddae10e21736d65bb1ab6d3a06708cdc608c4d57939c0a"
+    },
+    {
+      "id": "d868d56f3619aedd",
+      "source": "算子单位图标/德国战斗单位/符腾堡新兵b.png",
+      "name": "符腾堡新兵b",
+      "image": "pieces/d868d56f3619aedd.webp",
+      "sha256": "d868d56f3619aeddc01a6ff3d7e59ff725b63b399a8c36283e8c78c863d7f1e8"
+    },
+    {
+      "id": "e3de94d54774df7e",
+      "source": "算子单位图标/德国战斗单位/符腾堡新兵scu.png",
+      "name": "符腾堡新兵scu",
+      "image": "pieces/e3de94d54774df7e.webp",
+      "sha256": "e3de94d54774df7e1a2fd9371ff4404dce241f2591c39e7f8a3a1f25a30d3b4c"
+    },
+    {
+      "id": "d28a9dd63f8e0317",
+      "source": "算子单位图标/德国战斗单位/符腾堡新兵scub.png",
+      "name": "符腾堡新兵scub",
+      "image": "pieces/d28a9dd63f8e0317.webp",
+      "sha256": "d28a9dd63f8e03170e5f51b7cee61dadab429c82fb42221ee6636a6e9dbf0a7c"
+    },
+    {
+      "id": "e91c33e93b0eb7c8",
+      "source": "算子单位图标/德国战斗单位/符腾堡新兵山地scu.png",
+      "name": "符腾堡新兵山地scu",
+      "image": "pieces/e91c33e93b0eb7c8.webp",
+      "sha256": "e91c33e93b0eb7c86c58d29ad9d65581d5eae92c463702c6515776fe6593a974"
+    },
+    {
+      "id": "c18c24ea9c10de1c",
+      "source": "算子单位图标/德国战斗单位/符腾堡新兵山地scub.png",
+      "name": "符腾堡新兵山地scub",
+      "image": "pieces/c18c24ea9c10de1c.webp",
+      "sha256": "c18c24ea9c10de1c1c66801e3d0521ce9a67a3a9188d9372042074728a3bafdd"
+    },
+    {
+      "id": "a54983ee36ad2fbf",
+      "source": "算子单位图标/德国战斗单位/萨克森新兵.png",
+      "name": "萨克森新兵",
+      "image": "pieces/a54983ee36ad2fbf.webp",
+      "sha256": "a54983ee36ad2fbfe7e4b9462f8a3e124e0ef73669367efcf3d10bb7ef610ef2"
+    },
+    {
+      "id": "8c449014bfee0645",
+      "source": "算子单位图标/德国战斗单位/萨克森新兵b.png",
+      "name": "萨克森新兵b",
+      "image": "pieces/8c449014bfee0645.webp",
+      "sha256": "8c449014bfee064586f02c3e44d87abf1a9dd65f9c8fd9756d76417022ab211e"
+    },
+    {
+      "id": "8bd34cc1de1dde0d",
+      "source": "算子单位图标/德国战斗单位/萨克森新兵scu.png",
+      "name": "萨克森新兵scu",
+      "image": "pieces/8bd34cc1de1dde0d.webp",
+      "sha256": "8bd34cc1de1dde0de0a9c187b991b00e7cbb69080b84f420d22f1f2550c77bb6"
+    },
+    {
+      "id": "0a15bbbfebf8f0ec",
+      "source": "算子单位图标/德国战斗单位/萨克森新兵scub.png",
+      "name": "萨克森新兵scub",
+      "image": "pieces/0a15bbbfebf8f0ec.webp",
+      "sha256": "0a15bbbfebf8f0ec9676132f1a10fd2ff37f5853a49a5fb8293d71f7d670a16a"
+    },
+    {
+      "id": "37822ab98a0c1f8b",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵.png",
+      "name": "意大利新兵",
+      "image": "pieces/37822ab98a0c1f8b.webp",
+      "sha256": "37822ab98a0c1f8bdedb3d8b60a6670f4bd53d439e428b4e8ac48bacae457a15"
+    },
+    {
+      "id": "5015dc1baf49f984",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵b.png",
+      "name": "意大利新兵b",
+      "image": "pieces/5015dc1baf49f984.webp",
+      "sha256": "5015dc1baf49f9847ac6b2dbf56034e45ce4ae2f4d8002abab7a89871c3d9c34"
+    },
+    {
+      "id": "1369910e4b5ca3e2",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵scu.png",
+      "name": "意大利新兵scu",
+      "image": "pieces/1369910e4b5ca3e2.webp",
+      "sha256": "1369910e4b5ca3e298744a817409e3cd645745c324f1918cca058f7b6050e844"
+    },
+    {
+      "id": "5b5bf9e8c383bf00",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵scub.png",
+      "name": "意大利新兵scub",
+      "image": "pieces/5b5bf9e8c383bf00.webp",
+      "sha256": "5b5bf9e8c383bf009930c9a65e1ffca59933aad41e2ade434d5c23a0b0f8b6ce"
+    },
+    {
+      "id": "0aa625cb97f44baf",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵山地scu.png",
+      "name": "意大利新兵山地scu",
+      "image": "pieces/0aa625cb97f44baf.webp",
+      "sha256": "0aa625cb97f44baf4b17e674bffaa7bcc1b8d99f3771ad84af2498f0531a8b71"
+    },
+    {
+      "id": "55b6dc3c9354b898",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵山地scub.png",
+      "name": "意大利新兵山地scub",
+      "image": "pieces/55b6dc3c9354b898.webp",
+      "sha256": "55b6dc3c9354b8984e7eda0b86a31c8099f6ba6593ff5267c7ef1ef1b52b1500"
+    },
+    {
+      "id": "3522e0b813cee35f",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵骑兵.png",
+      "name": "意大利新兵骑兵",
+      "image": "pieces/3522e0b813cee35f.webp",
+      "sha256": "3522e0b813cee35f666b7cacb7b297c351bb22f2bf9b6062afc9ea2b3a6ccd67"
+    },
+    {
+      "id": "a28aefbf69aec01d",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵骑兵b.png",
+      "name": "意大利新兵骑兵b",
+      "image": "pieces/a28aefbf69aec01d.webp",
+      "sha256": "a28aefbf69aec01d64a2f0350b2bc28f8a9c7e1d232b3b0c8a0b3c1e0b3d8bd6"
+    },
+    {
+      "id": "27a16be00d60b748",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵骑兵scu.png",
+      "name": "意大利新兵骑兵scu",
+      "image": "pieces/27a16be00d60b748.webp",
+      "sha256": "27a16be00d60b748305d9b65b5b7793181e6ed9a78d52a5bf3a6a3316430cfef"
+    },
+    {
+      "id": "e13313a4b8ed16e3",
+      "source": "算子单位图标/意大利战斗单位/意大利新兵骑兵scub.png",
+      "name": "意大利新兵骑兵scub",
+      "image": "pieces/e13313a4b8ed16e3.webp",
+      "sha256": "e13313a4b8ed16e39ae2e4b88ed59b298fbea6239ad48530cc2932ac8b8d0328"
+    },
+    {
+      "id": "0134a80a81373df4",
+      "source": "算子单位图标/比利时战斗单位/比利时新兵.png",
+      "name": "比利时新兵",
+      "image": "pieces/0134a80a81373df4.webp",
+      "sha256": "0134a80a81373df46197397d0efaabfd77d2d9779c32f1a9c5f57fb51b9bed2a"
+    },
+    {
+      "id": "0f90e17abfa9e3ff",
+      "source": "算子单位图标/比利时战斗单位/比利时新兵b.png",
+      "name": "比利时新兵b",
+      "image": "pieces/0f90e17abfa9e3ff.webp",
+      "sha256": "0f90e17abfa9e3ffc61322018574b81de819318bf7abcacd493461d60e9a0617"
+    },
+    {
+      "id": "35a0f2c617248d6d",
+      "source": "算子单位图标/比利时战斗单位/比利时新兵scu.png",
+      "name": "比利时新兵scu",
+      "image": "pieces/35a0f2c617248d6d.webp",
+      "sha256": "35a0f2c617248d6d99b9d99e8ba16b14496049cf6104d187df5fafeba62b93cf"
+    },
+    {
+      "id": "defb1b5f1f2ecc4c",
+      "source": "算子单位图标/比利时战斗单位/比利时新兵scub.png",
+      "name": "比利时新兵scub",
+      "image": "pieces/defb1b5f1f2ecc4c.webp",
+      "sha256": "defb1b5f1f2ecc4c44ac236e303fed3fe7436c2b69e5f4328e7eed0890d54210"
+    },
+    {
+      "id": "21160e2ea8b692d3",
+      "source": "算子单位图标/比利时战斗单位/比利时新兵骑兵scu.png",
+      "name": "比利时新兵骑兵scu",
+      "image": "pieces/21160e2ea8b692d3.webp",
+      "sha256": "21160e2ea8b692d3211990895eff71ab3eb5331cdfd8c76b9da67417a357b0c0"
+    },
+    {
+      "id": "7705b9666ab52885",
+      "source": "算子单位图标/比利时战斗单位/比利时新兵骑兵scub.png",
+      "name": "比利时新兵骑兵scub",
+      "image": "pieces/7705b9666ab52885.webp",
+      "sha256": "7705b9666ab5288557b41b2c4819a4ee0d2438bc9df90c062486d2b9b18cd4b4"
+    },
+    {
+      "id": "a10abef73f14897f",
+      "source": "算子单位图标/法国战斗单位/法国外籍新兵.png",
+      "name": "法国外籍新兵",
+      "image": "pieces/a10abef73f14897f.webp",
+      "sha256": "a10abef73f14897f8f23be7da6cc05efd5f605d7812516c4b5acc42390c3af82"
+    },
+    {
+      "id": "d5484f7cc46c37d6",
+      "source": "算子单位图标/法国战斗单位/法国外籍新兵b.png",
+      "name": "法国外籍新兵b",
+      "image": "pieces/d5484f7cc46c37d6.webp",
+      "sha256": "d5484f7cc46c37d6c5fd24a1ae04b48237baae1f64f6c3c1e343cf1937e40b41"
+    },
+    {
+      "id": "9cab9c4af14c125d",
+      "source": "算子单位图标/法国战斗单位/法国外籍新兵scu.png",
+      "name": "法国外籍新兵scu",
+      "image": "pieces/9cab9c4af14c125d.webp",
+      "sha256": "9cab9c4af14c125d8660a1ff5f2cd15efd06452a626fd58975dbd82c573a30eb"
+    },
+    {
+      "id": "5cce0c8b334fd1ed",
+      "source": "算子单位图标/法国战斗单位/法国外籍新兵scub.png",
+      "name": "法国外籍新兵scub",
+      "image": "pieces/5cce0c8b334fd1ed.webp",
+      "sha256": "5cce0c8b334fd1ed43470ca26fd0ab6e74a8f3d6a2b155b50a2b70a67141fcae"
+    },
+    {
+      "id": "853fdcd3b87729bd",
+      "source": "算子单位图标/法国战斗单位/法国意大利LCU.png",
+      "name": "法国意大利LCU",
+      "image": "pieces/853fdcd3b87729bd.webp",
+      "sha256": "853fdcd3b87729bd0cd71982cfab162d9555e6ca9107d305f2de81f1bf011e85"
+    },
+    {
+      "id": "25157955ace4c587",
+      "source": "算子单位图标/法国战斗单位/法国意大利LCUb.png",
+      "name": "法国意大利LCUb",
+      "image": "pieces/25157955ace4c587.webp",
+      "sha256": "25157955ace4c5870b8bcb5513d51f7b6b2b00f6d2d30e78ce01635f36590734"
+    },
+    {
+      "id": "c00e58acf7628e0b",
+      "source": "算子单位图标/法国战斗单位/法国新兵.png",
+      "name": "法国新兵",
+      "image": "pieces/c00e58acf7628e0b.webp",
+      "sha256": "c00e58acf7628e0b943fc675a8860e738dece0f2149dfe0c992ebd1417ef6ad7"
+    },
+    {
+      "id": "f24ffba475afe41a",
+      "source": "算子单位图标/法国战斗单位/法国新兵b.png",
+      "name": "法国新兵b",
+      "image": "pieces/f24ffba475afe41a.webp",
+      "sha256": "f24ffba475afe41a77969eb549fb87cdb157ca5266367be2a1af6cc273ab8df5"
+    },
+    {
+      "id": "d0e6f5e294a17381",
+      "source": "算子单位图标/法国战斗单位/法国新兵scu.png",
+      "name": "法国新兵scu",
+      "image": "pieces/d0e6f5e294a17381.webp",
+      "sha256": "d0e6f5e294a173819beb87773238d970800b735ede25244e6f0a555ae0f64688"
+    },
+    {
+      "id": "86d6dcdb533fdcd8",
+      "source": "算子单位图标/法国战斗单位/法国新兵scub.png",
+      "name": "法国新兵scub",
+      "image": "pieces/86d6dcdb533fdcd8.webp",
+      "sha256": "86d6dcdb533fdcd8d2f2bf910799830ad2413bccf7f262299762d2a7357c45ff"
+    },
+    {
+      "id": "aa0d5324bf67536a",
+      "source": "算子单位图标/法国战斗单位/法国新兵山地scu.png",
+      "name": "法国新兵山地scu",
+      "image": "pieces/aa0d5324bf67536a.webp",
+      "sha256": "aa0d5324bf67536a250ad252175b1aad8d85b0cacdbae389bd21c2b79b3e0ef0"
+    },
+    {
+      "id": "055ce5323b81b6b9",
+      "source": "算子单位图标/法国战斗单位/法国新兵山地scub.png",
+      "name": "法国新兵山地scub",
+      "image": "pieces/055ce5323b81b6b9.webp",
+      "sha256": "055ce5323b81b6b97f5fabd31e1b29de62e30ca58dff6481c0082cc05e3e0872"
+    },
+    {
+      "id": "1a8d307ffe45eedc",
+      "source": "算子单位图标/法国战斗单位/法国新兵骑兵scu.png",
+      "name": "法国新兵骑兵scu",
+      "image": "pieces/1a8d307ffe45eedc.webp",
+      "sha256": "1a8d307ffe45eedcee1d0e7f1602e9ceeb346204f2dd53d0b1f6957040d1d3ef"
+    },
+    {
+      "id": "653dd608cfc384bd",
+      "source": "算子单位图标/法国战斗单位/法国新兵骑兵scub.png",
+      "name": "法国新兵骑兵scub",
+      "image": "pieces/653dd608cfc384bd.webp",
+      "sha256": "653dd608cfc384bdf6c5d46f6a159f6bf32466ca116032855e01e9fbc8f4281f"
+    },
+    {
+      "id": "47fcc6e22330abb9",
+      "source": "算子单位图标/法国战斗单位/法国老兵.png",
+      "name": "法国老兵",
+      "image": "pieces/47fcc6e22330abb9.webp",
+      "sha256": "47fcc6e22330abb99ffca4fd0a9739c67b9e16030f848af4c882af79fb46d347"
+    },
+    {
+      "id": "9f94732cbd2c5bf5",
+      "source": "算子单位图标/法国战斗单位/法国老兵b.png",
+      "name": "法国老兵b",
+      "image": "pieces/9f94732cbd2c5bf5.webp",
+      "sha256": "9f94732cbd2c5bf53fbf8475289f3317a690ef4311c59eea49dce41809c9db55"
+    },
+    {
+      "id": "58615a0075cc0c4a",
+      "source": "算子单位图标/法国战斗单位/法国老兵scu.png",
+      "name": "法国老兵scu",
+      "image": "pieces/58615a0075cc0c4a.webp",
+      "sha256": "58615a0075cc0c4a9613bb173bf85d518aaa3aefc60e9f519a24337cf45f35b1"
+    },
+    {
+      "id": "5d55bb76bb1a95ca",
+      "source": "算子单位图标/法国战斗单位/法国老兵scub.png",
+      "name": "法国老兵scub",
+      "image": "pieces/5d55bb76bb1a95ca.webp",
+      "sha256": "5d55bb76bb1a95ca1a556ae63680445a41dd68b850de044debbc69a4f3c98bb8"
+    },
+    {
+      "id": "adcda0307c6ae482",
+      "source": "算子单位图标/游戏标记/2rp.png",
+      "name": "2rp",
+      "image": "pieces/adcda0307c6ae482.webp",
+      "sha256": "adcda0307c6ae48269d7b5252ad41813230f962bf2bf63b14bf163b3d9a62110"
+    },
+    {
+      "id": "5b256904d337f07d",
+      "source": "算子单位图标/游戏标记/3rp.png",
+      "name": "3rp",
+      "image": "pieces/5b256904d337f07d.webp",
+      "sha256": "5b256904d337f07d397dc988409d7fa924f355e3f75edef74d42832d04711cc9"
+    },
+    {
+      "id": "e9750eb45c9a32b2",
+      "source": "算子单位图标/游戏标记/4rp.png",
+      "name": "4rp",
+      "image": "pieces/e9750eb45c9a32b2.webp",
+      "sha256": "e9750eb45c9a32b264f35c2deec4e0f7b0477c5f2788fb9246fbd7b4bb620a0a"
+    },
+    {
+      "id": "3eefbb79233c64c3",
+      "source": "算子单位图标/游戏标记/5rp.png",
+      "name": "5rp",
+      "image": "pieces/3eefbb79233c64c3.webp",
+      "sha256": "3eefbb79233c64c31ead99b5830988fcdc85649fb2e4f0762d220c30666bbcfc"
+    },
+    {
+      "id": "468353939c1f1237",
+      "source": "算子单位图标/游戏标记/AP-1VP.png",
+      "name": "AP-1VP",
+      "image": "pieces/468353939c1f1237.webp",
+      "sha256": "468353939c1f1237baaf099488292af8146a4633fb0ce33815124352ff5a5e41"
+    },
+    {
+      "id": "c3ddf0a1e5ef3353",
+      "source": "算子单位图标/游戏标记/AP海军阶段.png",
+      "name": "AP海军阶段",
+      "image": "pieces/c3ddf0a1e5ef3353.webp",
+      "sha256": "c3ddf0a1e5ef3353d718c39e1682a47fe69740ef9cfcd11b84367817aec052e5"
+    },
+    {
+      "id": "d5719de7600f7131",
+      "source": "算子单位图标/游戏标记/AP海军阶段b.png",
+      "name": "AP海军阶段b",
+      "image": "pieces/d5719de7600f7131.webp",
+      "sha256": "d5719de7600f7131140be5651bb4a9751e1abc797e3977b353cd74f82aef9995"
+    },
+    {
+      "id": "4f2d2edc34b3caa2",
+      "source": "算子单位图标/游戏标记/CP+1VP.png",
+      "name": "CP+1VP",
+      "image": "pieces/4f2d2edc34b3caa2.webp",
+      "sha256": "4f2d2edc34b3caa2a879cde780591be7e963103d23a2f68eab22502523eb5814"
+    },
+    {
+      "id": "7398742e2c1b77af",
+      "source": "算子单位图标/游戏标记/CP海军阶段.png",
+      "name": "CP海军阶段",
+      "image": "pieces/7398742e2c1b77af.webp",
+      "sha256": "7398742e2c1b77afe6c23da998a44d454d6d49633975aad97eac36abaf216b8f"
+    },
+    {
+      "id": "2fff99c5359de7cb",
+      "source": "算子单位图标/游戏标记/CP海军阶段b.png",
+      "name": "CP海军阶段b",
+      "image": "pieces/2fff99c5359de7cb.webp",
+      "sha256": "2fff99c5359de7cbb9db4a012def41be59f5d6e7863201eb1b4e0b4f6c6022d9"
+    },
+    {
+      "id": "cdfc5ab8f144fcab",
+      "source": "算子单位图标/游戏标记/Event.png",
+      "name": "Event",
+      "image": "pieces/cdfc5ab8f144fcab.webp",
+      "sha256": "cdfc5ab8f144fcab532ecd4d96c4d6dade687f46926dc35e05884591a7ed3402"
+    },
+    {
+      "id": "38928845cec3a484",
+      "source": "算子单位图标/游戏标记/OPS.png",
+      "name": "OPS",
+      "image": "pieces/38928845cec3a484.webp",
+      "sha256": "38928845cec3a4843c9f0d496d81291b29fcec0c698d02648fd45d67155de2cb"
+    },
+    {
+      "id": "beb1fc413a451a52",
+      "source": "算子单位图标/游戏标记/SR.png",
+      "name": "SR",
+      "image": "pieces/beb1fc413a451a52.webp",
+      "sha256": "beb1fc413a451a52dcc7ff25bccc885a09a908a492cd1a39716c90f89b9b3bf5"
+    },
+    {
+      "id": "939481ec96136ae3",
+      "source": "算子单位图标/游戏标记/U艇.png",
+      "name": "U艇",
+      "image": "pieces/939481ec96136ae3.webp",
+      "sha256": "939481ec96136ae3d81a7cc653fd1447c4e2f622d8e73d56ffb809ef0d2bbc09"
+    },
+    {
+      "id": "95bd5b1290934c66",
+      "source": "算子单位图标/游戏标记/俄国战线.png",
+      "name": "俄国战线",
+      "image": "pieces/95bd5b1290934c66.webp",
+      "sha256": "95bd5b1290934c66298ad1711feeb406a8170e5224b537aaf1ba214ee75c5564"
+    },
+    {
+      "id": "fdd0f3791c3c8ecc",
+      "source": "算子单位图标/游戏标记/停战协议.png",
+      "name": "停战协议",
+      "image": "pieces/fdd0f3791c3c8ecc.webp",
+      "sha256": "fdd0f3791c3c8ecc59f40c7601dc809399549f38f4162916076facfa1cfb9560"
+    },
+    {
+      "id": "b44f58d268920c30",
+      "source": "算子单位图标/游戏标记/土耳其战线.png",
+      "name": "土耳其战线",
+      "image": "pieces/b44f58d268920c30.webp",
+      "sha256": "b44f58d268920c30a0bcaf24df7a53dc70082b4f4ae8cecf3115209bc871f794"
+    },
+    {
+      "id": "f39f3dd6437ee2a3",
+      "source": "算子单位图标/游戏标记/美国参战.png",
+      "name": "美国参战",
+      "image": "pieces/f39f3dd6437ee2a3.webp",
+      "sha256": "f39f3dd6437ee2a38702648e21b7f1778ee08585e1d5200e0dddc4a8aae50189"
+    },
+    {
+      "id": "2917e756bce51dcc",
+      "source": "算子单位图标/游戏通用标记/AHRP.png",
+      "name": "AHRP",
+      "image": "pieces/2917e756bce51dcc.webp",
+      "sha256": "2917e756bce51dcc66c67e37e644ddb900c040cf921ec99ddc660a2ab9663065"
+    },
+    {
+      "id": "20d6e9fbd0d5e503",
+      "source": "算子单位图标/游戏通用标记/APWS.png",
+      "name": "APWS",
+      "image": "pieces/20d6e9fbd0d5e503.webp",
+      "sha256": "20d6e9fbd0d5e50351dbe74030d63bc839a8f4e9189c971e9b16c5d7cc09e0a3"
+    },
+    {
+      "id": "0aec8b3ec2295137",
+      "source": "算子单位图标/游戏通用标记/AP一级战壕.png",
+      "name": "AP一级战壕",
+      "image": "pieces/0aec8b3ec2295137.webp",
+      "sha256": "0aec8b3ec22951375ae61ce02269d1880df27a9824e5a9ef7f679a924dbd967c"
+    },
+    {
+      "id": "c3cf9f7f3c304436",
+      "source": "算子单位图标/游戏通用标记/AP二级战壕.png",
+      "name": "AP二级战壕",
+      "image": "pieces/c3cf9f7f3c304436.webp",
+      "sha256": "c3cf9f7f3c304436cd9d4da13df40511c9e92a55ff13ef6bc72ff57fcec587a9"
+    },
+    {
+      "id": "074bb468489e64b7",
+      "source": "算子单位图标/游戏通用标记/AP掘壕.png",
+      "name": "AP掘壕",
+      "image": "pieces/074bb468489e64b7.webp",
+      "sha256": "074bb468489e64b7dffe2283046dade74dd2a8e71fd6eb2f198169f0c936e9e7"
+    },
+    {
+      "id": "33b6d1f81bccdbbf",
+      "source": "算子单位图标/游戏通用标记/AP掘壕b.png",
+      "name": "AP掘壕b",
+      "image": "pieces/33b6d1f81bccdbbf.webp",
+      "sha256": "33b6d1f81bccdbbf20c59a5c4ba53fe3a907000c1c28cb37b012cfc492428285"
+    },
+    {
+      "id": "a2d5143b774d775b",
+      "source": "算子单位图标/游戏通用标记/AP控制标.png",
+      "name": "AP控制标",
+      "image": "pieces/a2d5143b774d775b.webp",
+      "sha256": "a2d5143b774d775b819188b6d3a93d8e9438f232ffc2f9403b5f830777fdf6c9"
+    },
+    {
+      "id": "b2bd696c19029e34",
+      "source": "算子单位图标/游戏通用标记/ARP.png",
+      "name": "ARP",
+      "image": "pieces/b2bd696c19029e34.webp",
+      "sha256": "b2bd696c19029e34386fd87cfa6ce9b22d1e75ac04b4bc7083586b41f0613103"
+    },
+    {
+      "id": "b92425e0f4ba5af3",
+      "source": "算子单位图标/游戏通用标记/Attack.png",
+      "name": "Attack",
+      "image": "pieces/b92425e0f4ba5af3.webp",
+      "sha256": "b92425e0f4ba5af3486ba90c5a7c1239ab5d9bfe441879a4a16666f6682d0c3c"
+    },
+    {
+      "id": "f27a32ef70b3fdc1",
+      "source": "算子单位图标/游戏通用标记/BRRP.png",
+      "name": "BRRP",
+      "image": "pieces/f27a32ef70b3fdc1.webp",
+      "sha256": "f27a32ef70b3fdc1e50f53374b8c12580e7ec9a10af36ff27fc6fd6b18477944"
+    },
+    {
+      "id": "81f330a77813c6c3",
+      "source": "算子单位图标/游戏通用标记/CBWS.png",
+      "name": "CBWS",
+      "image": "pieces/81f330a77813c6c3.webp",
+      "sha256": "81f330a77813c6c39862c41827fd63a567936ffabfbf151000628f774b111c73"
+    },
+    {
+      "id": "4d51c2b20936801b",
+      "source": "算子单位图标/游戏通用标记/CPWS.png",
+      "name": "CPWS",
+      "image": "pieces/4d51c2b20936801b.webp",
+      "sha256": "4d51c2b20936801be722ace508be94b15bbf1a3f5632ac6375b3c6b41076b744"
+    },
+    {
+      "id": "68ceb3424164e16e",
+      "source": "算子单位图标/游戏通用标记/CP一级战壕.png",
+      "name": "CP一级战壕",
+      "image": "pieces/68ceb3424164e16e.webp",
+      "sha256": "68ceb3424164e16e499afe4f58ce476e6742cf99eec0221908e42a2a5fec9a23"
+    },
+    {
+      "id": "e8ebf6a7778b1539",
+      "source": "算子单位图标/游戏通用标记/CP二级战壕.png",
+      "name": "CP二级战壕",
+      "image": "pieces/e8ebf6a7778b1539.webp",
+      "sha256": "e8ebf6a7778b153958f190ef54bb345b8e89f2a4f5f9d4d15b988c3f19aea535"
+    },
+    {
+      "id": "f1ffb70dd1c5c2d3",
+      "source": "算子单位图标/游戏通用标记/CP掘壕.png",
+      "name": "CP掘壕",
+      "image": "pieces/f1ffb70dd1c5c2d3.webp",
+      "sha256": "f1ffb70dd1c5c2d3eb9112b8fba4df907a07a289ff75b3b9b255f576c734c946"
+    },
+    {
+      "id": "f0a29fbbec20425a",
+      "source": "算子单位图标/游戏通用标记/CP掘壕b.png",
+      "name": "CP掘壕b",
+      "image": "pieces/f0a29fbbec20425a.webp",
+      "sha256": "f0a29fbbec20425a767279a79f44d6c20f5ca90834db4306e07dc215eff0778b"
+    },
+    {
+      "id": "fbffb698d1136232",
+      "source": "算子单位图标/游戏通用标记/CP控制标.png",
+      "name": "CP控制标",
+      "image": "pieces/fbffb698d1136232.webp",
+      "sha256": "fbffb698d11362329dd3ea31fad6457788bf9e404f867caf4f00f84f53f2b1d0"
+    },
+    {
+      "id": "0498a0e8f14ffe7a",
+      "source": "算子单位图标/游戏通用标记/EASTRP.png",
+      "name": "EASTRP",
+      "image": "pieces/0498a0e8f14ffe7a.webp",
+      "sha256": "0498a0e8f14ffe7a81c74d4244efb4a786ca4e241cdda639de89a635c681d517"
+    },
+    {
+      "id": "2496dc4b76b03422",
+      "source": "算子单位图标/游戏通用标记/Entrench.png",
+      "name": "Entrench",
+      "image": "pieces/2496dc4b76b03422.webp",
+      "sha256": "2496dc4b76b034225136c2f3611ee7991bb2195a8ff402693170a4d25883a6d1"
+    },
+    {
+      "id": "7cf86ed8203d3db7",
+      "source": "算子单位图标/游戏通用标记/FRRP.png",
+      "name": "FRRP",
+      "image": "pieces/7cf86ed8203d3db7.webp",
+      "sha256": "7cf86ed8203d3db7ca251042c267e378f1dfc01054a646d174b41632b7cbf78c"
+    },
+    {
+      "id": "77fe9a0e4c296059",
+      "source": "算子单位图标/游戏通用标记/GERP.png",
+      "name": "GERP",
+      "image": "pieces/77fe9a0e4c296059.webp",
+      "sha256": "77fe9a0e4c29605941a391c36f8037835ef70a9024e618367b288d5740fc3e6d"
+    },
+    {
+      "id": "11a3796722fad859",
+      "source": "算子单位图标/游戏通用标记/ITRP.png",
+      "name": "ITRP",
+      "image": "pieces/11a3796722fad859.webp",
+      "sha256": "11a3796722fad85927d1a6143a14e0645ee7703d0f4938088fe65d32c4fddae2"
+    },
+    {
+      "id": "5959e533831a19d7",
+      "source": "算子单位图标/游戏通用标记/Move.png",
+      "name": "Move",
+      "image": "pieces/5959e533831a19d7.webp",
+      "sha256": "5959e533831a19d7c8273825aa1b8c7dbc5d472b8fc4738222387a8337ee05bc"
+    },
+    {
+      "id": "6990e994a862401f",
+      "source": "算子单位图标/游戏通用标记/Turn.png",
+      "name": "Turn",
+      "image": "pieces/6990e994a862401f.webp",
+      "sha256": "6990e994a862401f4ea7a45d8eb0b3a5734ad59b5c85960e3a247fd1d6b6f378"
+    },
+    {
+      "id": "72f28f2f511ea24c",
+      "source": "算子单位图标/游戏通用标记/USRP.png",
+      "name": "USRP",
+      "image": "pieces/72f28f2f511ea24c.webp",
+      "sha256": "72f28f2f511ea24cb841dcf1059ad7f574e33a59c2ad1211ded995c5911cae5b"
+    },
+    {
+      "id": "2beec4bf5a1cb0e8",
+      "source": "算子单位图标/游戏通用标记/VP.png",
+      "name": "VP",
+      "image": "pieces/2beec4bf5a1cb0e8.webp",
+      "sha256": "2beec4bf5a1cb0e83ecbbb62eae86619506bf13944d16d6d91ec2cf3b632a6f3"
+    },
+    {
+      "id": "c7dd8b40ebe11c40",
+      "source": "算子单位图标/游戏通用标记/围攻.png",
+      "name": "围攻",
+      "image": "pieces/c7dd8b40ebe11c40.webp",
+      "sha256": "c7dd8b40ebe11c40acb5603988ef59c41564b90cb91bc5869996788cc0ce758f"
+    },
+    {
+      "id": "bacd542345e5d6d7",
+      "source": "算子单位图标/游戏通用标记/摧毁.png",
+      "name": "摧毁",
+      "image": "pieces/bacd542345e5d6d7.webp",
+      "sha256": "bacd542345e5d6d795d7cdfbd439bfb68881e641516c43d74728681d2d857e2a"
+    },
+    {
+      "id": "a7585a17ba51da0b",
+      "source": "算子单位图标/美国战斗单位/美国新兵.png",
+      "name": "美国新兵",
+      "image": "pieces/a7585a17ba51da0b.webp",
+      "sha256": "a7585a17ba51da0b79669717e3490a33bb4a30f5a11eef6d875867626cec22b4"
+    },
+    {
+      "id": "d20d56bed557010d",
+      "source": "算子单位图标/美国战斗单位/美国新兵b.png",
+      "name": "美国新兵b",
+      "image": "pieces/d20d56bed557010d.webp",
+      "sha256": "d20d56bed557010dea173ee84abf6a8198c921622fb2ea7061c005561b3d1b33"
+    },
+    {
+      "id": "8f51ccbaa231b0be",
+      "source": "算子单位图标/美国战斗单位/美国新兵scu.png",
+      "name": "美国新兵scu",
+      "image": "pieces/8f51ccbaa231b0be.webp",
+      "sha256": "8f51ccbaa231b0be50dac57831725197970c83f819dd1bd154493a101a411d2e"
+    },
+    {
+      "id": "9d1266b0a5bf32c3",
+      "source": "算子单位图标/美国战斗单位/美国新兵scub.png",
+      "name": "美国新兵scub",
+      "image": "pieces/9d1266b0a5bf32c3.webp",
+      "sha256": "9d1266b0a5bf32c3cce3d571c2d836da52971812b3d5bee55cbe4cb71582b789"
+    },
+    {
+      "id": "6131f0a712c2cef4",
+      "source": "算子单位图标/英国战斗单位/印度新兵scu.png",
+      "name": "印度新兵scu",
+      "image": "pieces/6131f0a712c2cef4.webp",
+      "sha256": "6131f0a712c2cef47485a0dd80cda164f6ddda72e3822c613c2ebd98b2022a53"
+    },
+    {
+      "id": "5166184bd375cd55",
+      "source": "算子单位图标/英国战斗单位/印度新兵scub.png",
+      "name": "印度新兵scub",
+      "image": "pieces/5166184bd375cd55.webp",
+      "sha256": "5166184bd375cd55cf06bae9c53192e62de69e8bb3f93914cd9cb9a83cc3d20e"
+    },
+    {
+      "id": "50a7daeed8062d6c",
+      "source": "算子单位图标/英国战斗单位/印度新兵骑兵scu.png",
+      "name": "印度新兵骑兵scu",
+      "image": "pieces/50a7daeed8062d6c.webp",
+      "sha256": "50a7daeed8062d6cb3af39b36ecfd350842a76f1f4b81d8388f005a6e270f6ef"
+    },
+    {
+      "id": "143ab1aa80d9e226",
+      "source": "算子单位图标/英国战斗单位/印度新兵骑兵scub.png",
+      "name": "印度新兵骑兵scub",
+      "image": "pieces/143ab1aa80d9e226.webp",
+      "sha256": "143ab1aa80d9e226cac0819d4b5ef79e1371720b0ece32829d515fdc28663800"
+    },
+    {
+      "id": "89a759c998775d6c",
+      "source": "算子单位图标/英国战斗单位/英国意大利LCU.png",
+      "name": "英国意大利LCU",
+      "image": "pieces/89a759c998775d6c.webp",
+      "sha256": "89a759c998775d6ca7f21d35fb5133b802f4f28f233e2c51ea51e129f694133b"
+    },
+    {
+      "id": "b2c41c22a2816890",
+      "source": "算子单位图标/英国战斗单位/英国意大利LCUb.png",
+      "name": "英国意大利LCUb",
+      "image": "pieces/b2c41c22a2816890.webp",
+      "sha256": "b2c41c22a28168900753a03733230f69d5dcfbeacd27e32825eb1058c81af71f"
+    },
+    {
+      "id": "14d3c9c3027f008f",
+      "source": "算子单位图标/英国战斗单位/英国新兵.png",
+      "name": "英国新兵",
+      "image": "pieces/14d3c9c3027f008f.webp",
+      "sha256": "14d3c9c3027f008f1793c810bdc2fff175e18e41f8c86bec1b0d71dcd380a700"
+    },
+    {
+      "id": "67cfdfe3516a1583",
+      "source": "算子单位图标/英国战斗单位/英国新兵b.png",
+      "name": "英国新兵b",
+      "image": "pieces/67cfdfe3516a1583.webp",
+      "sha256": "67cfdfe3516a15837b875c7e570665685c49bf982e437c34dee1ccefa076b442"
+    },
+    {
+      "id": "090536dbd14c4a9f",
+      "source": "算子单位图标/英国战斗单位/英国新兵scu.png",
+      "name": "英国新兵scu",
+      "image": "pieces/090536dbd14c4a9f.webp",
+      "sha256": "090536dbd14c4a9f13267312027e81c65d3e735a0935e730a0de1ef4170affb6"
+    },
+    {
+      "id": "673abd877580bd75",
+      "source": "算子单位图标/英国战斗单位/英国新兵scub.png",
+      "name": "英国新兵scub",
+      "image": "pieces/673abd877580bd75.webp",
+      "sha256": "673abd877580bd759587b919ddbdf2bf0beda10b9eb019038e11af85574f759d"
+    },
+    {
+      "id": "f89ddb96ef391a1c",
+      "source": "算子单位图标/英国战斗单位/英国新兵骑兵scu.png",
+      "name": "英国新兵骑兵scu",
+      "image": "pieces/f89ddb96ef391a1c.webp",
+      "sha256": "f89ddb96ef391a1c857e22d793293f3e8bfbf6622482ab8a0cfcef1ef899aa13"
+    },
+    {
+      "id": "5ec77ce498189e15",
+      "source": "算子单位图标/英国战斗单位/英国新兵骑兵scub.png",
+      "name": "英国新兵骑兵scub",
+      "image": "pieces/5ec77ce498189e15.webp",
+      "sha256": "5ec77ce498189e150b40fc1a0ce1ac1ad4146936f0e7ad156ef4b69146e986c2"
+    },
+    {
+      "id": "cdbe149ce0107c67",
+      "source": "算子单位图标/英国战斗单位/英国老兵.png",
+      "name": "英国老兵",
+      "image": "pieces/cdbe149ce0107c67.webp",
+      "sha256": "cdbe149ce0107c67e1c32278039114afa87b2ce46d3c6d5d2b38eae89ce0101a"
+    },
+    {
+      "id": "635c893332e5ecd4",
+      "source": "算子单位图标/英国战斗单位/英国老兵b.png",
+      "name": "英国老兵b",
+      "image": "pieces/635c893332e5ecd4.webp",
+      "sha256": "635c893332e5ecd458b5feb5b3e333b2068a01c8d57d454e152b75640c4bb991"
+    },
+    {
+      "id": "1502371c5d24cbef",
+      "source": "算子单位图标/英国战斗单位/英国老兵scu.png",
+      "name": "英国老兵scu",
+      "image": "pieces/1502371c5d24cbef.webp",
+      "sha256": "1502371c5d24cbef717de4f21be498ab1b4982c39f223d84e875c547b4667cbb"
+    },
+    {
+      "id": "69987bc7f79b325e",
+      "source": "算子单位图标/英国战斗单位/英国老兵scub.png",
+      "name": "英国老兵scub",
+      "image": "pieces/69987bc7f79b325e.webp",
+      "sha256": "69987bc7f79b325e5135939794536d663ee872637d96a72fa96763ec3b9bab84"
+    },
+    {
+      "id": "817a3768783d0c8a",
+      "source": "算子单位图标/英国战斗单位/英国远征兵.png",
+      "name": "英国远征兵",
+      "image": "pieces/817a3768783d0c8a.webp",
+      "sha256": "817a3768783d0c8a262b84591cad8b9554a711fe6bbb281890e3d75ec832d1b5"
+    },
+    {
+      "id": "cdf9ef3626eee919",
+      "source": "算子单位图标/英国战斗单位/英国远征兵b.png",
+      "name": "英国远征兵b",
+      "image": "pieces/cdf9ef3626eee919.webp",
+      "sha256": "cdf9ef3626eee91938975a4265dc7ae528d64775394396329f4507e9c12dce64"
+    },
+    {
+      "id": "0c3fe1714ebe8a95",
+      "source": "算子单位图标/英国战斗单位/英国远征军scu.png",
+      "name": "英国远征军scu",
+      "image": "pieces/0c3fe1714ebe8a95.webp",
+      "sha256": "0c3fe1714ebe8a95cd0a7248c2187d4e349a8f29cb083ff68081a55e7852aa17"
+    },
+    {
+      "id": "ac05974cdba77856",
+      "source": "算子单位图标/英国战斗单位/英国远征军scub.png",
+      "name": "英国远征军scub",
+      "image": "pieces/ac05974cdba77856.webp",
+      "sha256": "ac05974cdba77856fb508d161fe52434a65546d15dcfa2d870b0210b334d6f7d"
+    },
+    {
+      "id": "adf9a0e7cc54b6d4",
+      "source": "算子单位图标/英国战斗单位/英联邦LCUnew.png",
+      "name": "英联邦LCUnew",
+      "image": "pieces/adf9a0e7cc54b6d4.webp",
+      "sha256": "adf9a0e7cc54b6d40d1c92fa1936a958b80675494ba3eff705006df9934acb3c"
+    },
+    {
+      "id": "a07047c48cf82605",
+      "source": "算子单位图标/英国战斗单位/英联邦新兵.png",
+      "name": "英联邦新兵",
+      "image": "pieces/a07047c48cf82605.webp",
+      "sha256": "a07047c48cf826050318297bd3fb4e83705a57a6eace99c99fc4b987662032c7"
+    },
+    {
+      "id": "084bd9f8a7a6b9d4",
+      "source": "算子单位图标/英国战斗单位/英联邦新兵scu.png",
+      "name": "英联邦新兵scu",
+      "image": "pieces/084bd9f8a7a6b9d4.webp",
+      "sha256": "084bd9f8a7a6b9d4ea3b16b1720c04ed9dde10c5e040165fca5da60f5b4afa05"
+    },
+    {
+      "id": "ab7408f405911b03",
+      "source": "算子单位图标/英国战斗单位/英联邦新兵scub.png",
+      "name": "英联邦新兵scub",
+      "image": "pieces/ab7408f405911b03.webp",
+      "sha256": "ab7408f405911b0349bf483cdd4c807e10a56ba6055c7be9b2f97cd04be47379"
+    },
+    {
+      "id": "65961fe17fefa0f4",
+      "source": "算子单位图标/英国战斗单位/英联邦新兵骑兵scu.png",
+      "name": "英联邦新兵骑兵scu",
+      "image": "pieces/65961fe17fefa0f4.webp",
+      "sha256": "65961fe17fefa0f44f04661d8330771ecf39e01da99410050300e0539beac694"
+    },
+    {
+      "id": "78e67ecd2e853b70",
+      "source": "算子单位图标/英国战斗单位/英联邦新兵骑兵scub.png",
+      "name": "英联邦新兵骑兵scub",
+      "image": "pieces/78e67ecd2e853b70.webp",
+      "sha256": "78e67ecd2e853b70fc324f359bdd31a16db87272c1ae8b52dc04ec82741a6ee9"
+    }
+  ]
+}

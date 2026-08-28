@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>荣耀终结 - 卡牌图库</title>
+		<link rel="stylesheet" href="play.css" />
+		<script defer src="data.js"></script>
+	</head>
+	<body class="document-page">
+		<article>
+			<p class="eyebrow">CARD GALLERY</p>
+			<h1>卡牌图库</h1>
+			<p>协约国 59 张、同盟国 59 张；编号与 TTS CardID 一致。</p>
+			<div id="gallery" class="gallery"></div>
+		</article>
+		<script>
+			window.addEventListener("DOMContentLoaded", () => {
+				const gallery = document.getElementById("gallery")
+				for (const card of window.eog_data.cards) {
+					const figure = document.createElement("figure")
+					figure.innerHTML = `<img loading="lazy" src="assets/${card.image}" alt="${card.title}"><figcaption>${card.id} · ${card.title}</figcaption>`
+					gallery.append(figure)
+				}
+			})
+		</script>
+	</body>
+</html>

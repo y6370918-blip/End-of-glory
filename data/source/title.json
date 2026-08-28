@@ -1,0 +1,13 @@
+{
+  "id": "end-of-glory",
+  "name": "End of Glory",
+  "name_zh": "荣耀终结",
+  "roles": [
+    "Allied Powers",
+    "Central Powers"
+  ],
+  "default_scenario": "1914 Historical",
+  "turns": 15,
+  "action_rounds": 6,
+  "hand_size": 9
+}

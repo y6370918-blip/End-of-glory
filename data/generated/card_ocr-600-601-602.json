@@ -1,0 +1,20 @@
+[
+  {
+    "id": 600,
+    "confidence": 86,
+    "raw": "ENLIST TO.DAY\n\n[1 战争援助\n每回合补员阶段，可以将至多2\n点BR:RP转化为2点FR:RP，或者\n至多2点FR:RP转化为2点BR:RP。\n美国参战后，上述操作可以US:\n\nRP和FR:RP之间进行。\n\nMB BR:3 FR:3 II:2 A:1",
+    "text": "ENLIST TO.DAY\n\n[1 战争援助\n每回合补员阶段，可以将至多2\n点BR:RP转化为2点FR:RP，或者\n至多2点FR:RP转化为2点BR:RP。\n美国参战后，上述操作可以US:\n\nRP和FR:RP之间进行。\n\nMB BR:3 FR:3 II:2 A:1"
+  },
+  {
+    "id": 601,
+    "confidence": 86,
+    "raw": "村RD\n抽调地区军/轮换兵役制\n若为第一次事件，获得2点\nFR:RP并立刻使用\n之后，本牌效果变为;\n本回合+1FR:RP，减损地图/预备役\n至多1FR:RP的法国单位(不可因此\n消灭) ，获得对应FR:RP立刻使用\nMB BR:2 FR:2 IT1A:I{",
+    "text": "村RD\n抽调地区军/轮换兵役制\n若为第一次事件，获得2点\nFR:RP并立刻使用\n之后，本牌效果变为;\n本回合+1FR:RP，减损地图/预备役\n至多1FR:RP的法国单位(不可因此\n消灭) ，获得对应FR:RP立刻使用\nMB BR:2 FR:2 IT1A:I{"
+  },
+  {
+    "id": 602,
+    "confidence": 88,
+    "raw": "[人\n在一次CP进攻中，双方以scu\n火力表开火。战后，每个AP防\n御单位自由选择撤退1或2格，\nCP单位仅能挺进一格。\n本次战斗中受损的CP单位也可\n以挺进。\nMB BR:3 FR:3 IT:2 A:{",
+    "text": "[人\n在一次CP进攻中，双方以scu\n火力表开火。战后，每个AP防\n御单位自由选择撤退1或2格，\nCP单位仅能挺进一格。\n本次战斗中受损的CP单位也可\n以挺进。\nMB BR:3 FR:3 IT:2 A:{"
+  }
+]

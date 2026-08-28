@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width,height=device-height,user-scalable=no,interactive-widget=resizes-content,viewport-fit=cover"
+		/>
+		<meta name="theme-color" content="#33291f" />
+		<title>荣耀终结</title>
+		<link rel="icon" href="thumbnail.jpg" />
+		<link rel="stylesheet" href="/fonts/fonts.css" />
+		<link rel="stylesheet" href="/common/client.css" />
+		<link rel="stylesheet" href="play.css" />
+		<script defer src="/common/client.js"></script>
+		<script defer src="data.js"></script>
+		<script defer src="action-protocol.js"></script>
+		<script defer src="client-ui.js"></script>
+		<script defer src="piece-scene.js"></script>
+		<script defer src="play.js"></script>
+	</head>
+	<body class="eog bevel">
+		<header>
+			<div id="toolbar">
+				<details>
+					<summary title="游戏菜单"><img src="/images/cog.svg" alt="" /></summary>
+					<menu>
+						<li class="title">荣耀终结</li>
+						<li class="separator"></li>
+						<li onclick="window.open('rules.html', '_blank')">规则摘要</li>
+						<li onclick="window.open('charts.html', '_blank')">战斗表</li>
+						<li onclick="window.open('cards.html', '_blank')">卡牌图库</li>
+					</menu>
+				</details>
+				<details id="stack-menu">
+					<summary title="棋子与堆叠"><img src="/images/stack.svg" alt="" /></summary>
+					<menu>
+						<li id="mouse-focus-item">鼠标聚焦</li>
+						<li class="separator"></li>
+						<li id="style-bevel-item">斜面棋子</li>
+						<li id="style-flat-item">平面棋子</li>
+					</menu>
+				</details>
+				<details id="info-menu">
+					<summary title="游戏信息"><img src="/images/wooden-sign.svg" alt="" /></summary>
+					<menu>
+						<li id="show-score">得分与战争状态</li>
+						<li id="show-ap-cards">检查协约国卡牌</li>
+						<li id="show-cp-cards">检查同盟国卡牌</li>
+						<li class="separator"></li>
+						<li id="show-reinforcements">检查预备区与增援</li>
+					</menu>
+				</details>
+				<details id="supply-menu">
+					<summary title="补给与回滚"><img src="/images/oil-drum.svg" alt="" /></summary>
+					<menu>
+						<li id="flag-supply-warnings">标记补给警告</li>
+						<li id="propose-rollback">提议回滚</li>
+						<li id="report-bug">反馈问题</li>
+						<li class="separator"></li>
+						<li id="show-ap-supply">显示协约国补给</li>
+						<li id="show-cp-supply">显示同盟国补给</li>
+					</menu>
+				</details>
+				<button id="track-button" title="回合记录" aria-label="回合记录"><img src="/images/sands-of-time.svg" alt="" /></button>
+				<button id="piece-button" title="切换棋子与标记显示" aria-label="切换棋子与标记显示"><img src="/images/earth-america.svg" alt="" /></button>
+			</div>
+		</header>
+
+		<aside>
+			<div id="roles"></div>
+			<div id="turn_info"></div>
+			<div id="log"></div>
+		</aside>
+
+		<main data-min-zoom="0.2" data-max-zoom="2" data-pan-speed="1">
+			<div id="mapwrap">
+				<div id="map">
+					<img id="map-image" src="assets/map.webp" srcset="assets/map.webp 4562w, assets/map.png 6082w" sizes="4562px" alt="荣耀终结游戏地图" draggable="false" />
+					<div id="space-layer" class="map-layer"></div>
+					<div id="control-layer" class="map-layer"></div>
+					<div id="marker-layer" class="map-layer"></div>
+					<div id="piece-layer" class="map-layer"></div>
+				</div>
+			</div>
+			<section id="combat-zone" hidden aria-label="战斗牌">
+				<section id="combat-cards-panel" class="panel-zone">
+					<div id="combat-card-zones">
+						<section class="combat-card-zone"><h3 class="panel-head">本场已打出</h3><div id="combat-cards-played" class="combat-card-row" data-empty-label="无"></div></section>
+						<section class="combat-card-zone"><h3 class="panel-head">当前可打出</h3><div id="combat-cards-available" class="combat-card-row" data-empty-label="无"></div></section>
+						<section id="combat-cards-retained-zone" class="combat-card-zone combat-card-zone-retained" hidden><h3 class="panel-head">保留与持续生效</h3><div id="combat-cards-retained" class="combat-card-row"></div></section>
+					</div>
+				</section>
+			</section>
+
+			<section id="hand-panel" class="panel-zone">
+				<div id="hand-title" class="panel-head">手牌</div>
+				<div id="hand"></div>
+			</section>
+			<section id="mo-panel" class="mo-panel" hidden aria-label="本方强制进攻">
+				<div id="mo-list"></div>
+			</section>
+		</main>
+
+		<footer id="status"></footer>
+		<div id="activation-popup" class="map-popup" hidden role="menu" aria-label="地区激活"></div>
+		<menu id="card-popup" class="card-popup" hidden role="menu" aria-label="卡牌动作"></menu>
+
+		<dialog id="card-dialog">
+			<button class="dialog-close" data-close aria-label="关闭">×</button>
+			<div id="card-detail"></div>
+		</dialog>
+		<dialog id="unit-dialog">
+			<button class="dialog-close" data-close aria-label="关闭">×</button>
+			<div id="unit-detail"></div>
+		</dialog>
+		<section id="overview-window" class="info-window" hidden role="dialog" aria-modal="false" aria-label="游戏局势总览">
+			<header class="info-window-header"><strong>游戏局势总览</strong><button type="button" class="info-window-close" aria-label="关闭">×</button></header>
+			<div id="overview-detail" class="info-window-body"></div>
+		</section>
+		<section id="ap-cards-window" class="info-window info-window-card" hidden role="dialog" aria-modal="false" aria-label="协约国卡牌">
+			<header class="info-window-header"><strong>协约国卡牌</strong><button type="button" class="info-window-close" aria-label="关闭">×</button></header>
+			<div id="ap-cards-detail" class="info-window-body"></div>
+		</section>
+		<section id="cp-cards-window" class="info-window info-window-card" hidden role="dialog" aria-modal="false" aria-label="同盟国卡牌">
+			<header class="info-window-header"><strong>同盟国卡牌</strong><button type="button" class="info-window-close" aria-label="关闭">×</button></header>
+			<div id="cp-cards-detail" class="info-window-body"></div>
+		</section>
+		<section id="unit-pools-window" class="info-window info-window-wide" hidden role="dialog" aria-modal="false" aria-label="单位池与增援">
+			<header class="info-window-header"><strong>单位池与增援</strong><button type="button" class="info-window-close" aria-label="关闭">×</button></header>
+			<div id="unit-pools-detail" class="info-window-body"></div>
+		</section>
+		<section id="track-window" class="info-window info-window-wide" hidden role="dialog" aria-modal="false" aria-label="回合与行动记录">
+			<header class="info-window-header"><strong>回合与行动记录</strong><button type="button" class="info-window-close" aria-label="关闭">×</button></header>
+			<div id="track-detail" class="info-window-body"></div>
+		</section>
+		<dialog id="rollback-dialog">
+			<button class="dialog-close" data-close aria-label="关闭">×</button>
+			<form id="rollback-form" method="dialog">
+				<h2>提议回滚</h2>
+				<label for="rollback-group">回合与行动轮</label>
+				<select id="rollback-group" name="group"></select>
+				<label for="rollback-checkpoint">检查点</label>
+				<select id="rollback-checkpoint" name="checkpoint"></select>
+				<div id="rollback-detail"></div>
+				<div class="dialog-actions">
+					<button type="button" data-close>取消</button>
+					<button id="submit-rollback" type="submit">提交给对手</button>
+				</div>
+			</form>
+		</dialog>
+		<dialog id="bug-report-dialog">
+			<button class="dialog-close" data-close aria-label="关闭">×</button>
+			<form id="bug-report-form" method="dialog">
+				<h2>反馈问题</h2>
+				<label for="bug-report-note">问题说明</label>
+				<textarea id="bug-report-note" rows="6"></textarea>
+				<label class="dialog-checkbox"><input id="bug-report-send-chat" type="checkbox" /> 同时发送到聊天</label>
+				<div class="dialog-actions">
+					<button type="button" data-close>取消</button>
+					<button type="submit">下载报告</button>
+				</div>
+			</form>
+		</dialog>
+	</body>
+</html>

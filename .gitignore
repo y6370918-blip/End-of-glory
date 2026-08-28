@@ -1,0 +1,8 @@
+node_modules/
+.preview*.html
+.preview_state*.js
+tmp/
+coverage/
+playwright-report/
+test-results/
+*.log

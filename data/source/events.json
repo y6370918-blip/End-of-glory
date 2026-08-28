@@ -1,0 +1,174 @@
+{
+  "ap_容克军官": {},
+  "ap_战争援助": {
+    "kind": "persistent",
+    "rp_exchange": [
+      [
+        "br",
+        "fr"
+      ],
+      [
+        "fr",
+        "br"
+      ]
+    ]
+  },
+  "ap_抽调地区军_轮换兵役制": {
+    "first_rp": {
+      "fr": 2
+    },
+    "later_rp": {
+      "fr": 1
+    }
+  },
+  "ap_美国远征军": {
+    "kind": "entry",
+    "nation": "us",
+    "war_status": 2
+  },
+  "ap_皇家海军封锁": {
+    "kind": "persistent",
+    "naval": 1,
+    "winter_vp": -1
+  },
+  "ap_护航": {
+    "kind": "persistent",
+    "cancel": "cp_U艇攻势",
+    "naval": 4,
+    "vp": -1
+  },
+  "ap_洗劫比利时": {
+    "vp": -1,
+    "min_turn": 2
+  },
+  "ap_征服德国殖民地": {
+    "vp": -1
+  },
+  "ap_劳合乔治": {
+    "vp": -1,
+    "rp": {
+      "br": 2
+    },
+    "fronts": {
+      "turkish": 2
+    }
+  },
+  "ap_意大利参战": {
+    "kind": "entry",
+    "nation": "it",
+    "war_status": 2,
+    "vp": -2
+  },
+  "ap_希腊参战": {
+    "vp": -1,
+    "conditional_fronts": {
+      "event": "ap_萨洛尼卡",
+      "turkish": 1
+    }
+  },
+  "ap_罗马尼亚参战": {
+    "vp": -1,
+    "fronts": {
+      "russian": -1
+    },
+    "requires_any_event": [
+      "ap_勃鲁西洛夫攻势"
+    ],
+    "allow_if_front_at_most": {
+      "russian": 3
+    }
+  },
+  "ap_威尔逊": {
+    "vp": -1,
+    "entry_shift": {
+      "us": -1
+    }
+  },
+  "ap_勃鲁西洛夫攻势": {
+    "fronts": {
+      "russian": -2
+    }
+  },
+  "cp_土耳其参战": {
+    "kind": "entry",
+    "nation": "tu",
+    "war_status": 1,
+    "vp": -1,
+    "fronts": {
+      "turkish": 1
+    }
+  },
+  "cp_U艇攻势": {
+    "kind": "persistent",
+    "naval_each_turn": 1
+  },
+  "cp_保加利亚参战": {
+    "kind": "persistent",
+    "rp": {
+      "ge": 4,
+      "ah": 2
+    },
+    "fronts": {
+      "russian": 1
+    }
+  },
+  "cp_布列斯特_立托夫斯克条约": {
+    "kind": "persistent",
+    "min_front": {
+      "russian": 8
+    },
+    "lock_front": "russian",
+    "end_vp": 2
+  },
+  "cp_无限制潜艇战": {
+    "kind": "persistent",
+    "naval": 5,
+    "war_status": 1,
+    "fronts": {
+      "turkish": -1
+    },
+    "recurring_rp_loss": {
+      "ap": {
+        "us": 1,
+        "br": 1
+      }
+    }
+  },
+  "cp_德国战争工业": {
+    "kind": "persistent",
+    "replacement_bonus": {
+      "ge": 1
+    },
+    "free_upgrade": {
+      "nation": "ge",
+      "type": "corps",
+      "count": 1
+    }
+  },
+  "cp_兴登堡防线": {
+    "kind": "persistent",
+    "trench_bonus": 1
+  },
+  "cp_兴登堡_鲁登道夫": {
+    "kind": "persistent",
+    "fronts": {
+      "russian": 1
+    },
+    "mo_required": {
+      "ge": 1
+    }
+  },
+  "cp_法军兵变": {
+    "kind": "persistent",
+    "prohibit": "fr_attack_without_mo"
+  },
+  "cp_麦克斯亲王": {
+    "kind": "persistent",
+    "end_vp": 1
+  },
+  "cp_意大利声明中立": {
+    "rp": {
+      "ah": 2
+    }
+  }
+}

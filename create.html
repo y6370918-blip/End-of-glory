@@ -1,0 +1,74 @@
+<style>
+	.eog-create {
+		display: grid;
+		grid-template-columns: 150px minmax(0, 1fr);
+		gap: 18px;
+		align-items: start;
+		margin: 16px 0 20px;
+	}
+
+	.eog-create img {
+		display: block;
+		width: 150px;
+		height: 200px;
+		object-fit: cover;
+		border: 1px solid #777;
+	}
+
+	.eog-create .eyebrow {
+		margin: 0 0 8px;
+		font-size: 12px;
+		font-weight: bold;
+		letter-spacing: 0.12em;
+	}
+
+	.eog-create h2 {
+		margin: 0 0 8px;
+	}
+
+	.eog-create p {
+		margin: 8px 0;
+	}
+
+	.eog-create dl {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		gap: 4px 10px;
+		margin: 10px 0;
+	}
+
+	.eog-create dt {
+		font-weight: bold;
+	}
+
+	.eog-create dd {
+		margin: 0;
+	}
+
+	@media (max-width: 620px) {
+		.eog-create {
+			grid-template-columns: 1fr;
+		}
+
+		.eog-create img {
+			width: 108px;
+			height: 144px;
+		}
+	}
+</style>
+
+<section class="eog-create">
+	<img src="/end-of-glory/cover.1x.jpg" alt="荣耀终结封面" />
+	<div>
+		<p class="eyebrow">END OF GLORY</p>
+		<h2>荣耀终结</h2>
+		<p>中文双人完整规则版。公开剧本仅包含 1914 Historical。</p>
+		<dl>
+			<dt>协约国</dt>
+			<dd>法国、英国、比利时、意大利与美国</dd>
+			<dt>同盟国</dt>
+			<dd>德国与奥匈帝国</dd>
+		</dl>
+		<p>游戏状态由服务器裁定；客户端只显示服务器返回的合法动作。</p>
+	</div>
+</section>
