@@ -2544,7 +2544,8 @@ function createCombatSystem(api) {
   function canCancelRetreatWithUnit(state, id) {
       const pending = state.pending_retreat;
       const unit = state.units.find((candidate) => candidate.id === id);
-      if (!pending?.can_cancel_with_loss || !pending.units?.includes(id) || !unit || !api.isCombatUnit(unit))
+      if (!pending?.can_cancel_with_loss || !retreatCancellationTerrainAllowed(state, pending) ||
+          !pending.units?.includes(id) || !unit || !api.isCombatUnit(unit))
           return false;
       if (pending.prohibit_damaged_cancel && unit.reduced)
           return false;
@@ -2552,6 +2553,17 @@ function createCombatSystem(api) {
           return true;
       return unit.type === "army" && (unit.supplied || unit.limited_supply || unit.fort_limited_supply) &&
           api.combatReplacementOptions(state, unit).length > 0;
+  }
+
+  function retreatCancellationTerrainAllowed(state, pending = state.pending_retreat) {
+      if (!pending || pending.mode !== "mandatory")
+          return false;
+      const space = pending.from || state.combat?.target;
+      const terrain = api.spaceById[space]?.terrain;
+      if (["forest", "mountain", "swamp"].includes(terrain))
+          return true;
+      return Number(state.trenches?.[space] || 0) > 0 &&
+          !state.combat?.modifiers?.ignore_trench;
   }
 
   function retreatSpaceOverstacked(state, space, faction) {
@@ -2931,6 +2943,7 @@ return Object.freeze({
     resolveSieges,
     resumeAfterCombatRepair,
     retreatBaseDestinations,
+    retreatCancellationTerrainAllowed,
     retreatDestinations,
     retreatFinalStackLegal,
     retreatUnitHasRoute,
