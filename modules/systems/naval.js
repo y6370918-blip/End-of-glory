@@ -26,7 +26,7 @@ function createNavalSystem(api) {
   function startNaval(state) {
       state.phase = "海军阶段";
       state.state = "naval_choice";
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       state.naval.selections = {};
       state.naval.event_queue = [];
       state.naval.resolving = false;
@@ -68,7 +68,7 @@ function createNavalSystem(api) {
       }
       state.phase = "海军舰队牌处置";
       state.state = "naval_disposition";
-      state.active = order[0];
+      api.setActiveFaction(state, order[0]);
   }
 
   function navalDisposition(state, disposition) {
@@ -80,7 +80,7 @@ function createNavalSystem(api) {
       state.naval.dispositions[state.active] = disposition;
       const next = order.find((side) => !state.naval.dispositions[side]);
       if (next) {
-          state.active = next;
+          api.setActiveFaction(state, next);
           api.log(state, `${api.factionRole(api.other(next))} 已选择舰队牌去向。`);
           return;
       }
@@ -135,7 +135,7 @@ function createNavalSystem(api) {
       }
       state.naval.resolving = true;
       state.phase = "海军事件结算";
-      state.active = next.faction;
+      api.setActiveFaction(state, next.faction);
       state.state = "action_card";
       api.cardUse(state, next.card, "event");
   }
@@ -163,7 +163,7 @@ function createNavalSystem(api) {
       }
       state.naval.selections[faction] = { kind, card };
       if (faction === api.CP) {
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           api.log(state, "同盟国已暗出；协约国选择。");
           return;
       }

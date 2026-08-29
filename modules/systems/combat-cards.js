@@ -172,7 +172,7 @@ function createCombatCardSystem(api) {
           index: 0,
           owner: winner,
       };
-      state.active = winner;
+      api.setActiveFaction(state, winner);
       state.state = "combat_card_disposition";
       return true;
   }
@@ -198,7 +198,7 @@ function createCombatCardSystem(api) {
           return;
       state.pending_combat_card_disposition = null;
       state.state = "combat_losses";
-      state.active = state.combat?.pending_side || state.active;
+      api.setActiveFaction(state, state.combat?.pending_side || state.active);
       api.finishCombatLosses(state);
   }
 
@@ -223,7 +223,7 @@ function createCombatCardSystem(api) {
       if (!state.combat_window)
           throw new Error("No pending combat");
       state.combat_window.declaration.defense_mo_assignments = api.clone(state.combat_window.defense_mo_assignments || {});
-      state.active = state.combat_window.attacker;
+      api.setActiveFaction(state, state.combat_window.attacker);
       state.combat_window.side = state.active;
       state.state = "combat_card_window";
       api.log(state, "战斗牌窗口：进攻方先承诺战斗牌。");
@@ -258,7 +258,7 @@ function createCombatCardSystem(api) {
           defense_mo_decisions: {},
       };
       if (api.defenseMoChoices(state).length) {
-          state.active = state.combat_window.defender;
+          api.setActiveFaction(state, state.combat_window.defender);
           state.combat_window.side = state.active;
           state.state = "defense_mo";
           api.log(state, "防守方选择本次战斗使用的强制进攻标记。");
@@ -487,23 +487,23 @@ function createCombatCardSystem(api) {
       }
       state.pending_event = null;
       if (pending.resume === "resolve") {
-          state.active = state.combat_window.attacker;
+          api.setActiveFaction(state, state.combat_window.attacker);
           api.resolveCombat(state, state.combat_window.declaration);
           return;
       }
-      state.active = pending.resume_side;
+      api.setActiveFaction(state, pending.resume_side);
       state.combat_window.side = pending.resume_side;
       state.state = "combat_card_window";
   }
 
   function passCombatCard(state) {
       if (state.active === state.combat_window.attacker) {
-          state.active = state.combat_window.defender;
+          api.setActiveFaction(state, state.combat_window.defender);
           state.combat_window.side = state.active;
           api.log(state, "防御方承诺战斗牌。");
           return;
       }
-      state.active = state.combat_window.attacker;
+      api.setActiveFaction(state, state.combat_window.attacker);
       revealCommittedCombatCards(state);
       for (const id of state.combat_window.cards || []) {
           if ((state.combat_window.canceled_cards || []).includes(id))
@@ -533,7 +533,7 @@ function createCombatCardSystem(api) {
               if (spaces.length) {
                   reinforcement.resume_side = state.combat_window.attacker;
                   state.pending_event = reinforcement;
-                  state.active = reinforcement.owner;
+                  api.setActiveFaction(state, reinforcement.owner);
                   api.enterEventFlow(state);
                   return;
               }
@@ -766,7 +766,7 @@ function createCombatCardSystem(api) {
           side: defender,
           passes: 0,
       };
-      state.active = defender;
+      api.setActiveFaction(state, defender);
       state.state = "post_combat_card_window";
       return true;
   }
@@ -835,12 +835,12 @@ function createCombatCardSystem(api) {
       const window = state.post_combat_window;
       if (state.active === window.defender) {
           window.side = window.attacker;
-          state.active = window.attacker;
+          api.setActiveFaction(state, window.attacker);
           return;
       }
       state.post_combat_window = null;
       state.combat.post_combat_complete = true;
-      state.active = state.combat.attacker;
+      api.setActiveFaction(state, state.combat.attacker);
       state.state = "combat_losses";
       api.finishCombatLosses(state);
   }

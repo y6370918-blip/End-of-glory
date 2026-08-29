@@ -46,7 +46,7 @@ function createActionStates(api) {
         const review = state.pending_supply_warning_review;
         if (!review || review.reviewer !== state.active)
           throw new Error("No supply warning is awaiting confirmation");
-        state.active = review.owner;
+        api.setActiveFaction(state, review.owner);
         state.phase = review.return_phase;
         state.supply_warnings = null;
         state.pending_supply_warning_review = null;

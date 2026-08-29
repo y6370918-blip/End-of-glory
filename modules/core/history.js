@@ -3,6 +3,7 @@
 const zlib = require("node:zlib");
 const { Buffer } = require("node:buffer");
 const { clone } = require("./utils.js");
+const { syncStoredSnapshot } = require("./active-role.js");
 
 const ROLLBACK_STATE_PREFIX = "eog-rb-v44:";
 
@@ -12,7 +13,7 @@ function compactHistoryState(source) {
     if (["undo", "rollback", "rollback_state", "log"].includes(key)) continue;
     copy[key] = clone(value);
   }
-  return copy;
+  return syncStoredSnapshot(copy);
 }
 
 function encodeRollbackStates(states) {

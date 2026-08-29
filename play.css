@@ -522,6 +522,15 @@ body main {
 	pointer-events: none;
 }
 
+.space.combat-location {
+	z-index: 120;
+	border: 5px solid cyan;
+	border-radius: 16px;
+	background: #00ffff1f;
+	box-shadow: 0 0 0 2px #002b36, 0 0 12px #00ffffcc;
+	pointer-events: none;
+}
+
 .space.supply-warning {
 	z-index: 121;
 	border-color: red;
@@ -673,6 +682,15 @@ body.flat .activation-counter {
 
 .piece-stack.space-legal {
 	outline: none;
+}
+
+.piece-stack.piece-actionable:not(.expanded) {
+	filter: drop-shadow(0 0 8px #ffe600);
+}
+
+.piece-stack.piece-actionable.expanded::before {
+	border-color: #ffe600;
+	box-shadow: 0 0 0 2px #151000, 0 0 12px #ffe600aa;
 }
 
 .piece-stack.advance-candidate-stack {
@@ -884,6 +902,17 @@ body.flat .activation-counter {
 		0 0 0 1px #000,
 		0 0 0 4px cyan,
 		1px 1px 4px #000;
+}
+
+body.action-pending {
+	cursor: progress;
+}
+
+body.action-pending #piece-layer,
+body.action-pending #space-layer,
+body.action-pending #actions,
+body.action-pending #board-panels {
+	pointer-events: none;
 }
 
 .piece.advance-selected,

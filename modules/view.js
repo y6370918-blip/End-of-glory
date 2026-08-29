@@ -206,16 +206,17 @@ function createViewSystem(api) {
       if (state.pending_retreat) {
           const selected = ["advance_select", "advance_destination"].includes(state.state)
               ? state.pending_retreat.selected_advance_units || []
-              : state.pending_retreat.selected_units || [];
+              : [state.pending_retreat.selected_unit].filter(Boolean);
           if (selected.length)
               return {
                   kind: "units",
                   selected: selected.slice(),
                   required: [],
                   minimum: 1,
-                  maximum: Math.max(1, state.pending_retreat.units?.length ||
-                      state.pending_retreat.advance_units?.length ||
-                      1),
+                  maximum: ["advance_select", "advance_destination"].includes(state.state)
+                      ? Math.max(1, state.pending_retreat.units?.length ||
+                          state.pending_retreat.advance_units?.length || 1)
+                      : 1,
               };
       }
       if (state.pending_event?.selected_units)
@@ -571,11 +572,43 @@ function createViewSystem(api) {
       return api.stateEngine.message(state) || state.phase;
   }
 
+  function combatContext(state) {
+      const declaration = state.combat_window?.declaration ||
+          state.pending_event?.declaration ||
+          state.ops?.pending_attack ||
+          null;
+      const target = state.combat?.target || declaration?.target ||
+          state.pending_retreat?.target || null;
+      if (!target)
+          return null;
+      const attacker = state.combat?.attacker || state.combat_window?.attacker ||
+          state.pending_event?.owner || state.active;
+      if (![api.AP, api.CP].includes(attacker))
+          return null;
+      return {
+          target,
+          attacker,
+          defender: api.other(attacker),
+          stage: state.state,
+      };
+  }
+
+  function contextualPrompt(state, canAct, context) {
+      const base = context || canAct || ![api.AP, api.CP].includes(state.active)
+          ? prompt(state)
+          : `等待 ${state.active.toUpperCase()} 行动。`;
+      if (!context || String(base).startsWith("战斗："))
+          return base;
+      return `战斗：${api.spaceById[context.target]?.name || context.target}（${String(base).replace(/[。.]$/, "")}）`;
+  }
+
 
   function publicView(state, current) {
       api.ensureState(state);
       const faction = api.roleFaction(current);
+      const canAct = api.actionAllowed(state, current);
       const actionView = buildActionView(state, current);
+      const currentCombatContext = combatContext(state);
       const naval = api.clone(state.naval);
       const combatWindow = api.clone(state.combat_window);
       if (combatWindow)
@@ -632,11 +665,11 @@ function createViewSystem(api) {
               ...stagedReinforcements.reserves.cp.map((unit) => publicOffMapUnitView(unit, "reserve")),
           ],
       };
-      return {
+      const view = {
           active: api.factionRole(state.active),
           state: state.state,
           phase: state.phase,
-          prompt: prompt(state),
+          prompt: contextualPrompt(state, canAct, currentCombatContext),
           action_protocol: api.ActionProtocol.VERSION,
           actions: actionView.actions,
           action_labels: actionView.labels,
@@ -684,6 +717,7 @@ function createViewSystem(api) {
           usage_limits: api.clone(state.usage_limits),
           entry_tracks: api.clone(state.entry_tracks),
           combat_modifiers: privateCombatModifiers(state, faction),
+          combat_context: api.clone(currentCombatContext),
           combat_cards: combatCardsView(state, faction, actionView.actions),
           combat_window: combatWindow,
           post_combat_window: api.clone(state.post_combat_window),
@@ -734,6 +768,13 @@ function createViewSystem(api) {
           result: state.result,
           victory: state.victory,
       };
+      if (!canAct) {
+          delete view.actions;
+          delete view.action_labels;
+          delete view.action_hints;
+          delete view.selection;
+      }
+      return view;
   }
 return Object.freeze({
     actionHintsView,

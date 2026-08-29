@@ -613,7 +613,7 @@ function createEventSystem(api) {
           operation: api.clone(operation),
           cards: [...new Set(candidates)],
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
       return true;
   }
@@ -622,7 +622,7 @@ function createEventSystem(api) {
       const owner = state.pending_event?.owner || card.faction;
       const eventPlacements = (state.pending_event?.placements || []).map((entry) => entry.space);
       const immediateExtra = api.clone(state.pending_event?.immediate_rp_extra || {});
-      state.active = owner;
+      api.setActiveFaction(state, owner);
       const wasPlayed = Boolean(state.events[card.event]) ||
           state.event_history.some((entry) => entry.event === card.event);
       const reinforcementNation = REINFORCEMENT_EVENT_NATION[card.id];
@@ -777,7 +777,7 @@ function createEventSystem(api) {
           spaces: choice.spaces,
       };
       api.enterEventFlow(state);
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       state.phase = "放置突出部";
       return true;
   }
@@ -822,7 +822,7 @@ function createEventSystem(api) {
               operation: api.clone(rule),
               selected_units: [],
           };
-          state.active = card.faction;
+          api.setActiveFaction(state, card.faction);
           api.enterEventFlow(state);
           return;
       }
@@ -842,7 +842,7 @@ function createEventSystem(api) {
               spaces: [],
               required,
           };
-          state.active = api.CP;
+          api.setActiveFaction(state, api.CP);
           api.enterEventFlow(state);
           return;
       }
@@ -861,7 +861,7 @@ function createEventSystem(api) {
                   operation: api.clone(rule),
                   required,
               };
-              state.active = card.faction;
+              api.setActiveFaction(state, card.faction);
               api.enterEventFlow(state);
               return;
           }
@@ -883,7 +883,7 @@ function createEventSystem(api) {
               kind: "gorlitz_mo",
               operation: api.clone(rule),
           };
-          state.active = card.faction;
+          api.setActiveFaction(state, card.faction);
           api.enterEventFlow(state);
           if (gorlitzMoChoices(state).length)
               return;
@@ -935,7 +935,7 @@ function createEventSystem(api) {
               space: null,
           };
           api.enterEventFlow(state);
-          state.active = chooser;
+          api.setActiveFaction(state, chooser);
           api.log(state, `${card.title}：等待事件选择。`);
           return;
       }
@@ -1026,7 +1026,7 @@ function createEventSystem(api) {
       if (pending?.kind === "mo_counterattack") {
           if (id === "skip") {
               state.pending_event = null;
-              state.active = pending.resume.active;
+              api.setActiveFaction(state, pending.resume.active);
               state.ops = pending.resume.ops;
               state.activations = pending.resume.activations;
               state.state = "ops_activate";
@@ -1035,7 +1035,7 @@ function createEventSystem(api) {
           if (id !== "use")
               throw new Error("Invalid US MO counterattack choice");
           state.pending_event = null;
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           state.ops = {
               card: 650,
               total: 0,
@@ -1058,7 +1058,7 @@ function createEventSystem(api) {
               throw new Error("Invalid pre-combat restoration choice");
           const declaration = api.clone(pending.declaration);
           state.pending_event = null;
-          state.active = pending.owner;
+          api.setActiveFaction(state, pending.owner);
           api.openCombatCardWindow(state, declaration);
           return;
       }
@@ -1093,7 +1093,7 @@ function createEventSystem(api) {
               throw new Error("Illegal influenza MO completion");
           pending.mo_selection = { nation, mo };
           pending.stage = "losses";
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           return;
       }
       if (pending?.kind === "desertion_immediate") {
@@ -1346,7 +1346,7 @@ function createEventSystem(api) {
       api.log(state, `[[unit:${replacement.army}]]由[[unit:${unit.id}]]替换。`);
       pending.replacement = null;
       pending.mode = replacement.resume_mode;
-      state.active = replacement.return_active;
+      api.setActiveFaction(state, replacement.return_active);
   }
 
   function eliminateEventArmy(state, pending, unit, resumeMode) {
@@ -1373,7 +1373,7 @@ function createEventSystem(api) {
       }
       pending.replacement = replacement;
       pending.mode = "replacement";
-      state.active = eliminated.faction;
+      api.setActiveFaction(state, eliminated.faction);
   }
 
   function continueMassAttritionLosses(state, pending = state.pending_event) {
@@ -1675,7 +1675,7 @@ function createEventSystem(api) {
           if (!pending.remaining || !pending.candidates.length) {
               const declaration = api.clone(pending.declaration);
               state.pending_event = null;
-              state.active = pending.owner;
+              api.setActiveFaction(state, pending.owner);
               api.openCombatCardWindow(state, declaration);
           }
           return;
@@ -1718,7 +1718,7 @@ function createEventSystem(api) {
           }
           const resumeOpsCard = pending.resume_ops_card;
           state.pending_event = null;
-          state.active = pending.owner;
+          api.setActiveFaction(state, pending.owner);
           if (resumeOpsCard)
               api.beginOps(state, api.effectiveCard(state, api.cardById[resumeOpsCard]));
           else {
@@ -1745,7 +1745,7 @@ function createEventSystem(api) {
               pending.candidates.some((id) => state.units.some((candidate) => candidate.id === id)))
               return;
           state.pending_event = null;
-          state.active = state.combat.attacker;
+          api.setActiveFaction(state, state.combat.attacker);
           if (pending.resume === "finish_combat_sequence")
               api.finishCombatSequence(state);
           else {
@@ -1777,7 +1777,7 @@ function createEventSystem(api) {
               throw new Error("Illegal influenza losses");
           pending.selections[state.active] = ids.slice();
           if (state.active === api.AP) {
-              state.active = api.CP;
+              api.setActiveFaction(state, api.CP);
               return;
           }
           pending.loss_queue = [

@@ -100,7 +100,7 @@ function createFrontSystem(api) {
           queue,
           index: 0,
       };
-      state.active = queue[0];
+      api.setActiveFaction(state, queue[0]);
       state.state = "sr";
       state.phase = "战线战略调动";
       api.log(state, `${api.factionRole(state.active)} 获得战线轨的 1 点即时 SR。`);
@@ -112,7 +112,7 @@ function createFrontSystem(api) {
       state.usage_limits[`front_sr:${state.turn}:${faction}`] = 1;
       state.sr.index += 1;
       if (state.sr.index < state.sr.queue.length) {
-          state.active = state.sr.queue[state.sr.index];
+          api.setActiveFaction(state, state.sr.queue[state.sr.index]);
           state.sr.remaining = 1;
           state.sr.used_units = [];
           state.sr.selected_unit = null;
@@ -318,7 +318,7 @@ function createFrontSystem(api) {
       if (review.index >= review.queue.length)
           return finishFrontMoCommitmentReview(state);
       const next = review.queue[review.index];
-      state.active = next.faction;
+      api.setActiveFaction(state, next.faction);
       state.state = "front_mo_commit";
       state.phase = "战线MO承诺";
   }
@@ -335,7 +335,7 @@ function createFrontSystem(api) {
       if (!queue.length)
           return false;
       state.mo.front_commitment_review = { queue, index: 0 };
-      state.active = queue[0].faction;
+      api.setActiveFaction(state, queue[0].faction);
       state.state = "front_mo_commit";
       state.phase = "战线MO承诺";
       return true;
@@ -543,7 +543,7 @@ function createFrontSystem(api) {
       state.usage_limits[`front_maintenance:${state.turn}`] = 1;
       state.pending_event = null;
       state.state = "replacement";
-      state.active = api.AP;
+      api.setActiveFaction(state, api.AP);
       state.replacement_active = api.AP;
       resolveCommittedFrontMos(state);
       api.continueReplacement(state);
@@ -592,12 +592,12 @@ function createFrontSystem(api) {
       applyCommittedFrontMaintenance(state, state.pending_event);
       state.phase = "战线消耗";
       api.enterEventFlow(state);
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       advanceFrontMaintenance(state);
       if (state.pending_event?.kind === "front_maintenance") {
           const obligation = state.pending_event.obligations[state.pending_event.index];
           state.pending_event.owner = obligation.faction;
-          state.active = obligation.faction;
+          api.setActiveFaction(state, obligation.faction);
           return true;
       }
       return false;
@@ -645,7 +645,7 @@ function createFrontSystem(api) {
       if (state.pending_event?.kind === "front_maintenance") {
           const next = state.pending_event.obligations[state.pending_event.index];
           state.pending_event.owner = next.faction;
-          state.active = next.faction;
+          api.setActiveFaction(state, next.faction);
       }
   }
 
@@ -684,7 +684,7 @@ function createFrontSystem(api) {
       if (state.pending_event?.kind === "front_maintenance") {
           const next = state.pending_event.obligations[state.pending_event.index];
           state.pending_event.owner = next.faction;
-          state.active = next.faction;
+          api.setActiveFaction(state, next.faction);
       }
   }
 
@@ -962,7 +962,7 @@ function createFrontSystem(api) {
       state.pending_event = null;
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = pending.faction;
+      api.setActiveFaction(state, pending.faction);
       state.replacement_active = pending.faction;
   }
 
@@ -997,7 +997,7 @@ function createFrontSystem(api) {
           state.pending_event = null;
           state.phase = "补员/升级";
           state.state = "replacement";
-          state.active = pending.faction;
+          api.setActiveFaction(state, pending.faction);
           state.replacement_active = pending.faction;
           return;
       }

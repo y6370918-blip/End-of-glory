@@ -187,6 +187,10 @@ function createEventStates(api) {
       if (pending?.kind === "scheduled_return") return "部署返场单位。";
       if (pending?.kind === "mo_penalty") return "处理未完成MO。";
       if (pending?.kind === "august_reposition") return "八月炮火：重部署。";
+      if (pending?.kind === "precombat_restore")
+        return `${card?.title || "战前恢复"}：选择恢复单位（剩余${pending.remaining || 0}次）。`;
+      if (pending?.kind === "combat_repair")
+        return `${card?.title || "战斗后修复"}：选择修复单位（剩余${pending.remaining || 0} RP）。`;
       return card?.title || "事件。";
     },
     event_choose(state, id) {
@@ -462,7 +466,7 @@ function createEventStates(api) {
         if (!attackers.length || !unitsAt(state, space, CP).length)
           throw new Error("Counterattack has no legal participants");
         state.pending_event = null;
-        state.active = AP;
+        api.setActiveFaction(state, AP);
         state.combat_window = {
           declaration: { attackers, target: space },
           attacker: AP,
@@ -648,7 +652,7 @@ function createEventStates(api) {
         state.ops.forced_loss_adjust = pending.loss_adjust;
         for (const space of pending.spaces) state.activations[space] = "attack";
         state.pending_event = null;
-        state.active = AP;
+        api.setActiveFaction(state, AP);
         state.state = "ops_activate";
         return;
       }
@@ -756,7 +760,7 @@ function createEventStates(api) {
           if (pending.belgian_units?.length) {
             pending.kind = "august_belgian_relocation";
             pending.chooser = AP;
-            state.active = AP;
+            api.setActiveFaction(state, AP);
           } else {
             pending.kind = "august_reposition";
             pending.units = [];

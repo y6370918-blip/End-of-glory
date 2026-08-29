@@ -280,7 +280,13 @@ function createCombatStates(api) {
     },
 
     combat_card_window: {
-      message: "选择战斗牌。",
+      message(state) {
+        const window = state.combat_window;
+        const target = window?.declaration?.target;
+        const place = api.spaceById[target]?.name || target || "未知地区";
+        const side = state.active === window?.attacker ? "进攻方" : "防守方";
+        return `战斗：${place}（${side}选择战斗牌）`;
+      },
       prompt(state, builder) {
         const legal = [
           ...state.hands[state.active],
@@ -321,7 +327,10 @@ function createCombatStates(api) {
     },
 
     post_combat_card_window: {
-      message: "战后战斗牌。",
+      message(state) {
+        const place = api.spaceById[state.combat?.target]?.name || state.combat?.target || "未知地区";
+        return `战斗：${place}（选择战后战斗牌）`;
+      },
       prompt(state, builder) {
         builder.addAll(
           "combat_card",
@@ -390,111 +399,18 @@ function createCombatStates(api) {
       },
     },
 
-    retreat: {
-      message: "撤退。",
+    retreat_cancel: {
+      message: "防守方可以承受一步损失取消整次撤退。",
       prompt(state, builder) {
         const pending = state.pending_retreat;
-        const hasRetreated = Object.values(pending.paths || {}).some(
-          (path) => Array.isArray(path) && path.length > 1,
-        );
-        if (pending.optional && !hasRetreated) builder.enable("decline_retreat");
-        pending.selected_units ||= [];
-        const selected = pending.selected_units;
-        if (selected.length) {
-          const locked = (pending.paths?.[selected[0]]?.length || 1) > 1;
-          if (!locked) builder.addAll("deselect_retreat_unit", selected);
-          const distance = Number(pending.remaining?.[selected[0]]);
-          for (const id of pending.units) {
-            if (selected.includes(id)) continue;
-            const unit = api.findUnit(state, id);
-            const first = api.findUnit(state, selected[0]);
-            if (!unit || !first || unit.location !== first.location) continue;
-            if (pending.remaining?.[id] == null && pending.choices?.includes(distance)) {
-              if (api.retreatGroupDestinations(state, [...selected, id], distance).length)
-                builder.add(distance === 1 ? "select_retreat_one" : "select_retreat_two", id);
-              continue;
-            }
-            if (Number(pending.remaining?.[id]) !== distance) continue;
-            if (api.retreatGroupDestinations(state, [...selected, id], distance).length)
-              builder.add("select_retreat_unit", id);
-          }
-          builder.addAll("retreat_destination", api.retreatGroupDestinations(state, selected));
-        } else {
-          for (const id of pending.units) {
-            const remaining = Number(pending.remaining?.[id]);
-            if (Number.isInteger(remaining) && remaining > 0) {
-              if (api.retreatUnitHasRoute(state, id, remaining))
-                builder.add("select_retreat_unit", id);
-              else builder.add("eliminate", id);
-              continue;
-            }
-            const legalDistances = (pending.choices || []).filter((distance) =>
-              api.retreatUnitHasRoute(state, id, distance),
-            );
-            if (legalDistances.includes(1)) builder.add("select_retreat_one", id);
-            if (legalDistances.includes(2)) builder.add("select_retreat_two", id);
-            if (!legalDistances.length) builder.add("eliminate", id);
-          }
-        }
-        if (pending.can_cancel_with_loss)
-          builder.addAll("cancel_retreat", pending.units.filter((id) => api.canCancelRetreatWithUnit(state, id)));
-      },
-      decline_retreat(state) {
-        const pending = state.pending_retreat;
-        const hasRetreated = Object.values(pending?.paths || {}).some(
-          (path) => Array.isArray(path) && path.length > 1,
-        );
-        if (!pending?.optional || hasRetreated)
-          throw new Error("Retreat can no longer be declined");
-        api.clearUndo(state);
-        api.finishCombatSequence(state);
-      },
-      select_retreat_unit(state, id) {
-        const pending = state.pending_retreat;
-        const remaining = Number(pending.remaining?.[id]);
-        if (!Number.isInteger(remaining) || remaining <= 0 || !api.retreatUnitHasRoute(state, id, remaining))
-          throw new Error("Unit has no complete legal retreat path");
-        pending.selected_units ||= [];
-        const projected = [...pending.selected_units, id];
-        if (pending.selected_units.length && !api.retreatGroupDestinations(state, projected).length)
-          throw new Error("Units do not share a complete legal retreat path");
-        if (!pending.selected_units.includes(id)) pending.selected_units.push(id);
-      },
-      select_retreat_one(state, id) {
-        const pending = state.pending_retreat;
-        if (!pending.choices?.includes(1) || pending.remaining?.[id] != null || !api.retreatUnitHasRoute(state, id, 1))
-          throw new Error("One-space retreat is not legal");
-        pending.selected_units ||= [];
-        const projected = [...pending.selected_units, id];
-        if (pending.selected_units.length && !api.retreatGroupDestinations(state, projected, 1).length)
-          throw new Error("Units do not share a complete one-space retreat path");
-        pending.remaining[id] = 1;
-        if (!pending.selected_units.includes(id)) pending.selected_units.push(id);
-      },
-      select_retreat_two(state, id) {
-        const pending = state.pending_retreat;
-        if (!pending.choices?.includes(2) || pending.remaining?.[id] != null || !api.retreatUnitHasRoute(state, id, 2))
-          throw new Error("Two-space retreat is not legal");
-        pending.selected_units ||= [];
-        const projected = [...pending.selected_units, id];
-        if (pending.selected_units.length && !api.retreatGroupDestinations(state, projected, 2).length)
-          throw new Error("Units do not share a complete two-space retreat path");
-        pending.remaining[id] = 2;
-        if (!pending.selected_units.includes(id)) pending.selected_units.push(id);
-      },
-      deselect_retreat_unit(state, id) {
-        const pending = state.pending_retreat;
-        pending.selected_units ||= [];
-        if (!pending.selected_units.includes(id)) throw new Error("Unit is not selected");
-        if ((pending.paths?.[id]?.length || 1) > 1)
-          throw new Error("A retreat group cannot split after moving");
-        if (pending.choices && (pending.paths?.[id]?.length || 0) <= 1)
-          pending.remaining[id] = null;
-        pending.selected_units = pending.selected_units.filter((unitId) => unitId !== id);
+        builder.addAll("cancel_retreat", (pending.units || []).filter((id) =>
+          api.canCancelRetreatWithUnit(state, id),
+        ));
+        builder.enable("proceed_retreat");
       },
       cancel_retreat(state, id) {
         const pending = state.pending_retreat;
-        if (!api.canCancelRetreatWithUnit(state, id))
+        if (pending?.mode !== "mandatory" || !api.canCancelRetreatWithUnit(state, id))
           throw new Error("This unit cannot cancel the retreat");
         api.snapshot(state, "取消撤退损失");
         state.combat.pending_side = pending.faction;
@@ -505,9 +421,95 @@ function createCombatStates(api) {
         }
         api.finishCombatSequence(state);
       },
+      proceed_retreat(state) {
+        const pending = state.pending_retreat;
+        if (pending?.mode !== "mandatory")
+          throw new Error("Only a mandatory retreat may proceed from this state");
+        api.snapshot(state, "继续撤退");
+        pending.cancel_stage_complete = true;
+        state.state = "retreat";
+      },
+    },
+
+    retreat: {
+      message: "逐单位撤退。",
+      prompt(state, builder) {
+        const pending = state.pending_retreat;
+        const selected = pending.selected_unit;
+        if (selected) {
+          builder.add("deselect_retreat_unit", selected);
+          builder.addAll("retreat_destination", api.retreatDestinations(state, api.findUnit(state, selected)));
+          if (pending.mode === "movement_optional")
+            builder.enable("decline_optional_retreat");
+          return;
+        }
+        for (const id of pending.units || []) {
+          const unit = api.findUnit(state, id);
+          if (!unit) continue;
+          const remaining = Number(pending.remaining?.[id]);
+          if (Number.isInteger(remaining) && remaining > 0) {
+            if (pending.mode === "movement_optional" || api.retreatUnitHasRoute(state, id, remaining))
+              builder.add("select_retreat_unit", id);
+            else if (api.isCombatUnit(unit))
+              builder.add("eliminate", id);
+            continue;
+          }
+          const legalDistances = (pending.choices || []).filter((distance) =>
+            api.retreatUnitHasRoute(state, id, distance),
+          );
+          if (legalDistances.includes(1)) builder.add("select_retreat_one", id);
+          if (legalDistances.includes(2)) builder.add("select_retreat_two", id);
+          if (!legalDistances.length && api.isCombatUnit(unit)) builder.add("eliminate", id);
+        }
+      },
+      select_retreat_unit(state, id) {
+        const pending = state.pending_retreat;
+        const remaining = Number(pending.remaining?.[id]);
+        if (pending?.selected_unit || !pending?.units?.includes(id) ||
+            !Number.isInteger(remaining) || remaining <= 0 ||
+            (pending.mode !== "movement_optional" && !api.retreatUnitHasRoute(state, id, remaining)))
+          throw new Error("Unit has no complete legal retreat path");
+        pending.selected_unit = id;
+      },
+      select_retreat_one(state, id) {
+        const pending = state.pending_retreat;
+        if (pending?.selected_unit || !pending.choices?.includes(1) ||
+            pending.remaining?.[id] != null || !api.retreatUnitHasRoute(state, id, 1))
+          throw new Error("One-space retreat is not legal");
+        pending.remaining[id] = 1;
+        pending.selected_unit = id;
+      },
+      select_retreat_two(state, id) {
+        const pending = state.pending_retreat;
+        if (pending?.selected_unit || !pending.choices?.includes(2) ||
+            pending.remaining?.[id] != null || !api.retreatUnitHasRoute(state, id, 2))
+          throw new Error("Two-space retreat is not legal");
+        pending.remaining[id] = 2;
+        pending.selected_unit = id;
+      },
+      deselect_retreat_unit(state, id) {
+        const pending = state.pending_retreat;
+        if (pending?.selected_unit !== id) throw new Error("Unit is not selected");
+        pending.selected_unit = null;
+      },
+      decline_optional_retreat(state) {
+        const pending = state.pending_retreat;
+        const id = pending?.selected_unit;
+        if (pending?.mode !== "movement_optional" || !id || !pending.units.includes(id))
+          throw new Error("No optional retreat unit is selected");
+        api.snapshot(state, "该单位不撤退");
+        pending.declined_units ||= [];
+        if (!pending.declined_units.includes(id)) pending.declined_units.push(id);
+        pending.units = pending.units.filter((unitId) => unitId !== id);
+        pending.selected_unit = null;
+        api.log(state, `[[unit:${id}]]选择不撤退。`);
+        if (!pending.units.length) api.finishAllRetreats(state);
+      },
       eliminate(state, id) {
         const pending = state.pending_retreat;
-        if (!pending.units.includes(id)) throw new Error("Unit is not retreating");
+        const unit = api.findUnit(state, id);
+        if (pending?.mode !== "mandatory" || !pending.units.includes(id) || !api.isCombatUnit(unit))
+          throw new Error("Unit is not subject to mandatory retreat elimination");
         const distances = pending.remaining?.[id] != null
           ? [Number(pending.remaining[id])]
           : (pending.choices || [Number(pending.steps || 1)]);
@@ -516,44 +518,37 @@ function createCombatStates(api) {
         api.snapshot(state, "无法撤退消灭");
         api.eliminateUnit(state, id, "无法撤退");
         pending.units = pending.units.filter((unitId) => unitId !== id);
-        pending.selected_units = (pending.selected_units || []).filter((unitId) => unitId !== id);
+        if (pending.selected_unit === id) pending.selected_unit = null;
         if (!pending.units.length) api.finishAllRetreats(state);
       },
       retreat_destination(state, destination) {
         const pending = state.pending_retreat;
-        const ids = (pending.selected_units || []).slice();
-        if (!ids.length || !api.retreatGroupDestinations(state, ids).includes(destination))
+        const id = pending?.selected_unit;
+        const unit = id && api.findUnit(state, id);
+        if (!unit || !api.retreatDestinations(state, unit).includes(destination))
           throw new Error("Illegal retreat destination");
         const firstRetreatStep = !Object.values(pending.paths || {}).some(
           (path) => Array.isArray(path) && path.length > 1,
         );
         if (firstRetreatStep) api.clearUndo(state);
         api.snapshot(state, "撤退一步");
-        for (const id of ids) {
-          const unit = api.findUnit(state, id);
-          const origin = unit.location;
-          unit.location = destination;
-          state.combat.resolution_events ||= [];
-          state.combat.resolution_events.push({ kind: "retreat", side: unit.faction, unit: id, from: origin, to: destination });
-          pending.paths[id] ||= [pending.from];
-          pending.paths[id].push(destination);
-          pending.remaining[id] = Math.max(0, Number(pending.remaining[id]) - 1);
-          api.log(state, `[[unit:${id}]]撤退：[[space:${origin}]] → [[space:${destination}]]。`);
-        }
-        const final = ids.every((id) => pending.remaining[id] === 0);
+        const origin = unit.location;
+        unit.location = destination;
+        state.combat.resolution_events ||= [];
+        state.combat.resolution_events.push({ kind: "retreat", side: unit.faction, unit: id, from: origin, to: destination });
+        pending.paths[id] ||= [pending.from];
+        pending.paths[id].push(destination);
+        pending.remaining[id] = Math.max(0, Number(pending.remaining[id]) - 1);
+        pending.selected_unit = null;
+        api.log(state, `[[unit:${id}]]撤退：[[space:${origin}]] → [[space:${destination}]]。`);
+        const final = pending.remaining[id] === 0;
         if (api.retreatSpaceOverstacked(state, destination, pending.faction)) {
-          pending.overstack = {
-            space: destination,
-            unit: ids[0],
-            group: ids,
-            final,
-          };
-          state.active = pending.faction;
+          pending.overstack = { space: destination, unit: id, group: [id], final };
+          api.setActiveFaction(state, pending.faction);
           state.state = "retreat_overstack";
-        } else if (final) api.finishRetreatGroup(state, ids);
+        } else if (final) api.finishRetreatUnit(state, id);
         else {
-          pending.selected_units = ids;
-          state.active = pending.faction;
+          api.setActiveFaction(state, pending.faction);
           state.state = "retreat";
         }
       },

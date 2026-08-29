@@ -318,7 +318,7 @@ function createMoSystem(api) {
       };
       state.phase = "未完成强制进攻";
       api.enterEventFlow(state);
-      state.active = chooser;
+      api.setActiveFaction(state, chooser);
       return true;
   }
 
@@ -464,7 +464,7 @@ function createMoSystem(api) {
       state.mo.review.confirmed.push(faction);
       api.log(state, `${api.factionRole(faction)}已确认本回合私有强制进攻。`);
       if (faction === api.CP) {
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           return;
       }
       api.startNaval(state);

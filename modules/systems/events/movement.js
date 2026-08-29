@@ -21,7 +21,7 @@ function createMovementEventSystem(api) {
           cards: [...new Set(candidates)],
           locked: true,
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
       return true;
   }
@@ -40,7 +40,7 @@ function createMovementEventSystem(api) {
           unit: null,
           locked: true,
       };
-      state.active = api.AP;
+      api.setActiveFaction(state, api.AP);
       api.enterEventFlow(state);
       if (!state.pending_event.queue.length) {
           if (!beginWhiteFeatherSearch(state, card, operation))
@@ -107,7 +107,7 @@ function createMovementEventSystem(api) {
           operation: api.clone(operation),
           mode: null,
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
   }
 
@@ -121,7 +121,7 @@ function createMovementEventSystem(api) {
           operation: api.clone(operation),
           space: null,
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
   }
 
@@ -197,7 +197,7 @@ function createMovementEventSystem(api) {
           origin_enemy_distance: null,
           markers: [],
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
   }
 
@@ -427,7 +427,7 @@ function createMovementEventSystem(api) {
           pending.selected_units = [];
           pending.owner = api.CP;
           pending.chooser = api.CP;
-          state.active = api.CP;
+          api.setActiveFaction(state, api.CP);
       }
   }
 

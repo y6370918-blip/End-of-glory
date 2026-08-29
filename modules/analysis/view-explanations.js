@@ -112,7 +112,7 @@ function candidateNeighbors(state, context) {
       if (unit?.location) origins.add(unit.location);
     }
   } else if (state.state === "retreat") {
-    for (const id of state.pending_retreat?.selected_units || []) {
+    for (const id of [state.pending_retreat?.selected_unit].filter(Boolean)) {
       const unit = state.units.find((candidate) => candidate.id === id);
       if (unit?.location) origins.add(unit.location);
     }
@@ -200,7 +200,7 @@ function pieceContext(state, actions, result, context) {
   if (["ops_move", "movement_units"].includes(state.state)) relevantAction = "select_move_unit";
   else if (state.state === "ops_attack") relevantAction = "select_attacker";
   else if (state.state === "sr") relevantAction = "select_sr_unit";
-  else if (state.state === "retreat" && !state.pending_retreat?.selected_units?.length)
+  else if (state.state === "retreat" && !state.pending_retreat?.selected_unit)
     relevantAction = "select_retreat_unit";
   else if (state.state === "advance_select") relevantAction = "select_advance_unit";
   if (!relevantAction) return;

@@ -8,7 +8,9 @@ const ui = {
 	mouseFocus: false,
 	counterVisibility: 0,
 	supplyOverlayFaction: null,
-	supplyOverlaySpaces: new Set()
+	supplyOverlaySpaces: new Set(),
+	actionPending: false,
+	autoFocusSignature: null
 }
 
 let targetIndex = { spaces: new Map(), pieces: new Map(), cards: new Map(), options: new Map() }
@@ -116,11 +118,18 @@ function actionIncludes(name, value) {
 }
 
 function perform(name, arg) {
+	if (ui.actionPending) return false
 	if (arg !== undefined && arg !== null && !["string", "number"].includes(typeof arg)) return
 	if (!EogActionProtocol.allows(view?.actions, name, arg)) return
 	hideActivationMenu()
-	if (arg === undefined || arg === null) send_action(name)
-	else send_action(name, arg)
+	const sent = arg === undefined || arg === null
+		? send_action(name)
+		: send_action(name, arg)
+	if (sent === true) {
+		ui.actionPending = true
+		document.body.classList.add("action-pending")
+	}
+	return sent
 }
 
 function sourceToDisplay(value) {
@@ -160,8 +169,9 @@ function renderSpaces() {
 		const blocked = !selectable && hints.length > 0
 		const important = hints.some((entry) => entry.importance === "important")
 		const attackTarget = view.pending_attack?.target === space.id
+		const combatLocation = view.combat_context?.target === space.id
 		const supplyOverlay = ui.supplyOverlaySpaces.has(space.id) ? ` supply-overlay-${ui.supplyOverlayFaction}` : ""
-		button.className = `space${selectable ? " legal" : ""}${blocked ? important ? " blocked important" : " blocked" : ""}${attackTarget ? " attack-target" : ""}${warnings.has(space.id) ? " supply-warning" : ""}${supplyOverlay}`
+		button.className = `space${selectable ? " legal" : ""}${blocked ? important ? " blocked important" : " blocked" : ""}${attackTarget ? " attack-target" : ""}${combatLocation ? " combat-location" : ""}${warnings.has(space.id) ? " supply-warning" : ""}${supplyOverlay}`
 		EogClientUi.decorateTarget(button, { legal: selectable, hints })
 		Object.assign(button.style, mapPosition(space), mapSize(space, selectable))
 		const fortLabel = Number(space.fort) > 0 ? ` · 要塞${space.fort}` : ""
@@ -915,7 +925,7 @@ function updateStack(key, frame) {
 	}
 	const element = ensureStackElement(key)
 	const focused = ui.focusedStackKey === key && stackMemberCount(frame) > 1
-	element.className = `piece-stack${frame.zone === "reserve" ? " reserve-stack" : ""}${frame.zone === "eliminated" ? " eliminated-stack" : ""}${frame.zone === "upgrade" ? " upgrade-stack" : ""}${frame.legal ? " space-legal" : ""}${frame.advanceCandidate ? " advance-candidate-stack" : ""}${frame.retreatCandidate ? " retreat-candidate-stack" : ""}${focused ? " expanded" : ""}`
+	element.className = `piece-stack${frame.zone === "reserve" ? " reserve-stack" : ""}${frame.zone === "eliminated" ? " eliminated-stack" : ""}${frame.zone === "upgrade" ? " upgrade-stack" : ""}${frame.legal ? " space-legal" : ""}${frame.pieceActionable ? " piece-actionable" : ""}${frame.advanceCandidate ? " advance-candidate-stack" : ""}${frame.retreatCandidate ? " retreat-candidate-stack" : ""}${focused ? " expanded" : ""}`
 	element.dataset.count = String(frame.unitIds.length)
 	element.dataset.stacked = String(stackMemberCount(frame) > 1)
 	let contextLabel
@@ -970,6 +980,18 @@ function updateStack(key, frame) {
 function updatePieceScene() {
 	collectUnitIndex()
 	const nextScene = EogPieceScene.buildScene(view, targetIndex, eog_data)
+	const actionableIds = [...nextScene.units.values()]
+		.filter((unit) => unit.legal)
+		.map((unit) => String(unit.id))
+		.sort()
+	const actionableSignature = `${view.state || ""}:${actionableIds.join(",")}`
+	if (actionableSignature !== ui.autoFocusSignature) {
+		ui.autoFocusSignature = actionableSignature
+		const actionableStacks = [...nextScene.stacks.values()]
+			.filter((stack) => stack.pieceActionable)
+		if (actionableStacks.length === 1 && stackMemberCount(actionableStacks[0]) > 1)
+			ui.focusedStackKey = actionableStacks[0].key
+	}
 	if (ui.focusedStackKey && stackMemberCount(nextScene.stacks.get(ui.focusedStackKey)) <= 1)
 		ui.focusedStackKey = null
 	const dirty = EogPieceScene.diffScenes(currentPieceScene, nextScene, renderedFocusKey, ui.focusedStackKey)
@@ -1024,6 +1046,10 @@ function onUnit(id, event) {
 	const pieceEntries = targetIndex.pieces.get(id) || []
 	const focused = ui.focusedStackKey === frame.stackKey
 	if (!focused && stackMemberCount(stack) > 1) {
+		if (stack?.pieceActionable) {
+			focusStack(frame.stackKey)
+			return
+		}
 		if (spaceEntries.length) return dispatchTargetEntries(spaceEntries, event, spaceById[unit.location]?.name || unit.location)
 		focusStack(frame.stackKey)
 		return
@@ -2153,6 +2179,8 @@ function mountAdaptiveBoardPanels() {
 
 function onUpdate() {
 	if (!window.view) return
+	ui.actionPending = false
+	document.body.classList.remove("action-pending")
 	const activeFaction = factionCode(view.active)
 	document.body.classList.toggle("active-ap", activeFaction === "ap")
 	document.body.classList.toggle("active-cp", activeFaction === "cp")

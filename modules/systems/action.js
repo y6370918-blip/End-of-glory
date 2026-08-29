@@ -216,7 +216,7 @@ function createActionSystem(api) {
           return_phase: state.phase,
           index,
       };
-      state.active = api.other(state.active);
+      api.setActiveFaction(state, api.other(state.active));
       state.state = "review_rollback_proposal";
       state.phase = "审查回滚提议";
   }
@@ -225,7 +225,7 @@ function createActionSystem(api) {
       const proposal = state.rollback_proposal;
       if (!proposal || proposal.reviewer !== state.active)
           throw new Error("No rollback proposal is awaiting review");
-      state.active = proposal.proposer;
+      api.setActiveFaction(state, proposal.proposer);
       state.state = proposal.return_state;
       state.phase = proposal.return_phase;
       state.rollback_proposal = null;

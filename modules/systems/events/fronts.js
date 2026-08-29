@@ -10,7 +10,7 @@ function createFrontEventSystem(api) {
           source: "event",
           resume_event: { card: card.id, operation: api.clone(operation) },
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       state.state = "sr";
   }
 

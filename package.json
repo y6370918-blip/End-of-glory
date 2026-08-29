@@ -22,8 +22,10 @@
 		"test:campaign": "node tools/run_campaign_tests.mjs",
 		"test:e2e": "playwright test --grep-invert=@visual",
 		"test:visual": "playwright test --grep=@visual",
+		"migrate:rtt-active": "node migrate-rtt-active-v47.mjs",
+		"audit:rtt-active": "node audit-rtt-active.mjs",
 		"typecheck": "tsc -p tsconfig.json",
-		"lint": "eslint ."
+		"lint": "eslint . && npm run audit:rtt-active"
 	},
 	"engines": {
 		"node": ">=22"

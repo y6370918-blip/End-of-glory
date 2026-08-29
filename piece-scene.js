@@ -179,6 +179,7 @@
 			stack.unitIds.sort((a, b) => compareUnits(visibleById.get(a), visibleById.get(b), pieces))
 		for (const stack of stacks.values()) {
 			const kinds = stack.unitIds.flatMap((id) => units.get(id)?.actionKinds || [])
+			stack.pieceActionable = kinds.length > 0
 			stack.advanceCandidate = kinds.includes("select_advance_unit")
 			stack.retreatCandidate = kinds.some((action) =>
 				["select_retreat_unit", "select_retreat_one", "select_retreat_two"].includes(action),
@@ -216,6 +217,7 @@
 			a.type === b.type &&
 			a.face === b.face &&
 			a.legal === b.legal &&
+			a.pieceActionable === b.pieceActionable &&
 			a.advanceCandidate === b.advanceCandidate &&
 			a.retreatCandidate === b.retreatCandidate &&
 			equalArrays(a.unitIds, b.unitIds) &&

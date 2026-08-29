@@ -27,7 +27,23 @@ function createTurnSystem(api) {
       return true;
   }
 
+  function resolvePendingCommitmentShuffle(state, faction) {
+      if (!state.pending_commitment_shuffle?.[faction])
+          return false;
+      const activeCombatCards = activeCombatCardIds(state);
+      const recyclable = state.discard[faction].filter((id) => !activeCombatCards.has(id));
+      state.decks[faction] = api.shuffle(state, [
+          ...state.decks[faction],
+          ...recyclable,
+      ]);
+      state.discard[faction] = state.discard[faction].filter((id) => activeCombatCards.has(id));
+      state.pending_commitment_shuffle[faction] = false;
+      api.log(state, `${api.factionRole(faction)}战争承诺牌库与弃牌堆重新洗牌。`);
+      return true;
+  }
+
   function drawCards(state, faction, target = api.data.title.hand_size || 9) {
+      resolvePendingCommitmentShuffle(state, faction);
       while (state.hands[faction].length < target) {
           if (!state.decks[faction].length && !recycleDiscardIntoDeck(state, faction))
               break;
@@ -53,7 +69,7 @@ function createTurnSystem(api) {
       api.drawMo(state);
       state.phase = "强制进攻";
       state.state = "mo_review";
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       api.checkpoint(state, "turn", "T1");
       api.log(state, "《荣耀终结》1914 Historical 开局。");
   }
@@ -69,7 +85,7 @@ function createTurnSystem(api) {
       state.opening[faction === api.AP ? "ap_card" : "cp_august_guns"] = id;
       if (faction === api.AP) {
           state.state = "opening_cp_august_guns";
-          state.active = api.CP;
+          api.setActiveFaction(state, api.CP);
           return;
       }
       finishOpeningSelection(state);
@@ -114,10 +130,11 @@ function createTurnSystem(api) {
           card.commitment === commitment &&
           !existing.has(card.id))
           .map((card) => card.id);
-      state.decks[faction] = api.shuffle(state, [
-          ...state.decks[faction],
-          ...additions,
-      ]);
+      if (!additions.length)
+          return;
+      state.decks[faction].push(...additions);
+      state.pending_commitment_shuffle ||= { ap: false, cp: false };
+      state.pending_commitment_shuffle[faction] = true;
   }
 
   function populateVeteranUpgradePool(state, faction) {
@@ -148,7 +165,7 @@ function createTurnSystem(api) {
   }
 
   function enterFactionAction(state, faction) {
-      state.active = faction;
+      api.setActiveFaction(state, faction);
       state.state = "action_card";
       state.activations = {};
       state.ops = null;
@@ -221,7 +238,7 @@ function createTurnSystem(api) {
               reviewer: api.other(state.active),
               return_phase: state.phase,
           };
-          state.active = api.other(state.active);
+          api.setActiveFaction(state, api.other(state.active));
           state.state = "review_supply_warnings";
           state.phase = "补给警告确认";
           api.log(state, `${api.factionRole(warnings.owner)}标记补给警告：${warnings.spaces
@@ -256,7 +273,7 @@ function createTurnSystem(api) {
               cards: state.hands.cp.slice(),
           };
           api.enterEventFlow(state);
-          state.active = api.CP;
+          api.setActiveFaction(state, api.CP);
           state.phase = "德军最高统帅部";
           return;
       }
@@ -283,7 +300,7 @@ function createTurnSystem(api) {
   function resolveAttrition(state, factions = [api.CP, api.AP]) {
       state.phase = "损耗阶段";
       state.state = "automatic";
-      state.active = api.NONE;
+      api.setActiveFaction(state, api.NONE);
       for (const faction of factions)
           resolveFactionAttrition(state, faction);
       if (factions.includes(api.AP) &&
@@ -317,7 +334,7 @@ function createTurnSystem(api) {
       state.voluntary_cleanup = { faction, continuation };
       state.phase = "自愿清理";
       state.state = "voluntary_cleanup";
-      state.active = faction;
+      api.setActiveFaction(state, faction);
       return true;
   }
 
@@ -380,7 +397,7 @@ function createTurnSystem(api) {
               index: 0,
               placements: [],
           };
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           api.enterEventFlow(state);
           return true;
       }
@@ -421,7 +438,7 @@ function createTurnSystem(api) {
       state.pending_event = null;
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       state.replacement_active = api.CP;
   }
 
@@ -459,7 +476,7 @@ function createTurnSystem(api) {
           queue,
           index: 0,
       };
-      state.active = first.faction;
+      api.setActiveFaction(state, first.faction);
       api.enterEventFlow(state);
       return true;
   }
@@ -479,13 +496,13 @@ function createTurnSystem(api) {
       if (pending.index < pending.queue.length) {
           const next = pendingReturnHq(state, pending);
           pending.owner = next.faction;
-          state.active = next.faction;
+          api.setActiveFaction(state, next.faction);
           return;
       }
       state.pending_event = null;
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       state.replacement_active = api.CP;
       api.continueReplacement(state);
   }
@@ -510,7 +527,7 @@ function createTurnSystem(api) {
       };
       state.phase = "保加利亚战线响应";
       api.enterEventFlow(state);
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       return true;
   }
 
@@ -520,7 +537,7 @@ function createTurnSystem(api) {
       if (queue.length) {
           state.draw_discard = { queue, index: 0 };
           state.state = "draw_discard";
-          state.active = queue[0];
+          api.setActiveFaction(state, queue[0]);
           return;
       }
       finishDrawPhase(state);
@@ -531,7 +548,7 @@ function createTurnSystem(api) {
           throw new Error("No combat-card discard phase");
       state.draw_discard.index += 1;
       if (state.draw_discard.index < state.draw_discard.queue.length) {
-          state.active = state.draw_discard.queue[state.draw_discard.index];
+          api.setActiveFaction(state, state.draw_discard.queue[state.draw_discard.index]);
           return;
       }
       state.draw_discard = null;
@@ -541,7 +558,7 @@ function createTurnSystem(api) {
   function finishDrawPhase(state) {
       state.phase = "抽牌";
       state.state = "automatic";
-      state.active = api.NONE;
+      api.setActiveFaction(state, api.NONE);
       discardRetainedCombatCards(state);
       for (const faction of [api.AP, api.CP]) {
           drawCards(state, faction);
@@ -570,7 +587,7 @@ function createTurnSystem(api) {
       api.drawMo(state);
       state.phase = "强制进攻";
       state.state = "mo_review";
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
   }
 
   function beginScheduledReturns(state) {
@@ -587,7 +604,7 @@ function createTurnSystem(api) {
           };
           state.phase = "保加利亚后续";
           api.enterEventFlow(state);
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           return true;
       }
       const cards = state.scheduled_events.filter((entry) => entry.kind === "card_return" && entry.due_turn <= state.turn);
@@ -632,7 +649,7 @@ function createTurnSystem(api) {
       };
       state.phase = "延迟增援";
       api.enterEventFlow(state);
-      state.active = faction;
+      api.setActiveFaction(state, faction);
       api.log(state, `${api.factionRole(faction)} 部署本回合返场单位。`);
       return true;
   }
@@ -770,7 +787,7 @@ function createTurnSystem(api) {
   function gameOver(state, winner, reason) {
       state.state = "game_over";
       state.phase = "游戏结束";
-      state.active = api.NONE;
+      api.setActiveFaction(state, api.NONE);
       state.result = api.factionRole(winner);
       state.victory = reason;
       api.log(state, reason);
@@ -813,6 +830,7 @@ return Object.freeze({
     populateVeteranUpgradePool,
     resolveAttrition,
     resolveFactionAttrition,
+    resolvePendingCommitmentShuffle,
     setupDeck,
     selectOpeningCard,
     skipAugustGuns,

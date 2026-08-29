@@ -39,6 +39,13 @@ const {
   unique,
 } = require("./modules/core/utils.js");
 const {
+  activeFaction,
+  normalizeRttActive,
+  setActiveFaction,
+  syncRttActive,
+  syncStoredSnapshot,
+} = require("./modules/core/active-role.js");
+const {
   captureLegacyMiracleResume,
 } = require("./modules/core/save-migrations.js");
 const { createCombatSystem } = require("./modules/systems/combat.js");
@@ -88,10 +95,17 @@ const moById = Object.fromEntries(
 );
 const CardZones = createCardZoneSystem({ data, AP, CP, cardById });
 const AUTO_CARD_CONSERVATION = !process.env.NODE_TEST_CONTEXT;
+const EXPOSE_RTT_ACTIVE =
+  !process.env.NODE_TEST_CONTEXT || process.env.EOG_TEST_RTT_ACTIVE === "1";
 let undoActionContext = null;
+
+function exposeRttState(state) {
+  return EXPOSE_RTT_ACTIVE ? syncRttActive(state) : state;
+}
 
 function ensureState(state) {
   if (!state) return state;
+  normalizeRttActive(state);
   const previousVersion = Number(state.version) || 0;
   if (!state.opening) state.opening = {};
   if (!state.action_state) {
@@ -139,6 +153,14 @@ function ensureState(state) {
   if (!state.pending_combat_card_disposition)
     state.pending_combat_card_disposition = null;
   if (!state.draw_discard) state.draw_discard = null;
+  if (!state.pending_commitment_shuffle)
+    state.pending_commitment_shuffle = { ap: false, cp: false };
+  state.pending_commitment_shuffle.ap = Boolean(
+    state.pending_commitment_shuffle.ap,
+  );
+  state.pending_commitment_shuffle.cp = Boolean(
+    state.pending_commitment_shuffle.cp,
+  );
   if (!state.voluntary_cleanup) state.voluntary_cleanup = null;
   if (!state.event_history) state.event_history = [];
   if (!state.permanently_removed_units) state.permanently_removed_units = [];
@@ -224,11 +246,15 @@ function ensureState(state) {
     );
     state.pending_retreat.advanced_ids ||= [];
     state.pending_retreat.selected_advance_units ||= [];
-    if (!Array.isArray(state.pending_retreat.selected_units))
-      state.pending_retreat.selected_units = state.pending_retreat.selected_unit
-        ? [state.pending_retreat.selected_unit]
-        : [];
-    delete state.pending_retreat.selected_unit;
+    if (previousVersion < 49) {
+      if (!Array.isArray(state.pending_retreat.selected_units))
+        state.pending_retreat.selected_units = state.pending_retreat.selected_unit
+          ? [state.pending_retreat.selected_unit]
+          : [];
+    } else {
+      state.pending_retreat.selected_unit ||= null;
+      delete state.pending_retreat.selected_units;
+    }
     delete state.pending_retreat.selected_distance;
   }
   // Saves made while an orphaned defending HQ interrupted a vacant-space
@@ -297,7 +323,7 @@ function ensureState(state) {
     )
   ) {
     const resume = captureLegacyMiracleResume(state);
-    state.active = CP;
+    setActiveFaction(state, CP);
     state.ops = resume.ops;
     state.activations = resume.activations;
     if (state.ops.execution_phase === "attack") state.state = "ops_attack";
@@ -387,7 +413,7 @@ function ensureState(state) {
   }
   if (previousVersion < 10 && state.state === "mo_review") {
     state.mo.review.confirmed = [];
-    state.active = CP;
+    setActiveFaction(state, CP);
   }
   if (previousVersion < 13) {
     for (const [nation, current] of Object.entries(state.mo.current || {})) {
@@ -448,7 +474,7 @@ function ensureState(state) {
         } else {
           pending.offer = null;
           pending.phase = "select";
-          state.active = pending.faction;
+          setActiveFaction(state, pending.faction);
           state.state = "retreat_select";
         }
       } else {
@@ -514,7 +540,7 @@ function ensureState(state) {
         if (index >= 0) pool.splice(index, 1);
       }
       if (!state.hands.cp.includes(719)) state.hands.cp.push(719);
-      state.active = CP;
+      setActiveFaction(state, CP);
       state.state = "action_card";
       state.phase = "行动阶段";
     }
@@ -538,11 +564,11 @@ function ensureState(state) {
       pending.offer = null;
       if (pending.group?.units?.length) {
         pending.phase = "move";
-        state.active = pending.faction;
+        setActiveFaction(state, pending.faction);
         state.state = "retreat_move";
       } else {
         pending.phase = "select";
-        state.active = pending.faction;
+        setActiveFaction(state, pending.faction);
         state.state = "retreat_select";
       }
     }
@@ -654,7 +680,7 @@ function ensureState(state) {
   if (previousVersion < 23) {
     if (state.pending_event?.kind === "activation_conversion") {
       state.pending_event = null;
-      state.active = CP;
+      setActiveFaction(state, CP);
       state.state = state.ops?.execution_phase
         ? `ops_${state.ops.execution_phase}`
         : "ops_activate";
@@ -973,7 +999,7 @@ function ensureState(state) {
         state.pending_event.unit = null;
         delete state.pending_event.cards;
         delete state.pending_event.after_search;
-        state.active = AP;
+        setActiveFaction(state, AP);
         enterEventFlow(state);
       }
     }
@@ -1006,7 +1032,7 @@ function ensureState(state) {
       ["retreat_select", "retreat_move", "retreat_offer"].includes(state.state)
     ) {
       state.state = "retreat";
-      state.active = pending.faction;
+      setActiveFaction(state, pending.faction);
     }
     pending.selected_units = migratedRetreatGroup;
     delete pending.selected_unit;
@@ -1190,7 +1216,7 @@ function ensureState(state) {
         state.state = pending.resume_state || "replacement";
         state.phase = pending.resume_phase || "补员/升级";
       }
-      state.active = pending.faction;
+      setActiveFaction(state, pending.faction);
     }
   }
   if (previousVersion < 39) {
@@ -1440,6 +1466,84 @@ function ensureState(state) {
     }
     updateSupply(state);
   }
+  if (previousVersion < 47) {
+    for (const entry of state.undo || []) {
+      if (entry?.state) syncStoredSnapshot(entry.state);
+    }
+    const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
+    if (rollbackSnapshots.length) {
+      for (const snapshotState of rollbackSnapshots)
+        syncStoredSnapshot(snapshotState);
+      setRollbackSnapshots(state, rollbackSnapshots);
+    }
+  }
+  if (previousVersion < 48 && state.pending_retreat) {
+    const pending = state.pending_retreat;
+    const retreatStarted = Object.values(pending.paths || {}).some(
+      (path) => Array.isArray(path) && path.length > 1,
+    );
+    const stillSelectingRetreat = state.state === "retreat" && !pending.overstack;
+    if (!retreatStarted && stillSelectingRetreat && pending.faction && pending.from) {
+      const distance = Number(pending.steps || 0);
+      const hqs = state.units.filter(
+        (unit) =>
+          unit.faction === pending.faction &&
+          unit.type === "hq" &&
+          unit.location === pending.from &&
+          !pending.units?.includes(unit.id),
+      );
+      pending.units ||= [];
+      pending.remaining ||= {};
+      pending.paths ||= {};
+      for (const hq of hqs) {
+        pending.units.push(hq.id);
+        pending.remaining[hq.id] = pending.choices ? null : distance;
+        pending.paths[hq.id] = [pending.from];
+      }
+    }
+  }
+  if (previousVersion < 49) {
+    if (state.combat?.declaration) {
+      const computedMode = Engine.attackModeForDeclaration(
+        state,
+        state.combat.declaration,
+        state.combat.participant_units,
+      );
+      state.combat.attack_mode = computedMode;
+      state.combat.declaration.attack_mode = computedMode;
+      if (computedMode === "normal") state.combat.move_attackers = [];
+    }
+    if (state.combat_window?.declaration) {
+      state.combat_window.declaration.attack_mode =
+        Engine.attackModeForDeclaration(state, state.combat_window.declaration);
+    }
+    if (state.ops?.pending_attack) {
+      state.ops.pending_attack.attack_mode =
+        Engine.attackModeForDeclaration(state, state.ops.pending_attack);
+    }
+    if (state.pending_retreat) {
+      const pending = state.pending_retreat;
+      const computedMode = state.combat?.attack_mode ||
+        (state.combat?.declaration
+          ? Engine.attackModeForDeclaration(state, state.combat.declaration, state.combat.participant_units)
+          : "normal");
+      pending.mode = pending.optional && computedMode === "movement"
+        ? "movement_optional"
+        : "mandatory";
+      pending.declined_units ||= [];
+      pending.selected_unit = (pending.selected_units || [])
+        .find((id) => pending.units?.includes(id)) || null;
+      delete pending.selected_units;
+      delete pending.optional;
+      const retreatStarted = Object.values(pending.paths || {}).some(
+        (path) => Array.isArray(path) && path.length > 1,
+      );
+      if (state.state === "retreat" && !retreatStarted && !pending.overstack &&
+          pending.mode === "mandatory" && pending.can_cancel_with_loss &&
+          (pending.units || []).some((id) => Engine.canCancelRetreatWithUnit(state, id)))
+        state.state = "retreat_cancel";
+    }
+  }
   {
     const remapReinforcementPiece = (piece, sourceCard) => {
       if (Number(sourceCard) === 637) {
@@ -1493,7 +1597,7 @@ function ensureState(state) {
       typeof state.action_start_control.spaces !== "object")
   )
     state.action_start_control = null;
-  state.version = 46;
+  state.version = 49;
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -1875,7 +1979,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 46,
+    version: 49,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -1886,6 +1990,7 @@ function createState(seed, options = {}) {
     state: "opening_ap_card",
     phase: "开局选牌",
     active: AP,
+    active_faction: AP,
     turn: 1,
     action_round: 0,
     first_player: CP,
@@ -2000,6 +2105,7 @@ function createState(seed, options = {}) {
     retained_combat_cards: { ap: [], cp: [] },
     pending_combat_card_disposition: null,
     draw_discard: null,
+    pending_commitment_shuffle: { ap: false, cp: false },
     voluntary_cleanup: null,
   };
 }
@@ -2028,7 +2134,16 @@ const Engine = createEngine({
     NONE,
   },
   indexes: { cardById, cardSpecById, moById, pieceById, spaceById },
-  core: { clone, factionRole, findUnit, other, roleFaction, unique },
+  core: {
+    activeFaction,
+    clone,
+    factionRole,
+    findUnit,
+    other,
+    roleFaction,
+    setActiveFaction,
+    unique,
+  },
   adapters: {
     checkpoint,
     clearUndo,
@@ -2084,6 +2199,7 @@ const Engine = createEngine({
 
 const {
   actionAllowed,
+  addCommitmentCards,
   activationCost,
   activationSelectionSpec,
   adjustVp,
@@ -2136,6 +2252,7 @@ const {
   connectionRule,
   defenseMoChoices,
   destroyFort,
+  drawCards,
   drawMo,
   drawMoForNation,
   eliminateUnit,
@@ -2199,6 +2316,7 @@ const {
   resolveCombatCardDisposition,
   resolveFactionAttrition,
   resolveFortCombatLoss,
+  resolvePendingCommitmentShuffle,
   resolveSieges,
   resolveWarStatus,
   retreatDestinations,
@@ -2218,115 +2336,131 @@ const {
 } = Engine;
 
 exports.action = function (state, current, action, arg) {
-  ensureState(state);
-  advanceRestoringState(state);
-  if (!state || state.state === "game_over") return state;
-  if (!actionAllowed(state, current)) return state;
-  const offered = buildActionView(clone(state), current);
-  const primitiveArg = arg === null ? undefined : arg;
-  if (!ActionProtocol.allows(offered.actions, action, primitiveArg))
-    return state;
-  const stateBefore = state.state;
-  const activeBefore = state.active;
-  const seedBefore = state.seed;
-  const before = clone(state);
-  undoActionContext = {
-    state,
-    before,
-    entry: null,
-    snapshotTaken: false,
-    deterministic: false,
-  };
   try {
-    if (action === "undo") {
-      undoActionContext.suppress = true;
-      if (!undoAvailable(state))
-        throw new Error("Undo point is no longer available");
-      const entry = state.undo.pop();
-      restoreSnapshot(state, entry);
-      ensureState(state);
-    } else if (action === "propose_rollback") {
-      undoActionContext.suppress = true;
-      beginRollbackProposal(state, arg);
-      clearUndo(state);
-    } else if (action === "flag_supply_warnings") {
-      undoActionContext.suppress = true;
-      beginSupplyWarningEditor(state);
-    } else if (!Engine.dispatch(state, action, arg, current)) {
-      throw new Error("Offered action has no state handler");
+    ensureState(state);
+    advanceRestoringState(state);
+    if (!state || state.state === "game_over") return state;
+    if (!actionAllowed(state, current)) return state;
+    const offered = buildActionView(clone(state), current);
+    const primitiveArg = arg === null ? undefined : arg;
+    if (!ActionProtocol.allows(offered.actions, action, primitiveArg))
+      return state;
+    const stateBefore = state.state;
+    const activeBefore = state.active;
+    const seedBefore = state.seed;
+    const before = clone(state);
+    undoActionContext = {
+      state,
+      before,
+      entry: null,
+      snapshotTaken: false,
+      deterministic: false,
+    };
+    try {
+      if (action === "undo") {
+        undoActionContext.suppress = true;
+        if (!undoAvailable(state))
+          throw new Error("Undo point is no longer available");
+        const entry = state.undo.pop();
+        restoreSnapshot(state, entry);
+        ensureState(state);
+      } else if (action === "propose_rollback") {
+        undoActionContext.suppress = true;
+        beginRollbackProposal(state, arg);
+        clearUndo(state);
+      } else if (action === "flag_supply_warnings") {
+        undoActionContext.suppress = true;
+        beginSupplyWarningEditor(state);
+      } else if (!Engine.dispatch(state, action, arg, current)) {
+        throw new Error("Offered action has no state handler");
+      }
+      undoActionContext.deterministic = true;
+      Engine.advanceDeterministicStates(state);
+      undoActionContext.deterministic = false;
+      if (state.state !== "game_over")
+        checkVictory(state, { armisticeOnly: true });
+      if (!Engine.hasState(state.state))
+        throw new Error(`Unregistered stable state: ${state.state}`);
+      const changedPlayer =
+        [AP, CP].includes(activeBefore) &&
+        [AP, CP].includes(state.active) &&
+        activeBefore !== state.active;
+      if (changedPlayer || state.seed !== seedBefore) clearUndo(state);
+      if (AUTO_CARD_CONSERVATION || state.options?.assert_card_conservation)
+        assertCardConservation(state);
+    } catch (error) {
+      for (const key of Object.keys(state)) delete state[key];
+      Object.assign(state, before);
+      const detail = `${stateBefore}/${action}/${String(primitiveArg)}`;
+      const wrapped = new Error(`Action failed (${detail}): ${error.message}`);
+      wrapped.cause = error;
+      throw wrapped;
+    } finally {
+      undoActionContext = null;
     }
-    undoActionContext.deterministic = true;
-    Engine.advanceDeterministicStates(state);
-    undoActionContext.deterministic = false;
-    if (state.state !== "game_over")
-      checkVictory(state, { armisticeOnly: true });
-    if (!Engine.hasState(state.state))
-      throw new Error(`Unregistered stable state: ${state.state}`);
-    const changedPlayer =
-      [AP, CP].includes(activeBefore) &&
-      [AP, CP].includes(state.active) &&
-      activeBefore !== state.active;
-    if (changedPlayer || state.seed !== seedBefore) clearUndo(state);
-    if (AUTO_CARD_CONSERVATION || state.options?.assert_card_conservation)
-      assertCardConservation(state);
-  } catch (error) {
-    for (const key of Object.keys(state)) delete state[key];
-    Object.assign(state, before);
-    const detail = `${stateBefore}/${action}/${String(primitiveArg)}`;
-    const wrapped = new Error(`Action failed (${detail}): ${error.message}`);
-    wrapped.cause = error;
-    throw wrapped;
+    return state;
   } finally {
-    undoActionContext = null;
+    exposeRttState(state);
   }
-  return state;
 };
 exports.view = function (state, current) {
-  ensureState(state);
-  advanceRestoringState(state);
-  return Engine.view(state, current);
+  try {
+    ensureState(state);
+    advanceRestoringState(state);
+    return Engine.view(state, current);
+  } finally {
+    exposeRttState(state);
+  }
 };
 
 exports.query = function (state, current, query) {
-  ensureState(state);
-  const faction = roleFaction(current);
-  if (query === "cards")
-    return faction ? state.hands[faction].map((id) => cardById[id]) : [];
-  if (query === "ap_cards")
-    return faction === AP ? state.hands.ap.map((id) => cardById[id]) : [];
-  if (query === "cp_cards")
-    return faction === CP ? state.hands.cp.map((id) => cardById[id]) : [];
-  if (query === "supply") {
-    updateSupply(state);
-    return {
-      ap: [...suppliedSpaces(state, AP)],
-      cp: [...suppliedSpaces(state, CP)],
-      units: Object.fromEntries(
-        state.units.map((unit) => [
-          unit.id,
-          ViewExplanations.supplyStatus(unit),
-        ]),
-      ),
-    };
+  try {
+    ensureState(state);
+    const faction = roleFaction(current);
+    if (query === "cards")
+      return faction ? state.hands[faction].map((id) => cardById[id]) : [];
+    if (query === "ap_cards")
+      return faction === AP ? state.hands.ap.map((id) => cardById[id]) : [];
+    if (query === "cp_cards")
+      return faction === CP ? state.hands.cp.map((id) => cardById[id]) : [];
+    if (query === "supply") {
+      updateSupply(state);
+      return {
+        ap: [...suppliedSpaces(state, AP)],
+        cp: [...suppliedSpaces(state, CP)],
+        units: Object.fromEntries(
+          state.units.map((unit) => [
+            unit.id,
+            ViewExplanations.supplyStatus(unit),
+          ]),
+        ),
+      };
+    }
+    if (query === "combat_preview") return clone(state.combat);
+    if (query === "rollback")
+      return ViewExplanations.rollbackEntries(
+        state,
+        current,
+        20,
+        (index) => rollbackSnapshot(state, index),
+      );
+    return null;
+  } finally {
+    exposeRttState(state);
   }
-  if (query === "combat_preview") return clone(state.combat);
-  if (query === "rollback")
-    return ViewExplanations.rollbackEntries(
-      state,
-      current,
-      20,
-      (index) => rollbackSnapshot(state, index),
-    );
-  return null;
 };
 
 exports.resign = function (state, current) {
-  ensureState(state);
-  if (state.state === "game_over") return state;
-  const faction = roleFaction(current);
-  if (!faction) return state;
-  gameOver(state, other(faction), `${factionRole(faction)} 认输。`);
-  return state;
+  try {
+    ensureState(state);
+    if (state.state === "game_over") return state;
+    const faction = roleFaction(current);
+    if (!faction) return state;
+    gameOver(state, other(faction), `${factionRole(faction)} 认输。`);
+    return state;
+  } finally {
+    exposeRttState(state);
+  }
 };
 
 exports.setup = function (seed, scenario = HISTORICAL, options = {}) {
@@ -2336,7 +2470,7 @@ exports.setup = function (seed, scenario = HISTORICAL, options = {}) {
   setupDeck(state, AP);
   setupDeck(state, CP);
   updateSupply(state);
-  return state;
+  return exposeRttState(state);
 };
 
 exports.analysis = Engine.registerAnalysis(
@@ -2363,6 +2497,7 @@ exports.analysis = Engine.registerAnalysis(
 );
 
 exports._test = {
+  activeFaction,
   advanceDeterministicStates: Engine.advanceDeterministicStates,
   checkpoint,
   clearUndo,
@@ -2372,6 +2507,8 @@ exports._test = {
   restoreSnapshot,
   rollbackSnapshot,
   snapshot,
+  setActiveFaction,
+  syncRttActive,
   assertCardConservation,
   cardZoneInventory,
   clampVp,
@@ -2453,6 +2590,7 @@ exports._test = {
   moPenaltyAttackOptions,
   moPenaltyLossCandidates,
   moPenaltyLossValue,
+  addCommitmentCards,
   applyEndTurnVp,
   finalTerritoryVp,
   checkVictory,
@@ -2480,6 +2618,8 @@ exports._test = {
   beginReplacement,
   finishReplacement,
   beginDrawPhase,
+  drawCards,
+  resolvePendingCommitmentShuffle,
   beginVoluntaryCleanup,
   voluntaryCleanupOptions,
   hqEndLegal,

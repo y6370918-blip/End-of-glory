@@ -212,8 +212,8 @@ function createCombatSystem(api) {
           retreat.paths[replacement.id] = (retreat.paths[pending.army] || [pending.location]).slice();
           delete retreat.remaining[pending.army];
           delete retreat.paths[pending.army];
-          retreat.selected_units = (retreat.selected_units || []).map((unitId) =>
-              unitId === pending.army ? replacement.id : unitId);
+          if (retreat.selected_unit === pending.army)
+              retreat.selected_unit = replacement.id;
           if (retreat.overstack) {
               retreat.overstack.group = (retreat.overstack.group || []).map((unitId) =>
                   unitId === pending.army ? replacement.id : unitId);
@@ -534,6 +534,29 @@ function createCombatSystem(api) {
       commitPendingAttack(state, declaration);
   }
 
+  function attackModeForDeclaration(state, declaration, suppliedUnits = null) {
+      const supplied = new Map((suppliedUnits || []).map((unit) => [unit.id, unit]));
+      const combatUnits = (declaration?.attackers || [])
+          .map((id) => supplied.get(id) || state.units.find((unit) => unit.id === id))
+          .filter((unit) => unit && api.isCombatUnit(unit));
+      if (!combatUnits.length)
+          return "normal";
+      const forced = new Set(state.ops?.forced_attacks || []);
+      const marked = new Set(state.ops?.attack_marker_spaces || []);
+      const declaredMarkerOrigins = new Set(Object.values(declaration?.mo_marker_origins || {}).flat());
+      const hasRealAttackMarker = combatUnits.some((unit) =>
+          state.activations?.[unit.location] === "attack" ||
+          (state.ops && api.unitIsActivated(state, unit, ["attack"])) ||
+          forced.has(unit.location) ||
+          marked.has(unit.location) ||
+          declaredMarkerOrigins.has(unit.location)) ||
+          (declaration?.attack_origin?.kind && declaration.attack_origin.kind !== "normal");
+      return !hasRealAttackMarker && combatUnits.every((unit) =>
+          unit.moved && unit.attack_eligible)
+          ? "movement"
+          : "normal";
+  }
+
   function placeOptionalCombatHq(state, space) {
       const declaration = state.ops?.pending_attack;
       if (state.state !== "optional_combat_event" || declaration?.optional_hq_card !== 641 ||
@@ -598,8 +621,8 @@ function createCombatSystem(api) {
           mo_effects: [],
           modifier_sources: [],
       };
-      const moveAttackers = attackCombatUnits.filter((unit) => unit.moved && unit.attack_eligible);
-      if (moveAttackers.length) {
+      const movementAttack = attackModeForDeclaration(state, declaration, attackCombatUnits) === "movement";
+      if (movementAttack) {
           result.attack_column -= 1;
           result.modifier_sources.push({
               side: "attacker",
@@ -995,7 +1018,7 @@ function createCombatSystem(api) {
       state.combat_window = null;
       state.combat = null;
       api.enterEventFlow(state);
-      state.active = cpCards.length ? api.CP : api.CP;
+      api.setActiveFaction(state, cpCards.length ? api.CP : api.CP);
   }
 
   function attacksTarget(state, unit, target) {
@@ -1211,6 +1234,7 @@ function createCombatSystem(api) {
       validateAttackDeclaration(state, declaration);
       declaration = {
           ...declaration,
+          attack_mode: attackModeForDeclaration(state, declaration),
           mo_marker_origins: api.computeMoMarkerOrigins(state, declaration),
       };
       if (declaration.all_out_decision == null && allOutAttackChoices(state, declaration).length) {
@@ -1239,8 +1263,11 @@ function createCombatSystem(api) {
       const attackingUnits = attackers
           .map((id) => state.units.find((unit) => unit.id === id))
           .filter(Boolean);
-      const moveAttackers = attackingUnits.filter((unit) =>
-          api.isCombatUnit(unit) && unit.moved && unit.attack_eligible);
+      const attackMode = attackModeForDeclaration(state, declaration, attackingUnits);
+      declaration.attack_mode = attackMode;
+      const moveAttackers = attackMode === "movement"
+          ? attackingUnits.filter((unit) => api.isCombatUnit(unit) && unit.moved && unit.attack_eligible)
+          : [];
       if (!attackingUnits.length ||
           attackingUnits.some((unit) => unit.faction !== state.active))
           throw new Error("Invalid attackers");
@@ -1560,6 +1587,7 @@ function createCombatSystem(api) {
               state.units.find((unit) => unit.id === id)?.location,
           ])),
           move_attackers: moveAttackers.map((unit) => unit.id),
+          attack_mode: attackMode,
           counterattack_resume: api.clone(state.combat_window?.counterattack_resume || null),
       };
       if (state.active === api.CP && target === "paris") {
@@ -1608,7 +1636,7 @@ function createCombatSystem(api) {
               }
           }
       }
-      state.active = state.combat.pending_side;
+      api.setActiveFaction(state, state.combat.pending_side);
       state.state = "combat_losses";
       state.combat_window = null;
       api.log(state, "");
@@ -1759,7 +1787,7 @@ function createCombatSystem(api) {
                       ? combat.attack_loss
                       : combat.defense_loss;
               if (combat.remaining_loss > 0) {
-                  state.active = combat.pending_side;
+                  api.setActiveFaction(state, combat.pending_side);
                   return;
               }
           }
@@ -1770,7 +1798,7 @@ function createCombatSystem(api) {
           combat.pending_side = api.other(combat.attacker);
           combat.remaining_loss = combat.defense_loss;
           if (combat.remaining_loss > 0) {
-              state.active = combat.pending_side;
+              api.setActiveFaction(state, combat.pending_side);
               return;
           }
       }
@@ -1804,7 +1832,7 @@ function createCombatSystem(api) {
                   remaining: desertion.italian_attack_step_loss,
                   resume: "finish_combat_sequence",
               };
-              state.active = combat.attacker;
+              api.setActiveFaction(state, combat.attacker);
               api.enterEventFlow(state);
               return true;
           }
@@ -1872,7 +1900,7 @@ function createCombatSystem(api) {
       if (!combatRepairCandidates(state, pending).length)
           return false;
       state.pending_event = pending;
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
       return true;
   }
@@ -1953,7 +1981,7 @@ function createCombatSystem(api) {
       state.pending_event = null;
       if (pending.resume === "post_window") {
           state.state = "post_combat_card_window";
-          state.active = state.post_combat_window.side;
+          api.setActiveFaction(state, state.post_combat_window.side);
           return;
       }
       state.state = "combat_losses";
@@ -2002,7 +2030,7 @@ function createCombatSystem(api) {
           index: 0,
           resume,
       };
-      state.active = first.faction;
+      api.setActiveFaction(state, first.faction);
       api.enterEventFlow(state);
       return true;
   }
@@ -2019,12 +2047,12 @@ function createCombatSystem(api) {
       if (pending.index < pending.queue.length) {
           const hq = currentPendingHq(state, pending);
           pending.owner = hq.faction;
-          state.active = hq.faction;
+          api.setActiveFaction(state, hq.faction);
           return;
       }
       state.pending_event = null;
       state.combat.hq_relocation_complete = true;
-      state.active = state.combat.attacker;
+      api.setActiveFaction(state, state.combat.attacker);
       if (pending.resume === "post_retreat_advance")
           beginPostRetreatAdvance(state);
       else
@@ -2090,14 +2118,14 @@ function createCombatSystem(api) {
           }
           : null;
       if (combat)
-          state.active = combat.attacker;
+          api.setActiveFaction(state, combat.attacker);
       api.log(state, "");
       state.pending_retreat = null;
       state.combat = null;
       state.post_combat_window = null;
       api.clearCombatEvents(state);
       if (miracleResume) {
-          state.active = miracleResume.active;
+          api.setActiveFaction(state, miracleResume.active);
           state.ops = miracleResume.ops;
           state.activations = miracleResume.activations || {};
           if (!state.ops) {
@@ -2130,7 +2158,7 @@ function createCombatSystem(api) {
                   required,
                   loss_adjust: nivelle.effect.forced_attack_loss_adjust || 0,
               };
-              state.active = api.CP;
+              api.setActiveFaction(state, api.CP);
               api.enterEventFlow(state);
               return;
           }
@@ -2146,7 +2174,7 @@ function createCombatSystem(api) {
               targets: counterattackTargets,
               resume: counterattackResume,
           };
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           api.enterEventFlow(state);
           return;
       }
@@ -2271,20 +2299,17 @@ function createCombatSystem(api) {
               return;
           combat.post_combat_complete = true;
       }
-      const defenders = api.unitsAt(state, combat.target, api.other(combat.attacker)).filter(api.isCombatUnit);
-      state.active = combat.attacker;
+      const defenderFaction = api.other(combat.attacker);
+      const defenders = api.unitsAt(state, combat.target, defenderFaction).filter(api.isCombatUnit);
+      const defendingHqs = api.unitsAt(state, combat.target, defenderFaction)
+          .filter((unit) => unit.type === "hq");
+      const retreaters = [...defenders, ...defendingHqs];
+      api.setActiveFaction(state, combat.attacker);
       const rules = combat.modifiers || {};
       const potentialAdvanceUnits = potentialAdvanceUnitIds(state, combat, rules);
-      const movedAttackers = new Set(combat.move_attackers || []);
-      const recordedParticipants = combat.participant_units?.length
-          ? combat.participant_units
-          : combat.attackers
-              .map((id) => state.units.find((unit) => unit.id === id))
-              .filter(Boolean);
-      const originalCombatAttackers = recordedParticipants
-          .filter((unit) => unit.faction === combat.attacker && api.isCombatUnit(unit));
-      const movingAttackOnly = originalCombatAttackers.length > 0 &&
-          originalCombatAttackers.every((unit) => movedAttackers.has(unit.id));
+      const attackMode = combat.attack_mode ||
+          attackModeForDeclaration(state, combat.declaration, combat.participant_units);
+      combat.attack_mode = attackMode;
       // A force already fighting inside a besieged fort has nowhere to
       // advance.  An adjacent attacker that eliminates the field defenders,
       // however, may advance into an intact fort when the selected group can
@@ -2318,27 +2343,28 @@ function createCombatSystem(api) {
               return;
           state.state = "advance_select";
       }
-      else if (defenders.length && movingAttackOnly) {
+      else if (retreaters.length && attackMode === "movement") {
           state.pending_retreat = {
-              faction: defenders[0].faction,
-              selected_units: [],
-              units: defenders.map((unit) => unit.id),
+              faction: defenderFaction,
+              mode: "movement_optional",
+              selected_unit: null,
+              declined_units: [],
+              units: retreaters.map((unit) => unit.id),
               steps: 1,
               choices: null,
               from: combat.target,
-              remaining: Object.fromEntries(defenders.map((unit) => [unit.id, 1])),
-              paths: Object.fromEntries(defenders.map((unit) => [unit.id, [combat.target]])),
+              remaining: Object.fromEntries(retreaters.map((unit) => [unit.id, 1])),
+              paths: Object.fromEntries(retreaters.map((unit) => [unit.id, [combat.target]])),
               advance_units: [],
               advanced_ids: [],
               maximum: 0,
               advanced: 0,
               retreat_paths: [],
               advance_max_steps: 1,
-              optional: true,
               can_cancel_with_loss: false,
               prohibit_damaged_cancel: true,
           };
-          state.active = defenders[0].faction;
+          api.setActiveFaction(state, defenderFaction);
           state.state = "retreat";
       }
       else if (defenders.length &&
@@ -2351,16 +2377,18 @@ function createCombatSystem(api) {
           const retreatSteps = Math.min(2, Math.max(rules.minimum_retreat || 0, 1, margin));
           state.pending_retreat = {
               faction: defenders[0].faction,
-              selected_units: [],
-              units: defenders.map((unit) => unit.id),
+              mode: "mandatory",
+              selected_unit: null,
+              declined_units: [],
+              units: retreaters.map((unit) => unit.id),
               steps: rules.retreat_choice ? null : retreatSteps,
               choices: rules.retreat_choice ? rules.retreat_choice.slice() : null,
               from: combat.target,
-              remaining: Object.fromEntries(defenders.map((unit) => [
+              remaining: Object.fromEntries(retreaters.map((unit) => [
                   unit.id,
                   rules.retreat_choice ? null : retreatSteps,
               ])),
-              paths: Object.fromEntries(defenders.map((unit) => [unit.id, [combat.target]])),
+              paths: Object.fromEntries(retreaters.map((unit) => [unit.id, [combat.target]])),
               advance_units: potentialAdvanceUnits,
               advanced_ids: [],
               maximum: rules.advance_limit,
@@ -2371,8 +2399,11 @@ function createCombatSystem(api) {
                   ((state.trenches[combat.target] || 0) > 0 && !rules.ignore_trench)),
               prohibit_damaged_cancel: Boolean(rules.prohibit_damaged_retreat_cancel) || marginProhibition,
           };
-          state.active = defenders[0].faction;
-          state.state = "retreat";
+          api.setActiveFaction(state, defenders[0].faction);
+          state.state = state.pending_retreat.can_cancel_with_loss &&
+              retreaters.some((unit) => canCancelRetreatWithUnit(state, unit.id))
+              ? "retreat_cancel"
+              : "retreat";
       }
       else {
           finishCombatSequence(state);
@@ -2381,11 +2412,30 @@ function createCombatSystem(api) {
 
   function retreatFinalStackLegal(state, space, units) {
       if (api.spaceById[space]?.large_area)
-          return true;
+          return retreatEndpointHqsLegal(state, space, units);
       const selected = new Set(units.map((unit) => unit.id));
       const existing = api.unitsAt(state, space, units[0]?.faction).filter((unit) => !selected.has(unit.id));
       return ([...existing, ...units].filter(api.isCombatUnit).length <= 3 &&
-          [...existing, ...units].filter((unit) => unit.type === "hq").length <= 1);
+          [...existing, ...units].filter((unit) => unit.type === "hq").length <= 1 &&
+          retreatEndpointHqsLegal(state, space, units));
+  }
+
+  function retreatEndpointHqsLegal(state, space, units) {
+      if (!units.some((unit) => unit.type === "hq"))
+          return true;
+      const locations = units.map((unit) => unit.location);
+      try {
+          for (const unit of units)
+              unit.location = space;
+          const hqs = api.unitsAt(state, space, units[0]?.faction)
+              .filter((unit) => unit.type === "hq");
+          return hqs.length <= 1 && hqs.every((hq) => api.hqEndLegal(state, hq, space));
+      }
+      finally {
+          units.forEach((unit, index) => {
+              unit.location = locations[index];
+          });
+      }
   }
 
   function retreatBaseDestinations(state, units, space, visited, _finalStep) {
@@ -2412,6 +2462,9 @@ function createCombatSystem(api) {
       }));
       if (supplied.length)
           options = supplied;
+      if (_finalStep)
+          options = options.filter((destination) =>
+              retreatEndpointHqsLegal(state, destination, units));
       return options;
   }
 
@@ -2456,92 +2509,36 @@ function createCombatSystem(api) {
       return retreatUnitRoutes(state, id, Number(steps), path).length > 0;
   }
 
-  function retreatGroupRoutes(state, ids, explicitSteps = null) {
-      const units = ids.map((id) => state.units.find((unit) => unit.id === id)).filter(Boolean);
+  function deferUnroutableRetreatHqs(state) {
       const pending = state.pending_retreat;
-      const steps = explicitSteps == null
-          ? Number(pending?.remaining?.[ids[0]])
-          : Number(explicitSteps);
-      if (!units.length || units.length !== ids.length || !Number.isInteger(steps) || steps <= 0)
-          return [];
-      const firstPath = (pending.paths?.[ids[0]] || [units[0].location]).slice();
-      if (units.some((unit, index) => unit.location !== units[0].location ||
-          (pending.remaining?.[ids[index]] != null &&
-              Number(pending.remaining?.[ids[index]]) !== steps) ||
-          JSON.stringify(pending.paths?.[ids[index]] || [unit.location]) !== JSON.stringify(firstPath)))
-          return [];
-      const routes = [];
-      const search = (path, remaining) => {
-          if (remaining === 0) {
-              routes.push(path.slice());
-              return;
-          }
-          const current = path.at(-1);
-          for (const destination of retreatBaseDestinations(state, units, current, new Set(path), remaining === 1))
-              search([...path, destination], remaining - 1);
-      };
-      search(firstPath, steps);
-      return routes;
-  }
-
-  function retreatGroupDestinations(state, ids, explicitSteps = null) {
-      if (!ids?.length) return [];
-      const pending = state.pending_retreat;
-      const path = pending.paths?.[ids[0]] || [];
-      const steps = explicitSteps == null
-          ? Number(pending.remaining?.[ids[0]])
-          : Number(explicitSteps);
-      return [...new Set(retreatGroupRoutes(state, ids, steps).map((route) => route[path.length]))]
-          .filter(Boolean);
-  }
-
-  function prepareDefaultRetreatGroup(state) {
-      const pending = state.pending_retreat;
-      if (state.state !== "retreat" || !pending || pending.selected_units?.length)
+      if (state.state !== "retreat" || !pending || pending.mode !== "mandatory" || pending.selected_unit)
           return false;
-      pending.selected_units ||= [];
-      for (const firstId of pending.units || []) {
-          const first = state.units.find((unit) => unit.id === firstId);
-          if (!first)
+      if ((pending.units || []).some((id) => {
+          const unit = state.units.find((candidate) => candidate.id === id);
+          return unit && api.isCombatUnit(unit);
+      }))
+          return false;
+      const deferred = [];
+      for (const id of pending.units || []) {
+          const unit = state.units.find((candidate) => candidate.id === id);
+          if (unit?.type !== "hq")
               continue;
-          let distance = Number(pending.remaining?.[firstId]);
-          if (!Number.isInteger(distance) || distance <= 0) {
-              const choices = (pending.choices || []).filter((steps) =>
-                  retreatUnitHasRoute(state, firstId, steps));
-              // Strategic Retreat keeps the genuine one/two-space choice.
-              if (choices.length !== 1)
-                  continue;
-              distance = Number(choices[0]);
-              pending.remaining[firstId] = distance;
-          }
-          if (!retreatUnitHasRoute(state, firstId, distance))
-              continue;
-          const group = [firstId];
-          for (const id of pending.units || []) {
-              if (id === firstId)
-                  continue;
-              const unit = state.units.find((candidate) => candidate.id === id);
-              if (!unit || unit.location !== first.location)
-                  continue;
-              let candidateDistance = Number(pending.remaining?.[id]);
-              if (!Number.isInteger(candidateDistance) || candidateDistance <= 0) {
-                  const choices = (pending.choices || []).filter((steps) =>
-                      retreatUnitHasRoute(state, id, steps));
-                  if (choices.length !== 1 || Number(choices[0]) !== distance)
-                      continue;
-                  candidateDistance = distance;
-              }
-              if (candidateDistance !== distance ||
-                  !retreatGroupDestinations(state, [...group, id], distance).length)
-                  continue;
-              if (pending.remaining?.[id] == null)
-                  pending.remaining[id] = distance;
-              group.push(id);
-          }
-          pending.selected_units = group;
-          return true;
+          const distances = pending.remaining?.[id] != null
+              ? [Number(pending.remaining[id])]
+              : (pending.choices || [Number(pending.steps || 1)]);
+          if (!distances.some((steps) => retreatUnitHasRoute(state, id, steps)))
+              deferred.push(id);
       }
-      return false;
+      if (!deferred.length)
+          return false;
+      pending.deferred_hqs ||= [];
+      for (const id of deferred)
+          if (!pending.deferred_hqs.includes(id)) pending.deferred_hqs.push(id);
+      pending.units = pending.units.filter((id) => !deferred.includes(id));
+      if (deferred.includes(pending.selected_unit)) pending.selected_unit = null;
+      if (!pending.units.length)
+          finishAllRetreats(state);
+      return true;
   }
 
   function canCancelRetreatWithUnit(state, id) {
@@ -2740,7 +2737,7 @@ function createCombatSystem(api) {
       const pending = state.pending_retreat;
       pending.advance_group = null;
       pending.selected_advance_units = [];
-      state.active = state.combat.attacker;
+      api.setActiveFaction(state, state.combat.attacker);
       state.state = "advance_select";
   }
 
@@ -2776,14 +2773,14 @@ function createCombatSystem(api) {
           finishCombatSequence(state);
           return;
       }
-      state.active = combat.attacker;
+      api.setActiveFaction(state, combat.attacker);
       state.state = "advance_select";
   }
 
   function finishAllRetreats(state) {
       const pending = state.pending_retreat;
       pending.phase = "advance";
-      state.active = state.combat.attacker;
+      api.setActiveFaction(state, state.combat.attacker);
       if (beginCombatHqRelocation(state, state.combat, "post_retreat_advance"))
           return;
       beginPostRetreatAdvance(state);
@@ -2792,12 +2789,12 @@ function createCombatSystem(api) {
   function returnToRetreat(state) {
       const pending = state.pending_retreat;
       pending.units = (pending.units || []).filter((id) => state.units.some((unit) => unit.id === id));
-      pending.selected_units = [];
+      pending.selected_unit = null;
       if (!pending.units.length) {
           finishAllRetreats(state);
           return;
       }
-      state.active = pending.faction;
+      api.setActiveFaction(state, pending.faction);
       state.state = "retreat";
   }
 
@@ -2807,19 +2804,6 @@ function createCombatSystem(api) {
       pending.units = pending.units.filter((candidate) => candidate !== id && state.units.some((unit) => unit.id === candidate));
       pending.retreat_paths ||= [];
       if (path?.length) pending.retreat_paths.push(path.slice());
-      returnToRetreat(state);
-  }
-
-  function finishRetreatGroup(state, ids) {
-      const pending = state.pending_retreat;
-      pending.retreat_paths ||= [];
-      for (const id of ids) {
-          const path = pending.paths?.[id];
-          if (path?.length) pending.retreat_paths.push(path.slice());
-      }
-      pending.units = (pending.units || []).filter((id) => !ids.includes(id) &&
-          state.units.some((unit) => unit.id === id));
-      pending.selected_units = [];
       returnToRetreat(state);
   }
 
@@ -2839,8 +2823,8 @@ function createCombatSystem(api) {
           returnToRetreat(state);
           return;
       }
-      pending.selected_units = group;
-      state.active = pending.faction;
+      pending.selected_unit = null;
+      api.setActiveFaction(state, pending.faction);
       state.state = "retreat";
   }
 
@@ -2875,6 +2859,7 @@ return Object.freeze({
     applyCombatOutcomeEffects,
     applyPostCombatRules,
     attackSelectionActions,
+    attackModeForDeclaration,
     attacksTarget,
     beginCombat,
     beginCombatHqRelocation,
@@ -2899,6 +2884,7 @@ return Object.freeze({
     chooseOptionalCombatEvent,
     currentPendingHq,
     defendedAttackTarget,
+    deferUnroutableRetreatHqs,
     destroyFort,
     diazHqSpaces,
     eligibleAttackUnitIds,
@@ -2910,7 +2896,6 @@ return Object.freeze({
     finishCombatLosses,
     finishCombatSequence,
     forcedAttackRequiredIds,
-    finishRetreatGroup,
     finishRetreatUnit,
     finishRetreatOverstack,
     fireColumn,
@@ -2930,7 +2915,6 @@ return Object.freeze({
     permanentlyEliminateCombatArmy,
     placeOptionalCombatHq,
     placeCombatReplacement,
-    prepareDefaultRetreatGroup,
     pruneOrphanAttackHqs,
     reduceCombatUnit,
     reduceUnit,
@@ -2948,7 +2932,6 @@ return Object.freeze({
     resumeAfterCombatRepair,
     retreatBaseDestinations,
     retreatDestinations,
-    retreatGroupDestinations,
     retreatFinalStackLegal,
     retreatUnitHasRoute,
     retreatOverstackLossCandidates,

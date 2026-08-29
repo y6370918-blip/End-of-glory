@@ -129,7 +129,7 @@ function createOperationsSystem(api) {
         : action === "select_retreat_two"
           ? 2
           : Number(pending.remaining?.[unit.id] ?? pending.steps ?? 1);
-      if (!api.retreatUnitHasRoute(state, unit.id, distance))
+      if (pending.mode !== "movement_optional" && !api.retreatUnitHasRoute(state, unit.id, distance))
         return reason("rule_forbidden", "该单位没有完整的合法撤退路径");
     }
     if (action === "select_advance_unit") {
@@ -608,14 +608,14 @@ function createOperationsSystem(api) {
       state.ops = null;
       state.activations = {};
       if (resumeAfterForced) {
-          state.active = resumeAfterForced.active;
+          api.setActiveFaction(state, resumeAfterForced.active);
           state.ops = resumeAfterForced.ops;
           state.activations = resumeAfterForced.activations;
           state.state = "ops_activate";
           return;
       }
       if (returnAfterForced === "ap_action") {
-          state.active = api.AP;
+          api.setActiveFaction(state, api.AP);
           state.state = "action_card";
           return;
       }
@@ -686,7 +686,7 @@ function createOperationsSystem(api) {
                   unit.attack_eligible = true;
               }
           }
-      state.active = options.faction;
+      api.setActiveFaction(state, options.faction);
       state.activations = Object.fromEntries(spaces.map((space) => [space, "attack"]));
       state.ops = {
           card: options.card ?? null,

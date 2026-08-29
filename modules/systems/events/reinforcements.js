@@ -33,7 +33,7 @@ function createReinforcementEventSystem(api) {
           index: 0,
           units: [],
       };
-      state.active = operation.chooser;
+      api.setActiveFaction(state, operation.chooser);
       api.enterEventFlow(state);
       api.log(state, `${card.title}：选择暂时调离地图的单位。`);
   }
@@ -171,7 +171,7 @@ function createReinforcementEventSystem(api) {
           placements,
           next_unit_id_before: nextUnitIdBefore,
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
       api.log(state, `${card.title}：逐个选择增援部署地区。`);
   }

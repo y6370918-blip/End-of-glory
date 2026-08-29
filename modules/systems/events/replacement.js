@@ -43,7 +43,7 @@ function createReplacementEventSystem(api) {
               ? card.id
               : null,
       };
-      state.active = card.faction;
+      api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
       return true;
   }

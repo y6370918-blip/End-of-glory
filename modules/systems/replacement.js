@@ -62,7 +62,7 @@ function createReplacementSystem(api) {
   function beginReplacement(state) {
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = api.AP;
+      api.setActiveFaction(state, api.AP);
       state.replacement_active = api.AP;
       if (api.beginHqReturns(state))
           return;
@@ -72,7 +72,7 @@ function createReplacementSystem(api) {
   function continueReplacement(state) {
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = api.AP;
+      api.setActiveFaction(state, api.AP);
       state.replacement_active = api.AP;
       if (api.applyRecurringReinforcements(state))
           return;
@@ -130,7 +130,7 @@ function createReplacementSystem(api) {
           cost: marker.cost,
           usage_key: usageKey,
       };
-      state.active = api.CP;
+      api.setActiveFaction(state, api.CP);
       api.enterEventFlow(state);
       return true;
   }
@@ -171,7 +171,7 @@ function createReplacementSystem(api) {
           obligation = null;
       }
       if (state.active === api.AP) {
-          state.active = api.CP;
+          api.setActiveFaction(state, api.CP);
           state.replacement_active = api.CP;
           api.log(state, "同盟国补员、升级与战线投入。");
       }

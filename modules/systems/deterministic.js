@@ -40,8 +40,17 @@ function createDeterministicSystem(api) {
       if (!state || state.state === "game_over") return;
       canonicalizeEventState(state);
 
+      if (state.state === "retreat_cancel") {
+        const actions = stateActions(state);
+        if (!(actions.cancel_retreat || []).length && actions.proceed_retreat === 1) {
+          api.stateEngine.dispatch(state, "proceed_retreat");
+          continue;
+        }
+        return;
+      }
+
       if (state.state === "retreat") {
-        if (api.prepareDefaultRetreatGroup(state)) continue;
+        if (api.deferUnroutableRetreatHqs(state)) continue;
         return;
       }
 
@@ -126,6 +135,21 @@ function createDeterministicSystem(api) {
           api.stateEngine.dispatch(state, "select_move_unit", actions.select_move_unit[0]);
           continue;
         }
+        if (!(actions.select_move_unit || []).length &&
+            !(actions.combine || []).length &&
+            actions.finish === 1) {
+          api.stateEngine.dispatch(state, "finish");
+          continue;
+        }
+        return;
+      }
+
+      if (state.state === "movement_units") {
+        const actions = stateActions(state);
+        if (!(actions.move || []).length && actions.finish === 1) {
+          api.stateEngine.dispatch(state, "finish");
+          continue;
+        }
         return;
       }
 
@@ -155,7 +179,7 @@ function createDeterministicSystem(api) {
           state.pending_event = null;
           state.phase = "补员/升级";
           state.state = "replacement";
-          state.active = faction;
+          api.setActiveFaction(state, faction);
           state.replacement_active = faction;
           continue;
         }
