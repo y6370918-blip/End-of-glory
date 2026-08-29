@@ -10,51 +10,15 @@
 - `about.html`、`rules.html`、`charts.html`、`cards.html`：介绍、规则、战斗表与卡牌图库
 - `data.js`：浏览器和 Node 共用的编译数据
 
-## 数据流水线
+## 部署内容
 
-```powershell
-npm.cmd ci
-npm.cmd run build
-npm.cmd run build:assets
-npm.cmd run build:data
-```
-
-`data/source/`、`tools/`、`tests/`、构建配置和正式原始素材都属于源码仓库。大型 PNG 通过 Git LFS 保存；首次克隆后必须完成 LFS 拉取，再执行 `npm ci` 和 `npm run build`。生成的 `data.js` 与运行时 WebP 必须能够由这些源码确定性重建。
-
-地图连接只允许维护在 `data/source/edges.json`。端点、六类模式、阵营限制、`alpine` 等特殊属性不得放入旁路规则文件；构建发现 `edge_rules.json` 会直接失败。正式地图审核记录位于 `data/source/map_audit.json`。
+本仓库只保存 RTT 服务器运行所需的规则、模块、客户端、`data.js` 和 `assets/` 运行时素材。测试、开发工具、地图编辑器、源数据、原始图包与规则书仅保留在本地，不提交到部署仓库。
 
 ## 人工初设
 
 `rules.js` 中的 `set_up_historical_scenario()` 是 Historical 初设的唯一权威来源。初设采用与 POG 相同的剧本式写法：`setup_piece("ge", "德国骑兵", "Essen")`；第四个参数为 `true` 时表示减损面。手工修改第三个参数中的印刷地名即可，不需要坐标，也不需要重新生成 `data.js`。
 
-仓库中不存在正式 `setup.json`。运行时和构建器都不会读取 TTS 对象、坐标、GUID 或生成数据来建立 Historical 初设；构建发现 `setup.json` 会直接失败。`tools/seed_source_data.mjs` 也不会读写初设。
-
-如需单独更新 TTS 审计材料，可显式运行 `npm.cmd run import:tts`。它不是正常构建流程的一部分，只能输出独立审计材料，不能覆盖正式地图、连接或 Historical 初设。
-
-TTS 导入器递归保留 728 个对象，并输出组件、图片哈希、牌组、区域、堆叠和 Historical 初设审计数据。卡牌使用稳定编号 `600–658` 与 `700–758`。OCR 原始结果保存在 `data/generated/card_ocr.json`，人工校正文保存在 `tools/seed_source_data.mjs`。
-
-## 验证
-
-```powershell
-npm.cmd run typecheck
-npm.cmd run lint
-npm.cmd test
-npm.cmd run test:campaign
-npm.cmd run test:e2e
-npm.cmd run test:visual
-npm.cmd run preview:build
-npm.cmd run preview
-```
-
-## 服务器部署包
-
-```powershell
-npm.cmd run package:server
-```
-
-该命令先重新构建并执行正式地图和连接审计，再生成 `dist/end-of-glory/`。部署包只包含服务器运行所需的规则、模块、客户端、生成数据及运行时素材，不包含测试、工具、原始图包、规则书或地图编辑器。`DEPLOYMENT.json` 记录每个部署文件的大小和 SHA-256。
-
-日常测试覆盖 RTT 页面契约、数据完整性、初设、隐藏信息、地图、单位、MO、海军、行动轮、补给、SR、战斗、撤退、挺进、补员、战线、终局、确定性回放、合法行动 fuzz、回滚和服务器复验。`test:campaign`单独运行跨T1–T15的保存/重载战役；`test:e2e`和`test:visual`使用真实Chromium检查交互与PUG式界面基准。
+仓库中不存在正式 `setup.json`。运行时不会读取 TTS 对象、坐标、GUID 或生成数据来建立 Historical 初设。
 
 ## 实现状态
 

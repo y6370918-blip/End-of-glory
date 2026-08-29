@@ -1,3 +1,0 @@
-游戏地图和卡牌和表格/*.png filter=lfs diff=lfs merge=lfs -text
-算子单位图标/**/*.png filter=lfs diff=lfs merge=lfs -text
-国旗/**/*.png filter=lfs diff=lfs merge=lfs -text

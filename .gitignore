@@ -10,7 +10,23 @@ test-results/
 dist/
 data/generated/
 
-# Import caches and external OCR language packs. Formal source artwork is tracked.
+# Development-only tests, tooling, CI and build configuration
+tests/
+tools/
+.github/
+eslint.config.js
+playwright.config.js
+tsconfig.json
+requirements-build.txt
+.gitattributes
+
+# Build inputs and audit/import output. Runtime uses the committed data.js.
+data/
+
+# Original artwork, documents and OCR sources. Runtime-ready assets remain under assets/.
 assets/source-recovered/
+国旗/
+算子单位图标/
+游戏地图和卡牌和表格/
 chi_sim.traineddata
 eng.traineddata
