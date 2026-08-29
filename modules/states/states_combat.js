@@ -400,9 +400,17 @@ function createCombatStates(api) {
     },
 
     retreat_cancel: {
-      message: "防守方可以承受一步损失取消整次撤退。",
+      message(state) {
+        return api.retreatCancellationTerrainAllowed(state)
+          ? "防守方可以承受一步损失取消整次撤退。"
+          : "逐单位撤退。";
+      },
       prompt(state, builder) {
         const pending = state.pending_retreat;
+        if (!api.retreatCancellationTerrainAllowed(state)) {
+          builder.enable("proceed_retreat");
+          return;
+        }
         builder.addAll("cancel_retreat", (pending.units || []).filter((id) =>
           api.canCancelRetreatWithUnit(state, id),
         ));
