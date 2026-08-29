@@ -592,7 +592,7 @@ function createMoSystem(api) {
               if (entry === "port")
                   return Boolean(api.spaceById[target]?.port);
               if (entry === "mountain")
-                  return ["mountain", "alpine"].includes(api.spaceById[target]?.terrain);
+                  return api.spaceById[target]?.terrain === "mountain";
               if (entry === "swamp")
                   return api.spaceById[target]?.terrain === "swamp";
               if (entry === "river")

@@ -205,9 +205,23 @@ function createOperationsSystem(api) {
           candidates: candidates.map((unit) => unit.id),
           required,
           minimum: largeArea ? Math.min(1, candidates.length) : candidates.length,
-          maximum: largeArea ? Math.min(3, candidates.length) : candidates.length,
+          maximum: largeArea
+              ? Math.min(3, candidates.filter((unit) => unit.type !== "hq").length)
+              : candidates.length,
           large_area: largeArea,
       };
+  }
+
+  function regionActivationCountedUnitCount(state, unitIds) {
+      return (unitIds || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter((unit) => unit && unit.type !== "hq").length;
+  }
+
+  function regionActivationCanAddUnit(state, selected, id) {
+      const unit = state.units.find((candidate) => candidate.id === id);
+      return Boolean(unit &&
+          (unit.type === "hq" || regionActivationCountedUnitCount(state, selected) < 3));
   }
 
   function selectedActivationUnits(state, spaceId, unitIds = null) {
@@ -413,7 +427,7 @@ function createOperationsSystem(api) {
           const hindenburg = state.active === api.CP && api.activeRule(state, "hindenburg_line");
           const canEntrench = Boolean(trenchRule(state, state.active)) &&
               terrain !== "swamp" &&
-              ((["mountain", "alpine"].includes(terrain) &&
+              ((terrain === "mountain" &&
                   (state.fortifications[space.id] || 0) < 2) ||
                   level < maximum ||
                   (level === 2 &&
@@ -450,7 +464,7 @@ function createOperationsSystem(api) {
 
   function constructionMaximumTrench(state, space) {
       const terrain = api.spaceById[space]?.terrain;
-      if (terrain === "mountain" || terrain === "alpine" || terrain === "swamp")
+      if (terrain === "mountain" || terrain === "swamp")
           return 0;
       const rule = trenchRule(state, state.active);
       if (!rule)
@@ -472,7 +486,7 @@ function createOperationsSystem(api) {
       const level = state.trenches[space] || 0;
       const maximum = constructionMaximumTrench(state, space);
       const hindenburg = state.active === api.CP && api.activeRule(state, "hindenburg_line");
-      if (terrain === "mountain" || terrain === "alpine")
+      if (terrain === "mountain")
           return (state.fortifications[space] || 0) < 2;
       if (level < maximum)
           return true;
@@ -864,14 +878,36 @@ function createOperationsSystem(api) {
   function schlieffenSrActions(state) {
       if (!state.ops?.schlieffen?.preactivation_sr_corps || state.active !== api.CP)
           return [];
-      const destinations = Object.keys(state.activations).filter((space) => !state.ops.preactivation_sr_used.includes(space) &&
-          state.control[space] === api.CP &&
-          api.unitsAt(state, space, api.AP).length === 0);
+      const destinations = Object.keys(state.activations).filter((space) => {
+          if (state.ops.preactivation_sr_used.includes(space) ||
+              state.control[space] !== api.CP ||
+              api.unitsAt(state, space, api.AP).length)
+              return false;
+          if (!api.spaceById[space]?.large_area)
+              return true;
+          const kind = state.activations[space];
+          const stacks = kind && state.ops.region_activations?.[kind]?.[space];
+          const stack = (stacks || []).slice().sort((a, b) => Number(b.order || 0) - Number(a.order || 0))[0];
+          return Boolean(stack && regionActivationCountedUnitCount(state, stack.units) < 3);
+      });
       if (!destinations.length)
           return [];
-      return state.reserves.cp
+      const alreadyImported = new Set(state.ops.preactivation_sr_units || []);
+      const reserveActions = state.reserves.cp
           .filter((unit) => api.pieceById[unit.piece]?.type === "corps")
           .flatMap((unit) => destinations.map((destination) => ({ unit: unit.id, destination })));
+      const mapActions = state.units
+          .filter((unit) => unit.faction === api.CP &&
+              unit.type === "corps" &&
+              unit.location &&
+              !alreadyImported.has(unit.id))
+          .flatMap((unit) => {
+              const legal = new Set(legalSrDestinations(state, unit, { allowOverstack: true }));
+              return destinations
+                  .filter((destination) => destination !== unit.location && legal.has(destination))
+                  .map((destination) => ({ unit: unit.id, destination }));
+          });
+      return [...reserveActions, ...mapActions];
   }
 
   function schlieffenSrUnits(state) {
@@ -887,16 +923,52 @@ function createOperationsSystem(api) {
   function schlieffenSr(state, arg) {
       if (!schlieffenSrActions(state).some((action) => action.unit === arg?.unit && action.destination === arg?.destination))
           throw new Error("Illegal Schlieffen pre-activation SR");
-      const index = state.reserves.cp.findIndex((unit) => unit.id === arg.unit);
-      const [unit] = state.reserves.cp.splice(index, 1);
+      const reserveIndex = state.reserves.cp.findIndex((unit) => unit.id === arg.unit);
+      const mapIndex = state.units.findIndex((unit) => unit.id === arg.unit && unit.faction === api.CP);
+      const unit = reserveIndex >= 0
+          ? state.reserves.cp.splice(reserveIndex, 1)[0]
+          : mapIndex >= 0
+              ? state.units[mapIndex]
+              : null;
+      if (!unit)
+          throw new Error("Schlieffen SR unit no longer exists");
       api.hydrateUnit(unit);
+      const origin = unit.location;
+      if (origin) {
+          for (const ids of Object.values(state.ops.activated_units || {})) {
+              const index = ids.indexOf(unit.id);
+              if (index >= 0) ids.splice(index, 1);
+          }
+          for (const kind of ["move", "attack", "construct"])
+              for (const stacks of Object.values(state.ops.region_activations?.[kind] || {}))
+                  for (const stack of stacks || [])
+                      stack.units = (stack.units || []).filter((id) => id !== unit.id);
+      }
       unit.location = arg.destination;
       unit.moved = false;
       unit.attacked = false;
-      state.units.push(unit);
+      delete unit.attack_eligible;
+      if (reserveIndex >= 0)
+          state.units.push(unit);
+      state.ops.activated_units ||= {};
+      state.ops.activated_units[arg.destination] = [
+          ...new Set([...(state.ops.activated_units[arg.destination] || []), unit.id]),
+      ];
+      if (api.spaceById[arg.destination]?.large_area) {
+          const kind = state.activations[arg.destination];
+          const stacks = kind && state.ops.region_activations?.[kind]?.[arg.destination];
+          const stack = (stacks || []).slice().sort((a, b) => Number(b.order || 0) - Number(a.order || 0))[0];
+          if (stack && !stack.units.includes(unit.id))
+              stack.units.push(unit.id);
+      }
       state.ops.preactivation_sr_used.push(arg.destination);
       state.ops.preactivation_sr_units.push(unit.id);
       state.ops.preactivation_sr_selected = null;
+      if (origin && Number(api.spaceById[origin]?.fort) > 0)
+          api.refreshBesiegedSpace(state, origin);
+      if (Number(api.spaceById[arg.destination]?.fort) > 0)
+          api.refreshBesiegedSpace(state, arg.destination);
+      api.updateSupply(state);
   }
 
   function earlyWarOccupationLimit(state, faction) {
@@ -1082,8 +1154,6 @@ function createOperationsSystem(api) {
           if (currentFort)
               continue;
           for (const next of api.neighborsFor(current, "move", unit.faction)) {
-              if (next === origin || path.includes(next))
-                  continue;
               if (!api.spaceCanActivate(state, next))
                   continue;
               if (api.unitsAt(state, next, api.other(unit.faction)).length)
@@ -1135,8 +1205,7 @@ function createOperationsSystem(api) {
       if (!canLeaveBesiegedFort(state, unit))
           throw new Error("Movement would leave an enemy fort without a sufficient siege force");
       if (!path.length ||
-          path.length > maximum ||
-          new Set([unit.location, ...path]).size !== path.length + 1)
+          path.length > maximum)
           throw new Error("Illegal movement path");
       let current = unit.location;
       for (let index = 0; index < path.length; index++) {
@@ -1596,7 +1665,7 @@ function createOperationsSystem(api) {
       return seen;
   }
 
-  function srDestinations(state, unit) {
+  function srDestinations(state, unit, options = {}) {
       if (!unit.supplied)
           return [];
       if (!api.spaceCanActivate(state, unit.location))
@@ -1611,7 +1680,7 @@ function createOperationsSystem(api) {
           (unit.type !== "hq" || hqEndLegal(state, unit, space)) &&
           (overland.has(space) ||
               api.theaterOf(unit.location) !== api.theaterOf(space)) &&
-          api.stackLegal(state, space, unit) &&
+          (options.allowOverstack || api.stackLegal(state, space, unit)) &&
           !(unit.faction === blockade?.blocked_faction &&
               api.spaceById[space]?.port &&
               ["br", "fr", "be"].includes(api.spaceById[space]?.nation)));
@@ -1620,7 +1689,7 @@ function createOperationsSystem(api) {
       return destinations;
   }
 
-  function reserveSrDestinations(state, unit) {
+  function reserveSrDestinations(state, unit, options = {}) {
       if (unit.type !== "corps")
           return [];
       const supplied = api.suppliedSpaces(state, unit.faction, unit.nation);
@@ -1628,7 +1697,7 @@ function createOperationsSystem(api) {
           if (!api.spaceCanActivate(state, space) ||
               !earlySrDestinationAllowed(state, unit, space) ||
               !crossTheaterSrDestinationAllowed(state, unit, space) ||
-              !api.stackLegal(state, space, unit))
+              (!options.allowOverstack && !api.stackLegal(state, space, unit)))
               return false;
           const nationality = api.nationalityGroup(unit.nation);
           const nationalSource = api.nationalSupplySource(state, unit.faction, unit.nation, api.spaceById[space]);
@@ -1664,10 +1733,10 @@ function createOperationsSystem(api) {
       return resolvable;
   }
 
-  function legalSrDestinations(state, unit) {
+  function legalSrDestinations(state, unit, options = {}) {
       const destinations = unit.location
-          ? srDestinations(state, unit)
-          : reserveSrDestinations(state, unit);
+          ? srDestinations(state, unit, options)
+          : reserveSrDestinations(state, unit, options);
       return destinations.filter((space) => srDestinationKeepsHqsResolvable(state, unit, space));
   }
 
@@ -1711,7 +1780,7 @@ function createOperationsSystem(api) {
           const points = activated.some((unit) => unit.type === "army")
               ? (api.theaterOf(space) === "italian" ? 2 : 3)
               : activated.filter((unit) => unit.type === "corps").length;
-          const cap = ["mountain", "alpine"].includes(terrain) ? 2 : 6;
+          const cap = terrain === "mountain" ? 2 : 6;
           const total = Math.min(cap, (state.fortifications[space] || 0) + points);
           if (total >= 6 && level < maximum) {
               state.trenches[space] = level + 1;
@@ -1753,10 +1822,13 @@ function createOperationsSystem(api) {
 
   function commitActivation(state, space, kind, unitIds) {
       const spec = activationSelectionSpec(state, space, kind);
+      const selectedCount = spec.large_area
+          ? regionActivationCountedUnitCount(state, unitIds)
+          : unitIds.length;
       if (!Array.isArray(unitIds) ||
           new Set(unitIds).size !== unitIds.length ||
           unitIds.length < spec.minimum ||
-          unitIds.length > spec.maximum ||
+          selectedCount > spec.maximum ||
           unitIds.some((id) => !spec.candidates.includes(id)) ||
           spec.required.some((id) => !unitIds.includes(id)))
           throw new Error("Invalid activation unit selection");
@@ -1849,7 +1921,7 @@ function createOperationsSystem(api) {
       const pending = state.ops?.pending_activation;
       if (!pending || !api.spaceById[pending.space]?.large_area) return false;
       const selected = pending.selected || [];
-      if (!selected.length || selected.length > 3 ||
+      if (!selected.length || regionActivationCountedUnitCount(state, selected) > 3 ||
           selected.some((id) => !pending.candidates.includes(id)) ||
           selected.some((id) => regionUnitActivated(state, id))) return false;
       const units = selected.map((id) => state.units.find((unit) => unit.id === id)).filter(Boolean);
@@ -1868,7 +1940,8 @@ function createOperationsSystem(api) {
 
   function selectRegionActivationUnit(state, id) {
       const pending = state.ops?.pending_activation;
-      if (!pending || !pending.candidates.includes(id) || pending.selected.includes(id) || pending.selected.length >= 3)
+      if (!pending || !pending.candidates.includes(id) || pending.selected.includes(id) ||
+          !regionActivationCanAddUnit(state, pending.selected, id))
           throw new Error("Illegal large-area activation unit");
       pending.selected.push(id);
   }
@@ -2023,6 +2096,8 @@ return Object.freeze({
     prepareOpsAttackSelection,
     requestOpsFinish,
     regionActivationBatchForUnit,
+    regionActivationCanAddUnit,
+    regionActivationCountedUnitCount,
     regionActivationStacks,
     selectRegionActivationUnit,
     deselectRegionActivationUnit,

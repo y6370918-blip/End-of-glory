@@ -92,9 +92,7 @@ const terrainLabel = {
 	clear: "平地",
 	forest: "森林",
 	swamp: "沼泽",
-	mountain: "山地",
-	alpine: "高山",
-	fort: "要塞"
+	mountain: "山地"
 }
 function roleLabel(role) {
 	if (role === "Allied Powers") return "协约国"
@@ -166,7 +164,8 @@ function renderSpaces() {
 		button.className = `space${selectable ? " legal" : ""}${blocked ? important ? " blocked important" : " blocked" : ""}${attackTarget ? " attack-target" : ""}${warnings.has(space.id) ? " supply-warning" : ""}${supplyOverlay}`
 		EogClientUi.decorateTarget(button, { legal: selectable, hints })
 		Object.assign(button.style, mapPosition(space), mapSize(space, selectable))
-		button.title = `${space.name} · ${terrainLabel[space.terrain] || space.terrain}${hints.length ? `\n${hints.map((entry) => entry.label).join("\n")}` : ""}`
+		const fortLabel = Number(space.fort) > 0 ? ` · 要塞${space.fort}` : ""
+		button.title = `${space.name} · ${terrainLabel[space.terrain] || space.terrain}${fortLabel}${hints.length ? `\n${hints.map((entry) => entry.label).join("\n")}` : ""}`
 		button.dataset.space = space.id
 		button.addEventListener("click", (event) => onSpace(space.id, event))
 		layer.append(button)
@@ -546,14 +545,16 @@ function renderMarkers() {
 		if (!space || space.ui?.hidden) continue
 		const isDestroyed = destroyed.has(spaceId)
 		const label = isDestroyed ? "摧毁" : "围攻"
+		const depth = 1 + Number(Boolean(view.fortifications?.[spaceId])) + Number(Boolean(view.trenches?.[spaceId]))
+		const position = bottomStackMarkerPosition(spaceId, depth)
 		frames.push({
 			key: `fort-state:${spaceId}`,
 			className: "marker image-marker fort-state-marker",
 			label,
 			title: `${space.name}：要塞${label}`,
 			image: pieceAssetByName[label],
-			x: sourceToDisplay(space.ui.x),
-			y: sourceToDisplay(space.ui.y),
+			x: position.x,
+			y: position.y,
 			zIndex: 145
 		})
 	}

@@ -137,6 +137,7 @@ function createReinforcementEventSystem(api) {
                       definition_index: definitionIndex,
                       copy_index: copyIndex,
                       reserve_optional: selectableReserveScu,
+                      placement: unit.placement || null,
                       map_spaces: Array.isArray(unit.map_spaces)
                           ? unit.map_spaces.slice()
                           : null,
@@ -377,7 +378,7 @@ function createReinforcementEventSystem(api) {
           state,
           pending,
           piece,
-          pending.operation.placement,
+          current.placement || pending.operation.placement,
           pending.placements || [],
       );
       return current.map_spaces?.length

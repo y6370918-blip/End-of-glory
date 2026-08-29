@@ -335,6 +335,10 @@ function createViewSystem(api) {
       const pending = api.clone(state.pending_event);
       if (!pending)
           return null;
+      // Internal interruption continuations may contain the suspended ops
+      // object. They are server state, never player-facing event data.
+      if (pending.kind === "counterattack")
+          delete pending.resume;
       if (pending.kind === "combat_hq_reinforcement" && viewer !== pending.owner)
           return null;
       const chooser = pending.chooser || pending.owner || pending.faction;
@@ -390,6 +394,7 @@ function createViewSystem(api) {
       const combat = api.clone(state.combat);
       if (!combat)
           return null;
+      delete combat.counterattack_resume;
       combat.mo_assignments = visibleMoAssignments(state, combat.mo_assignments, viewer, combat.attacker);
       combat.defense_mo_assignments = visibleMoAssignments(state, combat.defense_mo_assignments, viewer, api.other(combat.attacker));
       if (combat.declaration) {
@@ -573,6 +578,8 @@ function createViewSystem(api) {
       const actionView = buildActionView(state, current);
       const naval = api.clone(state.naval);
       const combatWindow = api.clone(state.combat_window);
+      if (combatWindow)
+          delete combatWindow.counterattack_resume;
       if (state.state === "naval_choice" &&
           faction !== api.CP &&
           state.active === api.AP &&

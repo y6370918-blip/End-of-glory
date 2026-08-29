@@ -470,6 +470,7 @@ function createEventStates(api) {
           side: AP,
           cards: [],
           counterattack_card: card.id,
+          counterattack_resume: api.clone(pending.resume),
           prohibit_combat_cards: true,
         };
         state.state = "combat_card_window";

@@ -599,7 +599,9 @@ function createCombatStates(api) {
             (!selectedOrigin || unit.location === selectedOrigin) &&
             (selected.includes(id) ||
               pending.maximum == null ||
-              pending.advanced_ids.length + selected.length < pending.maximum) &&
+              unit.type === "hq" ||
+              api.advanceCountedUnitCount(state, pending.advanced_ids) +
+                api.advanceCountedUnitCount(state, selected) < pending.maximum) &&
             api.advanceSelectionCanAdd(state, pending, [...selected, id])
           );
         });
@@ -622,13 +624,15 @@ function createCombatStates(api) {
         if (!pending.units.includes(id)) throw new Error("Unit cannot advance");
         if (pending.advance_group?.length)
           throw new Error("No new unit may join an advance already in progress");
+        const unit = api.findUnit(state, id);
         if (
           pending.maximum != null &&
-          pending.advanced_ids.length + pending.selected_advance_units.length >= pending.maximum &&
+          unit?.type !== "hq" &&
+          api.advanceCountedUnitCount(state, pending.advanced_ids) +
+            api.advanceCountedUnitCount(state, pending.selected_advance_units) >= pending.maximum &&
           !pending.selected_advance_units.includes(id)
         )
           throw new Error("Advance limit reached");
-        const unit = api.findUnit(state, id);
         const selectedUnits = pending.selected_advance_units
           .map((unitId) => api.findUnit(state, unitId))
           .filter(Boolean);
@@ -643,7 +647,16 @@ function createCombatStates(api) {
           // an intact fort, corps may need to be accumulated until the group
           // reaches the printed siege strength; the last required click then
           // performs the advance automatically.
-          if (api.advanceDestinations(state, pending).includes(pending.target))
+          const supportStillAvailable = pending.units.some((candidateId) => {
+            if (pending.selected_advance_units.includes(candidateId)) return false;
+            const candidate = api.findUnit(state, candidateId);
+            return candidate?.type === "hq" &&
+              api.advanceSelectionCanAdd(state, pending, [
+                ...pending.selected_advance_units,
+                candidateId,
+              ]);
+          });
+          if (!supportStillAvailable && api.advanceDestinations(state, pending).includes(pending.target))
             advanceToDestination(state, pending.target);
         }
       },

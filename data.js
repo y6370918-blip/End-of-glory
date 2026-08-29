@@ -233,7 +233,7 @@ const data = {
 			"remove": true,
 			"event": "ap_法国增援_预备军",
 			"condition": "always",
-			"effect": "增援：德斯佩雷HQ与4个法国新兵SCU，部署在法国境内距离巴黎或南希2格以内的地区。然后可向其中两个增援地区各免费SR 1个法国LCU；若在第1回合事件本牌，则总共只能免费SR 1个法国LCU。",
+			"effect": "增援：德斯佩雷HQ选择部署在法国补给源；4个法国新兵SCU部署在法国境内距离巴黎或南希2格以内的地区。然后可向其中两个增援地区各免费SR 1个法国LCU；若在第1回合事件本牌，则总共只能免费SR 1个法国LCU。",
 			"ocr_confidence": 85,
 			"ocr_text": "|\n法国增援-预备军\n名T1事件本牌，仅能SR一个\n法国LCU\n增援: 德斯佩雷HQ，在法国境内\n距离巴黎/南希2格内的地区，增\n援4个法国新兵scu。然后可以向\n其中2个地区，各SR (不计入SR次\n数) 一个法国LCU\nMB BR:3 FR:3 IT:2 AI",
 			"image": "cards/ap/607.webp",
@@ -1818,7 +1818,7 @@ const data = {
 			"remove": true,
 			"event": "cp_施里芬计划",
 			"condition": "always",
-			"effect": "使用本牌3 OP进行正常移动或进攻。每个已激活地区在结算前可从CP预备区免费SR一枚SCU；允许临时超堆叠，行动结束时将造成超堆叠的本牌增援SCU送回预备区。",
+			"effect": "使用本牌3 OP进行正常移动或进攻。每个已激活地区在结算前可从CP预备区或地图免费SR一枚SCU；该SCU参与目的地激活；允许临时超堆叠，行动结束时将造成超堆叠的本牌SR SCU送回预备区。",
 			"ocr_confidence": 80,
 			"ocr_text": "ee”\n施里分于划\n用本牌0P进行移动或进攻。激活\n前，可以向每一个激活地区SR一\n个scu单位(不计入SR次数，无视\nT1-2的SR限制) 允许暂时超堆僚\n本行动轮结束时，移除超堆本单\n义。\nMB GE:3 AH:2 FAST:2",
 			"image": "cards/cp/707.webp",
@@ -3618,7 +3618,13 @@ const data = {
 						{
 							"piece": "component-002",
 							"count": 1,
-							"to": "map"
+							"to": "map",
+							"placement": "national_supply",
+							"map_spaces": [
+								"paris",
+								"orleans",
+								"chaumont"
+							]
 						},
 						{
 							"piece": "component-028",
@@ -3640,7 +3646,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "增援：德斯佩雷HQ与4个法国新兵SCU，部署在法国境内距离巴黎或南希2格以内的地区。然后可向其中两个增援地区各免费SR 1个法国LCU；若在第1回合事件本牌，则总共只能免费SR 1个法国LCU。"
+			"source_text": "增援：德斯佩雷HQ选择部署在法国补给源；4个法国新兵SCU部署在法国境内距离巴黎或南希2格以内的地区。然后可向其中两个增援地区各免费SR 1个法国LCU；若在第1回合事件本牌，则总共只能免费SR 1个法国LCU。"
 		},
 		"608": {
 			"card_id": 608,
@@ -6753,7 +6759,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "使用本牌3 OP进行正常行动。每个已激活地区在结算前可从CP预备区免费SR一枚SCU；行动结束时将造成超堆叠的本牌增援SCU送回预备区。"
+			"source_text": "使用本牌3 OP进行正常行动。每个已激活地区在结算前可从CP预备区或地图免费SR一枚SCU；该SCU参与目的地激活；行动结束时将造成超堆叠的本牌SR SCU送回预备区。"
 		},
 		"708": {
 			"card_id": 708,
@@ -10128,6 +10134,7 @@ const data = {
 				"h": 225
 			},
 			"vp": true,
+			"fort": 2,
 			"control": "ap",
 			"connections": [
 				"boulogne",
@@ -10307,6 +10314,7 @@ const data = {
 			"terrain": "clear",
 			"supply": false,
 			"port": true,
+			"fort": 1,
 			"ui": {
 				"x": 2795,
 				"y": 454,
@@ -10522,7 +10530,7 @@ const data = {
 			"name": "Liege",
 			"nation": "be",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"fort": 3,
 			"supply": false,
 			"port": false,
@@ -10654,6 +10662,7 @@ const data = {
 				"h": 227
 			},
 			"vp": true,
+			"fort": 2,
 			"control": "ap",
 			"connections": [
 				"abbeville",
@@ -10888,7 +10897,7 @@ const data = {
 			"name": "Paris",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": true,
 			"port": false,
 			"ui": {
@@ -11033,6 +11042,7 @@ const data = {
 				"h": 217
 			},
 			"vp": true,
+			"fort": 2,
 			"control": "ap",
 			"connections": [
 				"champagne",
@@ -11253,7 +11263,7 @@ const data = {
 			"name": "Verdun",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "forest",
 			"fort": 3,
 			"supply": false,
 			"port": false,
@@ -11580,8 +11590,7 @@ const data = {
 			"name": "Nancy",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
-			"fort": 3,
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -11591,6 +11600,7 @@ const data = {
 				"h": 203
 			},
 			"vp": true,
+			"fort": 3,
 			"control": "ap",
 			"connections": [
 				"charmes",
@@ -11699,6 +11709,7 @@ const data = {
 				"w": 184,
 				"h": 218
 			},
+			"fort": 2,
 			"control": "ap",
 			"connections": [
 				"besancon",
@@ -12041,7 +12052,7 @@ const data = {
 			"name": "Metz",
 			"nation": "ge",
 			"faction": "cp",
-			"terrain": "fort",
+			"terrain": "clear",
 			"fort": 3,
 			"supply": false,
 			"port": false,
@@ -12177,7 +12188,7 @@ const data = {
 			"name": "Strasbourg",
 			"nation": "ge",
 			"faction": "cp",
-			"terrain": "fort",
+			"terrain": "clear",
 			"fort": 3,
 			"supply": false,
 			"port": false,
@@ -12475,6 +12486,7 @@ const data = {
 				"h": 216
 			},
 			"control": "ap",
+			"fort": 2,
 			"vp": true,
 			"connections": [
 				"brescia",
@@ -12584,6 +12596,7 @@ const data = {
 				"h": 207
 			},
 			"control": "ap",
+			"fort": 1,
 			"vp": true,
 			"connections": [
 				"padova",
@@ -12779,7 +12792,7 @@ const data = {
 			"name": "Trent",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -12789,6 +12802,7 @@ const data = {
 				"h": 208
 			},
 			"control": "cp",
+			"fort": 2,
 			"vp": true,
 			"connections": [
 				"pergine",
@@ -12958,7 +12972,7 @@ const data = {
 			"name": "Villach",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -14280,7 +14294,7 @@ const data = {
 			"name": "Lille",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -14887,7 +14901,7 @@ const data = {
 			"name": "Namur",
 			"nation": "be",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -15212,7 +15226,7 @@ const data = {
 			"name": "Maubeuge",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -16729,7 +16743,7 @@ const data = {
 			"name": "Laon",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -18635,7 +18649,7 @@ const data = {
 			"name": "Toul",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -20126,7 +20140,7 @@ const data = {
 			"name": "Chaumont",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": true,
 			"port": false,
 			"ui": {
@@ -20249,7 +20263,7 @@ const data = {
 			"name": "Neufchateau",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -21144,7 +21158,7 @@ const data = {
 			"name": "Dijon",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "fort",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -23147,6 +23161,7 @@ const data = {
 				"h": 240
 			},
 			"control": "ap",
+			"fort": 2,
 			"connections": [
 				"belfort",
 				"charmes",
@@ -23364,6 +23379,7 @@ const data = {
 				"h": 232
 			},
 			"control": "ap",
+			"fort": 2,
 			"connections": [
 				"chatillon",
 				"chaumont",
@@ -23488,7 +23504,7 @@ const data = {
 			"name": "Tyrol",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": true,
 			"port": false,
 			"ui": {
@@ -23571,7 +23587,7 @@ const data = {
 			"name": "Bozen",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -23679,7 +23695,7 @@ const data = {
 			"name": "Lienz",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -23774,7 +23790,7 @@ const data = {
 			"name": "Spittal",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -23882,7 +23898,7 @@ const data = {
 			"name": "Carnicola",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": true,
 			"port": false,
 			"ui": {
@@ -24086,7 +24102,7 @@ const data = {
 			"name": "Pergine",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -24194,7 +24210,7 @@ const data = {
 			"name": "Rovereto",
 			"nation": "ah",
 			"faction": "cp",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -24514,7 +24530,6 @@ const data = {
 				"w": 204,
 				"h": 202
 			},
-			"fort": 2,
 			"control": "cp",
 			"connections": [
 				"gorizia",
@@ -24901,7 +24916,7 @@ const data = {
 			"name": "Asiago",
 			"nation": "it",
 			"faction": "ap",
-			"terrain": "alpine",
+			"terrain": "mountain",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -25627,7 +25642,6 @@ const data = {
 				"w": 180,
 				"h": 180
 			},
-			"fort": 2,
 			"control": "ap",
 			"vp": true,
 			"connections": [

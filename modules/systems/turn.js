@@ -17,8 +17,20 @@ function createTurnSystem(api) {
       state.decks[faction] = api.shuffle(state, initial);
   }
 
+  function recycleDiscardIntoDeck(state, faction) {
+      const activeCombatCards = activeCombatCardIds(state);
+      const recyclable = state.discard[faction].filter((id) => !activeCombatCards.has(id));
+      if (!recyclable.length)
+          return false;
+      state.decks[faction] = api.shuffle(state, recyclable);
+      state.discard[faction] = state.discard[faction].filter((id) => activeCombatCards.has(id));
+      return true;
+  }
+
   function drawCards(state, faction, target = api.data.title.hand_size || 9) {
-      while (state.hands[faction].length < target && state.decks[faction].length) {
+      while (state.hands[faction].length < target) {
+          if (!state.decks[faction].length && !recycleDiscardIntoDeck(state, faction))
+              break;
           state.hands[faction].push(state.decks[faction].pop());
       }
   }
@@ -531,13 +543,7 @@ function createTurnSystem(api) {
       state.state = "automatic";
       state.active = api.NONE;
       discardRetainedCombatCards(state);
-      const activeCombatCards = activeCombatCardIds(state);
       for (const faction of [api.AP, api.CP]) {
-          if (state.discard[faction].length && state.decks[faction].length === 0) {
-              const recyclable = state.discard[faction].filter((id) => !activeCombatCards.has(id));
-              state.decks[faction] = api.shuffle(state, recyclable);
-              state.discard[faction] = state.discard[faction].filter((id) => activeCombatCards.has(id));
-          }
           drawCards(state, faction);
       }
       applyEndTurnVp(state);

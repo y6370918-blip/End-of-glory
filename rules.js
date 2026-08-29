@@ -38,6 +38,9 @@ const {
   roleFaction,
   unique,
 } = require("./modules/core/utils.js");
+const {
+  captureLegacyMiracleResume,
+} = require("./modules/core/save-migrations.js");
 const { createCombatSystem } = require("./modules/systems/combat.js");
 const { createCombatCardSystem } = require("./modules/systems/combat-cards.js");
 const { createEventSystem } = require("./modules/systems/events.js");
@@ -86,6 +89,7 @@ const moById = Object.fromEntries(
 const CardZones = createCardZoneSystem({ data, AP, CP, cardById });
 const AUTO_CARD_CONSERVATION = !process.env.NODE_TEST_CONTEXT;
 let undoActionContext = null;
+
 function ensureState(state) {
   if (!state) return state;
   const previousVersion = Number(state.version) || 0;
@@ -251,6 +255,57 @@ function ensureState(state) {
     state.ops.preactivation_sr_selected = null;
   if (state.ops && state.ops.pending_attack === undefined)
     state.ops.pending_attack = null;
+
+  // Repair saves made while the old Miracle on the Marne interruption was
+  // active.  That implementation left the CP operation live while AP owned
+  // the counterattack, so finishing the combat could strand AP inside CP's
+  // activations and then skip AP's formal action.  New games carry an
+  // explicit resume payload; old in-flight saves can recover it from the CP
+  // action that is still present in state.ops.
+  if (
+    state.pending_event?.kind === "counterattack" &&
+    !state.pending_event.resume &&
+    state.ops &&
+    state.action_state?.actor === CP
+  ) {
+    state.pending_event.resume = captureLegacyMiracleResume(state);
+    state.ops = null;
+    state.activations = {};
+  }
+  if (
+    state.combat &&
+    !state.combat.counterattack_resume &&
+    state.ops &&
+    state.action_state?.actor === CP &&
+    state.combat.modifiers?.cards?.some(
+      (entry) => Number(entry?.id ?? entry) === 609,
+    )
+  ) {
+    state.combat.counterattack_resume = captureLegacyMiracleResume(state);
+    state.ops = null;
+    state.activations = {};
+  }
+  if (
+    !state.combat &&
+    !state.pending_event &&
+    state.ops &&
+    state.active === AP &&
+    state.action_state?.actor === CP &&
+    state.action_state.used_combat_cards.includes(609) &&
+    ["ops_activate", "ops_move", "ops_construct", "ops_attack"].includes(
+      state.state,
+    )
+  ) {
+    const resume = captureLegacyMiracleResume(state);
+    state.active = CP;
+    state.ops = resume.ops;
+    state.activations = resume.activations;
+    if (state.ops.execution_phase === "attack") state.state = "ops_attack";
+    else if (state.ops.execution_phase === "move") state.state = "ops_move";
+    else if (state.ops.execution_phase === "construct")
+      state.state = "ops_construct";
+    else state.state = "ops_activate";
+  }
   if (state.ops?.pending_attack) {
     state.ops.pending_attack.mo_assignments ||= {};
     state.ops.pending_attack.mo_decisions ||= {};
@@ -1060,6 +1115,15 @@ function ensureState(state) {
   // leaving some saves with an uncontested destroyed fort still controlled by
   // its printed owner.  This is a safe invariant repair rather than a schema
   // migration, so it also fixes already-current saves as soon as they load.
+  // Antwerp was also missing its printed LF1 value in the map data.  A CP-
+  // controlled Antwerp in an existing save could therefore only have been
+  // entered while that fort was incorrectly absent; preserve that achieved
+  // position by recording the fort as destroyed when the corrected data loads.
+  if (
+    state.control.antwerp === CP &&
+    !state.destroyed_forts.includes("antwerp")
+  )
+    state.destroyed_forts.push("antwerp");
   let repairedDestroyedFortControl = false;
   for (const space of state.destroyed_forts || []) {
     const occupiers = unique(
@@ -2097,6 +2161,7 @@ const {
   isCombatUnit,
   italianTheaterActive,
   landNeighbors,
+  legalSrDestinations,
   markMoForAttack,
   markMoRequirement,
   moAttackEffect,
@@ -2342,6 +2407,7 @@ exports._test = {
   schlieffenOverstackCandidates,
   validateMovementPath,
   srDestinations,
+  legalSrDestinations,
   reserveSrDestinations,
   attacksTarget,
   validateAttackDeclaration,

@@ -962,6 +962,19 @@ function createCombatSystem(api) {
       const cpCards = (state.combat_window?.cards || []).filter((id) => id !== cardId && api.cardById[id]?.faction === api.CP);
       for (const id of cpCards)
           delete state.events[api.cardById[id].event];
+      // Miracle on the Marne interrupts, but does not end, the current CP
+      // operation.  Keep that operation completely separate from the AP
+      // counterattack so combat cleanup cannot reinterpret CP activations as
+      // AP activations or advance the action round with AP still active.
+      for (const unit of attackingUnits)
+          unit.attacked = true;
+      if (state.ops) {
+          const participating = new Set(attackingUnits.map((unit) => unit.location));
+          state.ops.forced_attacks = (state.ops.forced_attacks || [])
+              .filter((space) => !participating.has(space));
+          state.ops.pending_attack = null;
+          state.ops.attack_selection = [];
+      }
       state.pending_event = {
           kind: "counterattack",
           card: cardId,
@@ -971,7 +984,14 @@ function createCombatSystem(api) {
           index: 0,
           origins: [...new Set(attackingUnits.map((unit) => unit.location))],
           original_target: declaration.target,
+          resume: {
+              active: state.active,
+              ops: api.clone(state.ops),
+              activations: api.clone(state.activations),
+          },
       };
+      state.ops = null;
+      state.activations = {};
       state.combat_window = null;
       state.combat = null;
       api.enterEventFlow(state);
@@ -1331,13 +1351,13 @@ function createCombatSystem(api) {
                   label: "跨河进攻",
               });
           }
-          if (terrain === "mountain" || terrain === "alpine") {
+          if (terrain === "mountain") {
               modifiers.attack_column -= 1;
               modifiers.modifier_sources.push({
                   side: "attacker",
                   kind: "column",
                   amount: -1,
-                  label: terrain === "alpine" ? "高山地形" : "山地",
+                  label: "山地",
               });
           }
           if (terrain === "swamp") {
@@ -1387,8 +1407,8 @@ function createCombatSystem(api) {
       }
       const mountainAttack = attackingUnits.some((unit) => api.pieceById[unit.piece]?.mountain);
       const mountainDefense = defenders.some((unit) => api.pieceById[unit.piece]?.mountain);
-      const mountainTerrain = ["mountain", "alpine"].includes(api.spaceById[target]?.terrain) ||
-          attackingUnits.some((unit) => ["mountain", "alpine"].includes(api.spaceById[unit.location]?.terrain));
+      const mountainTerrain = api.spaceById[target]?.terrain === "mountain" ||
+          attackingUnits.some((unit) => api.spaceById[unit.location]?.terrain === "mountain");
       if (mountainTerrain && mountainAttack && !mountainDefense) {
           attackDrm += 1;
           modifiers.modifier_sources.push({
@@ -1540,6 +1560,7 @@ function createCombatSystem(api) {
               state.units.find((unit) => unit.id === id)?.location,
           ])),
           move_attackers: moveAttackers.map((unit) => unit.id),
+          counterattack_resume: api.clone(state.combat_window?.counterattack_resume || null),
       };
       if (state.active === api.CP && target === "paris") {
           state.campaign_flags ||= {};
@@ -2057,6 +2078,7 @@ function createCombatSystem(api) {
               api.log(state, `伊普尔阻击：${[...locations].map(api.spaceName).join("、")} 防御工事 +1。`);
       }
       const nivelle = combat?.modifiers?.cards?.find((entry) => entry.effect.forced_french_attacks_after);
+      const miracleResume = api.clone(combat?.counterattack_resume || null);
       const moCounterattack = combat?.mo_counterattack;
       const counterattackUnits = (moCounterattack?.units || []).filter((id) => state.units.some((unit) => unit.id === id && unit.location === moCounterattack.origin));
       const counterattackTargets = api.neighborsFor(moCounterattack?.origin, "attack", api.AP).filter((space) => api.unitsAt(state, space, api.CP).length || api.spaceById[space]?.fort);
@@ -2074,6 +2096,26 @@ function createCombatSystem(api) {
       state.combat = null;
       state.post_combat_window = null;
       api.clearCombatEvents(state);
+      if (miracleResume) {
+          state.active = miracleResume.active;
+          state.ops = miracleResume.ops;
+          state.activations = miracleResume.activations || {};
+          if (!state.ops) {
+              state.state = "action_card";
+              return;
+          }
+          if (state.ops.execution_phase === "attack") {
+              api.prepareOpsAttackSelection(state);
+              state.state = "ops_attack";
+          }
+          else if (state.ops.execution_phase === "move")
+              state.state = "ops_move";
+          else if (state.ops.execution_phase === "construct")
+              state.state = "ops_construct";
+          else
+              state.state = "ops_activate";
+          return;
+      }
       if (nivelle) {
           const candidates = nivelleMarkerCandidates(state);
           const required = Math.min(nivelle.effect.forced_french_attacks_after, candidates.length);
@@ -2194,7 +2236,19 @@ function createCombatSystem(api) {
           }
           result.push(...units);
       }
-      return result.map((unit) => unit.id);
+      const eligibleOrigins = new Map();
+      for (const unit of result) {
+          const group = api.nationalityGroup(unit.nation);
+          if (!eligibleOrigins.has(unit.location)) eligibleOrigins.set(unit.location, new Set());
+          eligibleOrigins.get(unit.location).add(group);
+      }
+      const hqs = combat.attackers
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter((unit) => unit?.type === "hq" &&
+              unit.faction === combat.attacker &&
+              api.connectionAllows(unit.location, combat.target, "advance", combat.attacker) &&
+              eligibleOrigins.get(unit.location)?.has(api.nationalityGroup(unit.nation)));
+      return [...result, ...hqs].map((unit) => unit.id);
   }
 
   function finishCombatLosses(state) {
@@ -2313,7 +2367,7 @@ function createCombatSystem(api) {
               advanced: 0,
               retreat_paths: [],
               advance_max_steps: retreatSteps,
-              can_cancel_with_loss: (["forest", "mountain", "alpine", "swamp"].includes(api.spaceById[combat.target]?.terrain) ||
+              can_cancel_with_loss: (["forest", "mountain", "swamp"].includes(api.spaceById[combat.target]?.terrain) ||
                   ((state.trenches[combat.target] || 0) > 0 && !rules.ignore_trench)),
               prohibit_damaged_cancel: Boolean(rules.prohibit_damaged_retreat_cancel) || marginProhibition,
           };
@@ -2536,6 +2590,24 @@ function createCombatSystem(api) {
           [...existing, ...incoming].filter((unit) => unit.type === "hq").length <= 1);
   }
 
+  function advanceCountedUnitCount(state, ids) {
+      return (ids || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(api.isCombatUnit).length;
+  }
+
+  function advanceHqsEscorted(state, ids) {
+      const units = (ids || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(Boolean);
+      const combatUnits = units.filter(api.isCombatUnit);
+      return units
+          .filter((unit) => unit.type === "hq")
+          .every((hq) => combatUnits.some((unit) =>
+              unit.location === hq.location &&
+              api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation)));
+  }
+
   function advanceUnitInto(state, pending, unit, destination) {
       const origin = unit.location;
       const destroysKillingGround = unit.faction === api.CP &&
@@ -2564,7 +2636,8 @@ function createCombatSystem(api) {
           api.captureSpace(state, destination, unit.faction);
       if (enteredApItaly)
           api.markMoRequirement(state, "ah", "enter_enemy_italy");
-      api.markAdvanceMo(state, unit.nation);
+      if (api.isCombatUnit(unit))
+          api.markAdvanceMo(state, unit.nation);
       if (unit.type === "army")
           pending.army_advanced = true;
       if (!pending.advanced_ids.includes(unit.id))
@@ -2599,6 +2672,7 @@ function createCombatSystem(api) {
       const faction = units[0].faction;
       if (units.some((unit) => unit.faction !== faction ||
           !api.connectionAllows(unit.location, destination, "advance", faction)) ||
+          !advanceHqsEscorted(state, ids) ||
           !api.canOccupyByEarlyWarDepth(state, faction, destination) ||
           !api.spaceCanActivate(state, destination) ||
           api.unitsAt(state, destination, api.other(faction)).length)
@@ -2630,6 +2704,7 @@ function createCombatSystem(api) {
       const faction = units[0].faction;
       return (units.every((unit) => unit.faction === faction &&
           api.connectionAllows(unit.location, pending.target, "advance", faction)) &&
+          advanceHqsEscorted(state, ids) &&
           api.canOccupyByEarlyWarDepth(state, faction, pending.target) &&
           api.spaceCanActivate(state, pending.target) &&
           !api.unitsAt(state, pending.target, api.other(faction)).length &&
@@ -2637,7 +2712,7 @@ function createCombatSystem(api) {
   }
 
   function advanceTerrainAllowsSecondStep(state, pending) {
-      return !["forest", "mountain", "alpine", "swamp", "desert"].includes(api.spaceById[pending.target]?.terrain);
+      return !["forest", "mountain", "swamp", "desert"].includes(api.spaceById[pending.target]?.terrain);
   }
 
   function secondAdvanceDestinations(state, pending, ids) {
@@ -2688,7 +2763,7 @@ function createCombatSystem(api) {
       const movedAttackers = new Set(combat.move_attackers || []);
       pending.units = (pending.advance_units || pending.units || []).filter((id) => {
           const unit = state.units.find((candidate) => candidate.id === id);
-          return unit && api.isCombatUnit(unit) && !movedAttackers.has(id);
+          return unit && api.isAttackParticipant(unit) && !movedAttackers.has(id);
       });
       pending.selected_advance_units = [];
       pending.advance_group = null;
@@ -2789,6 +2864,7 @@ return Object.freeze({
     allOutAttackChoices,
     assignedDestroyMoQualifies,
     advanceCanEnter,
+    advanceCountedUnitCount,
     advanceCombatHqRelocation,
     advanceCombatLosses,
     advanceDestinations,

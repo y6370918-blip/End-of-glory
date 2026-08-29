@@ -49,7 +49,7 @@ function createActivationStates(api) {
       message: (state) => {
         const pending = state.ops?.pending_activation;
         const name = api.spaceById[pending?.space]?.name || pending?.space || "大区";
-        return `${name}：选择最多3枚单位（1 OP）`;
+        return `${name}：选择最多3枚战斗单位（HQ不计，1 OP）`;
       },
       prompt(state, builder) {
         const pending = state.ops?.pending_activation;
@@ -57,7 +57,9 @@ function createActivationStates(api) {
         const selected = pending.selected || [];
         builder.addAll(
           "select_activation_unit",
-          pending.candidates.filter((id) => !selected.includes(id) && selected.length < 3),
+          pending.candidates.filter(
+            (id) => !selected.includes(id) && api.regionActivationCanAddUnit(state, selected, id),
+          ),
         );
         builder.addAll("deselect_activation_unit", selected);
         if (selected.length && api.pendingRegionActivationLegal(state))
