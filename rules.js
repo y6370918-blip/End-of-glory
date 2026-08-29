@@ -15,7 +15,6 @@ const {
   AP_ROLE,
   CP,
   CP_ROLE,
-  FRENCH_VP_SPACES,
   HISTORICAL,
   MO_NATIONS,
   NONE,
@@ -23,6 +22,7 @@ const {
 const { findUnit } = require("./modules/core/game-utils.js");
 const {
   canonicalizeEventState,
+  enterEventFlow,
 } = require("./modules/core/event-flow.js");
 const {
   compactHistoryState,
@@ -115,6 +115,7 @@ function ensureState(state) {
   if (!state.usage_limits) state.usage_limits = {};
   if (!state.front_storage) state.front_storage = { russian: 0, turkish: 0 };
   if (!state.entry_tracks) state.entry_tracks = { us: 0, armistice: 0 };
+  if (!state.campaign_flags) state.campaign_flags = { paris_attacked: false };
   if (!state.combat_modifiers) state.combat_modifiers = {};
   if (state.combat) {
     state.combat.attackers ||= [];
@@ -165,10 +166,6 @@ function ensureState(state) {
     state.markers.killing_ground.destroy_vp =
       ruleModifier(card)?.destroy_vp || 1;
   }
-  if (!state.round_start_control)
-    state.round_start_control = clone(state.control || {});
-  if (!state.round_enemy_entries)
-    state.round_enemy_entries = { cp: [], ap: [] };
   if (!state.fortifications) state.fortifications = {};
   for (const [space, value] of Object.entries(state.fortifications))
     state.fortifications[space] = Math.max(0, Number(value) || (value ? 1 : 0));
@@ -305,15 +302,10 @@ function ensureState(state) {
       unit ? [[unit, state.ops.movement.path?.length || 0]] : [],
     );
   }
-  if (
-    state.ops?.movement &&
-    state.ops.movement.began_in_fort_limited_supply === undefined &&
-    state.ops.movement.began_in_limited_supply !== undefined
-  ) {
-    state.ops.movement.began_in_fort_limited_supply = {
-      ...state.ops.movement.began_in_limited_supply,
-    };
-    delete state.ops.movement.began_in_limited_supply;
+  if (state.ops?.movement) {
+    state.ops.movement.began_in_fort_limited_supply ||= {};
+    state.ops.movement.began_in_limited_supply ||= {};
+    state.ops.movement.began_adjacent_enemy ||= {};
   }
   if (!state.entry_reserve) state.entry_reserve = { it: [] };
   if (
@@ -927,7 +919,7 @@ function ensureState(state) {
         delete state.pending_event.cards;
         delete state.pending_event.after_search;
         state.active = AP;
-        state.state = "event";
+        enterEventFlow(state);
       }
     }
 
@@ -1127,7 +1119,7 @@ function ensureState(state) {
       const resume = pending.resume_immediate_rp || pending.resume_combat_fr_rp;
       if (resume) {
         state.pending_event = resume;
-        state.state = "event";
+        enterEventFlow(state);
         state.phase = "行动阶段";
       } else {
         state.pending_event = null;
@@ -1244,7 +1236,7 @@ function ensureState(state) {
         if (pending.resume_immediate_rp || pending.resume_combat_fr_rp) {
           state.pending_event =
             pending.resume_immediate_rp || pending.resume_combat_fr_rp;
-          state.state = "event";
+          enterEventFlow(state);
           state.phase = "行动阶段";
         } else {
           state.pending_event = null;
@@ -1324,7 +1316,120 @@ function ensureState(state) {
     setRollbackSnapshots(state, rollbackSnapshots);
     canonicalizeEventState(state);
   }
-  state.version = 44;
+  if (previousVersion < 45) {
+    const actor = state.action_state?.actor;
+    const inFormalAction =
+      [AP, CP].includes(actor) &&
+      Number(state.action_round) > 0 &&
+      state.action_state?.turn === state.turn &&
+      state.action_state?.round === state.action_round;
+    if (inFormalAction) {
+      const legacyCpSnapshot =
+        actor === CP &&
+        state.round_start_control &&
+        Object.keys(state.round_start_control).length
+          ? state.round_start_control
+          : null;
+      state.action_start_control = {
+        actor,
+        spaces: clone(legacyCpSnapshot || state.control || {}),
+      };
+    } else {
+      state.action_start_control = null;
+    }
+    delete state.round_start_control;
+    delete state.round_enemy_entries;
+  }
+  if (previousVersion < 46) {
+    state.campaign_flags ||= { paris_attacked: false };
+    state.campaign_flags.paris_attacked = Boolean(
+      state.campaign_flags.paris_attacked,
+    );
+    if (state.ops) {
+      state.ops.attack_marker_spaces = [
+        ...new Set([
+          ...(state.ops.attack_marker_spaces || []),
+          ...Object.entries(state.activations || {})
+            .filter(([, kind]) => kind === "attack")
+            .map(([space]) => space),
+          ...Object.entries(state.ops.region_activations?.attack || {})
+            .filter(([, stacks]) => stacks?.length)
+            .map(([space]) => space),
+        ]),
+      ];
+    }
+    const penalty = state.pending_event;
+    if (penalty?.kind === "mo_penalty" &&
+        ["forward_origin", "forward_leave", "forward_target"].includes(penalty.stage)) {
+      penalty.stage = "mode";
+      delete penalty.origin;
+      delete penalty.leave;
+      delete penalty.forward_available;
+      penalty.selected = [];
+      penalty.selected_units = [];
+      penalty.loss_required = Engine.moPenaltyLossCanPay(
+        state,
+        penalty.penalized,
+        penalty.nation,
+        2,
+      ) ? 2 : 0;
+    }
+    updateSupply(state);
+  }
+  {
+    const remapReinforcementPiece = (piece, sourceCard) => {
+      if (Number(sourceCard) === 637) {
+        if (piece === "component-093") return "component-170";
+        if (piece === "component-026") return "component-169";
+      }
+      if (Number(sourceCard) === 735 && piece === "component-033")
+        return "component-167";
+      return piece;
+    };
+    const migrateUnit = (unit) => {
+      if (!unit || typeof unit !== "object") return;
+      unit.piece = remapReinforcementPiece(
+        unit.piece,
+        unit.reinforcement_card,
+      );
+    };
+    const pools = [
+      state.units,
+      state.permanently_removed_units,
+      ...Object.values(state.reserves || {}),
+      ...Object.values(state.upgrade_pool || {}),
+      ...Object.values(state.eliminated || {}),
+      ...Object.values(state.hq_turn_track || {}),
+      ...Object.values(state.entry_reserve || {}),
+      ...(state.scheduled_events || []).map((entry) => entry.units),
+    ];
+    for (const pool of pools)
+      for (const unit of pool || []) migrateUnit(unit);
+
+    const pending = state.pending_event;
+    if ([637, 735].includes(Number(pending?.card))) {
+      const remap = (entry) => {
+        if (entry && typeof entry === "object" && entry.piece)
+          entry.piece = remapReinforcementPiece(entry.piece, pending.card);
+      };
+      for (const entry of pending.queue || []) remap(entry);
+      for (const entry of pending.placements || []) remap(entry);
+      for (const entry of pending.operation?.units || []) remap(entry);
+      if (Array.isArray(pending.operation?.exchange?.incoming_pieces))
+        pending.operation.exchange.incoming_pieces =
+          pending.operation.exchange.incoming_pieces.map((piece) =>
+            remapReinforcementPiece(piece, pending.card),
+          );
+    }
+  }
+  if (
+    state.action_start_control &&
+    (![AP, CP].includes(state.action_start_control.actor) ||
+      !state.action_start_control.spaces ||
+      typeof state.action_start_control.spaces !== "object")
+  )
+    state.action_start_control = null;
+  state.version = 46;
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -1706,7 +1811,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 44,
+    version: 46,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -1734,7 +1839,7 @@ function createState(seed, options = {}) {
     action_state: null,
     last_action_use: { ap: null, cp: null },
     reinforcement_events_this_turn: { ap: [], cp: [] },
-    round_enemy_entries: { cp: [], ap: [] },
+    action_start_control: null,
     units: startingUnits.filter((unit) => unit.nation !== "it"),
     entry_reserve: {
       it: italianEntryUnits,
@@ -1753,7 +1858,6 @@ function createState(seed, options = {}) {
         space.control || space.faction || null,
       ]),
     ),
-    round_start_control: {},
     trenches: {},
     fortifications: {},
     besieged: [],
@@ -1811,6 +1915,7 @@ function createState(seed, options = {}) {
     turn_flags: {},
     usage_limits: {},
     entry_tracks: { us: 0, armistice: 0 },
+    campaign_flags: { paris_attacked: false },
     combat_modifiers: {},
     permanently_removed_units: [],
     eliminated: { ap: [], cp: [] },
@@ -1854,7 +1959,6 @@ const Engine = createEngine({
     AP_ROLE,
     CP,
     CP_ROLE,
-    FRENCH_VP_SPACES,
     HISTORICAL,
     MO_NATIONS,
     NONE,
@@ -1880,6 +1984,7 @@ const Engine = createEngine({
     FORT_LOSS,
     ViewExplanations,
     ensureState,
+    enterEventFlow,
     spaceName: (id) => spaceById[id]?.name || id,
     undoAvailable,
   },
@@ -1958,6 +2063,7 @@ const {
   diazHqSpaces,
   combatRepairCandidates,
   combatReplacementOptions,
+  replacementKeys,
   combatStrength,
   combatWinner,
   computeMoMarkerOrigins,
@@ -1999,7 +2105,6 @@ const {
   moBagDefinitions,
   moDefinition,
   moPenaltyAttackOptions,
-  moPenaltyForwardOptions,
   moPenaltyLossCandidates,
   moPenaltyLossValue,
   moveFront,
@@ -2009,9 +2114,10 @@ const {
   regionActivationBatchForUnit,
   multinationalAttackValid,
   movementStepDestinations,
-  enteredRoundStartEnemySpaces,
-  recordRoundEnemyEntry,
-  roundEntryLimit,
+  canOccupyByEarlyWarDepth,
+  earlyWarOccupationLimit,
+  occupationDepth,
+  occupationDepths,
   schlieffenOverstackCandidates,
   neighborsFor,
   nextFactionAction,
@@ -2087,6 +2193,8 @@ exports.action = function (state, current, action, arg) {
     undoActionContext.deterministic = true;
     Engine.advanceDeterministicStates(state);
     undoActionContext.deterministic = false;
+    if (state.state !== "game_over")
+      checkVictory(state, { armisticeOnly: true });
     if (!Engine.hasState(state.state))
       throw new Error(`Unregistered stable state: ${state.state}`);
     const changedPlayer =
@@ -2227,9 +2335,10 @@ exports._test = {
   movementPaths,
   movementDestinations,
   movementStepDestinations,
-  enteredRoundStartEnemySpaces,
-  recordRoundEnemyEntry,
-  roundEntryLimit,
+  canOccupyByEarlyWarDepth,
+  earlyWarOccupationLimit,
+  occupationDepth,
+  occupationDepths,
   schlieffenOverstackCandidates,
   validateMovementPath,
   srDestinations,
@@ -2278,7 +2387,6 @@ exports._test = {
   moPenaltyAttackOptions,
   moPenaltyLossCandidates,
   moPenaltyLossValue,
-  moPenaltyForwardOptions,
   applyEndTurnVp,
   finalTerritoryVp,
   checkVictory,
@@ -2311,6 +2419,7 @@ exports._test = {
   hqEndLegal,
   hqReturnSpaces,
   combatReplacementOptions,
+  replacementKeys,
   reduceCombatUnit,
   cardIds,
 };

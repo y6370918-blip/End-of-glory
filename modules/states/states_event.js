@@ -26,7 +26,6 @@ function createEventStates(api) {
     commitDelayedUnits,
     commitFrenchDoctrine,
     commitMoPenaltyAttacks,
-    commitMoPenaltyForwardMove,
     commitMoPenaltyLoss,
     commitOptionalDeployment,
     commitNavalPostFortifications,
@@ -68,7 +67,6 @@ function createEventStates(api) {
     massAttritionCandidates,
     massAttritionMoChoices,
     moPenaltyAttackSelectionOptions,
-    moPenaltyForwardOptions,
     moPenaltyLossCandidates,
     moPenaltyLossSelectionComplete,
     moPenaltyLossValue,
@@ -420,22 +418,6 @@ function createEventStates(api) {
         return;
       }
       if (pending?.kind === "mo_penalty") {
-        if (pending.stage === "forward_origin") {
-          if (
-            !moPenaltyForwardOptions(state, pending.penalized).some(
-              (entry) => entry.origin === space,
-            )
-          )
-            throw new Error("Illegal forward-movement stack");
-          pending.origin = space;
-          pending.stage = "forward_leave";
-          return;
-        }
-        if (pending.stage === "forward_target") {
-          api.snapshot(state, "MO处罚前移");
-          commitMoPenaltyForwardMove(state, pending, space);
-          return;
-        }
         if (pending.stage === "origin") {
           if (!moPenaltyAttackSelectionOptions(state, pending).includes(space))
             throw new Error("Illegal forced-attack origin");
@@ -848,40 +830,12 @@ function createEventStates(api) {
               id: "attack",
               label: `放置 ${pending.required} 个强制进攻标记`,
             });
-          if (pending.forward_available)
-            options.push({
-              id: "forward",
-              label: "留下一个战斗单位，其余向前移动一格",
-            });
           if (pending.loss_required)
             options.push({
               id: "loss",
               label: `改为非致命减员 ${pending.loss_required} RP`,
             });
           addEventChoices(builder, options);
-        } else if (pending.stage === "forward_origin") {
-          actions.event_space = [
-            ...new Set(
-              moPenaltyForwardOptions(state, pending.penalized).map(
-                (entry) => entry.origin,
-              ),
-            ),
-          ];
-        } else if (pending.stage === "forward_leave") {
-          addEventUnits(state, builder, [
-            ...new Set(
-              moPenaltyForwardOptions(state, pending.penalized)
-                .filter((entry) => entry.origin === pending.origin)
-                .map((entry) => entry.leave),
-            ),
-          ]);
-        } else if (pending.stage === "forward_target") {
-          actions.event_space =
-            moPenaltyForwardOptions(state, pending.penalized).find(
-              (entry) =>
-                entry.origin === pending.origin &&
-                entry.leave === pending.leave,
-            )?.targets || [];
         } else if (pending.stage === "origin") {
           actions.event_space = moPenaltyAttackSelectionOptions(state, pending);
         } else if (pending.stage === "confirm") actions.event_confirm = 1;
@@ -1247,9 +1201,39 @@ function createEventStates(api) {
         if (pending.space) actions.event_confirm = 1;
       } else actions.event_confirm = 1;
   };
+
+  function explicitEventState(kind = null) {
+    const expectedState = kind ? `event_${kind}` : GENERIC_EVENT_STATE;
+    const expectedKind = kind;
+    const assertOwner = (state) => {
+      const actualKind = state.pending_event?.kind || null;
+      if (state.state !== expectedState || actualKind !== expectedKind) {
+        const card = state.pending_event?.card ?? "unknown";
+        throw new Error(
+          `Event state ownership mismatch: ${state.state}/${actualKind || "choice"} for card ${card}; expected ${expectedState}`,
+        );
+      }
+    };
+    const owned = {};
+    for (const [name, handler] of Object.entries(event)) {
+      if (typeof handler !== "function") continue;
+      owned[name] = function ownedEventHandler(state, ...args) {
+        assertOwner(state);
+        const result = handler(state, ...args);
+        if (state.pending_event && state.state === expectedState)
+          api.enterEventFlow(state);
+        return result;
+      };
+    }
+    return owned;
+  }
+
   return Object.fromEntries([
-    [GENERIC_EVENT_STATE, event],
-    ...EVENT_KINDS.map((kind) => [`event_${kind}`, event]),
+    [GENERIC_EVENT_STATE, explicitEventState()],
+    ...EVENT_KINDS.map((kind) => [
+      `event_${kind}`,
+      explicitEventState(kind),
+    ]),
   ]);
 }
 

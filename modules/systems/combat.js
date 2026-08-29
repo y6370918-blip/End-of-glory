@@ -252,7 +252,7 @@ function createCombatSystem(api) {
       }
       const army = unit.type === "army" ? api.clone(unit) : null;
       const permanent = Boolean(army) && api.permanentOnElimination(army);
-      const outOfSupply = Boolean(army) && !unit.supplied && !unit.fort_limited_supply;
+      const outOfSupply = Boolean(army) && !unit.supplied && !unit.limited_supply && !unit.fort_limited_supply;
       const replacementOptions = army && !outOfSupply ? api.combatReplacementOptions(state, unit) : [];
       reduceUnit(state, id);
       state.combat.resolution_events ||= [];
@@ -310,7 +310,7 @@ function createCombatSystem(api) {
               continue;
           }
           const units = model.units.filter((_, candidateIndex) => candidateIndex !== index);
-          const replacements = unit.type === "army" && (unit.supplied || unit.fort_limited_supply)
+          const replacements = unit.type === "army" && (unit.supplied || unit.limited_supply || unit.fort_limited_supply)
               ? lossModelReplacementOptions(model, unit)
               : [];
           if (!replacements.length) {
@@ -608,13 +608,13 @@ function createCombatSystem(api) {
               label: "移动后进攻",
           });
       }
-      if (attackCombatUnits.some((unit) => unit.fort_limited_supply)) {
+      if (attackCombatUnits.some((unit) => unit.limited_supply || unit.fort_limited_supply)) {
           result.attack_column -= 1;
           result.modifier_sources.push({
               side: "attacker",
               kind: "column",
               amount: -1,
-              label: "要塞有限补给",
+              label: "有限补给",
           });
       }
       if (state.ops?.source === "mo_penalty") {
@@ -937,9 +937,12 @@ function createCombatSystem(api) {
       if (!deferred || deferred.resolved)
           return;
       deferred.resolved = true;
-      const firingIds = deferred.firing_side === combat.attacker
+      // First-fire casualties may create replacement SCU. Those replacements
+      // were not participants when the return-fire roll was made and must not
+      // be appended to the deferred firing group.
+      const firingIds = deferred.firing_ids || (deferred.firing_side === combat.attacker
           ? combat.attackers
-          : combat.defenders;
+          : combat.defenders);
       const survivors = firingIds.filter((id) => state.units.some((unit) => unit.id === id));
       const fortStrength = deferred.firing_side === api.other(combat.attacker)
           ? intactFort(state, combat.target)
@@ -971,7 +974,7 @@ function createCombatSystem(api) {
       };
       state.combat_window = null;
       state.combat = null;
-      state.state = "event";
+      api.enterEventFlow(state);
       state.active = cpCards.length ? api.CP : api.CP;
   }
 
@@ -1461,6 +1464,7 @@ function createCombatSystem(api) {
           deferredFire = {
               firing_side: api.other(state.active),
               target_side: state.active,
+              firing_ids: defendingIds.slice(),
               roll: defenseRoll,
               table: defenseTable,
               column: modifiers.defense_column,
@@ -1474,6 +1478,7 @@ function createCombatSystem(api) {
           deferredFire = {
               firing_side: state.active,
               target_side: api.other(state.active),
+              firing_ids: attackers.slice(),
               roll: attackRoll,
               table: attackTable,
               column: modifiers.attack_column,
@@ -1536,6 +1541,10 @@ function createCombatSystem(api) {
           ])),
           move_attackers: moveAttackers.map((unit) => unit.id),
       };
+      if (state.active === api.CP && target === "paris") {
+          state.campaign_flags ||= {};
+          state.campaign_flags.paris_attacked = true;
+      }
       // Dice have been rolled and the combat result is now public information.
       // Ordinary undo must never cross this information boundary; later
       // post-combat advances create their own, newer snapshots.
@@ -1709,7 +1718,7 @@ function createCombatSystem(api) {
               remaining,
               usage_key: usageKey,
           };
-          state.state = "event";
+          api.enterEventFlow(state);
           return;
       }
       api.openCombatCardWindow(state, declaration);
@@ -1775,7 +1784,7 @@ function createCombatSystem(api) {
                   resume: "finish_combat_sequence",
               };
               state.active = combat.attacker;
-              state.state = "event";
+              api.enterEventFlow(state);
               return true;
           }
       }
@@ -1843,7 +1852,7 @@ function createCombatSystem(api) {
           return false;
       state.pending_event = pending;
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 
@@ -1973,7 +1982,7 @@ function createCombatSystem(api) {
           resume,
       };
       state.active = first.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 
@@ -2080,7 +2089,7 @@ function createCombatSystem(api) {
                   loss_adjust: nivelle.effect.forced_attack_loss_adjust || 0,
               };
               state.active = api.CP;
-              state.state = "event";
+              api.enterEventFlow(state);
               return;
           }
       }
@@ -2096,7 +2105,7 @@ function createCombatSystem(api) {
               resume: counterattackResume,
           };
           state.active = api.AP;
-          state.state = "event";
+          api.enterEventFlow(state);
           return;
       }
       if (state.ops?.forced_attacks?.length) {
@@ -2146,8 +2155,7 @@ function createCombatSystem(api) {
           rules.cancel_advance.includes(combat.attacker) ||
           (rules.advance_limit != null && Number(rules.advance_limit) === 0))
           return [];
-      if (api.enteredRoundStartEnemySpaces(state, combat.attacker, [combat.target]) >
-          api.roundEntryLimit(state, combat.attacker))
+      if (!api.canOccupyByEarlyWarDepth(state, combat.attacker, combat.target))
           return [];
       const movedAttackers = new Set(combat.move_attackers || []);
       const candidates = combat.attackers
@@ -2213,6 +2221,16 @@ function createCombatSystem(api) {
       state.active = combat.attacker;
       const rules = combat.modifiers || {};
       const potentialAdvanceUnits = potentialAdvanceUnitIds(state, combat, rules);
+      const movedAttackers = new Set(combat.move_attackers || []);
+      const recordedParticipants = combat.participant_units?.length
+          ? combat.participant_units
+          : combat.attackers
+              .map((id) => state.units.find((unit) => unit.id === id))
+              .filter(Boolean);
+      const originalCombatAttackers = recordedParticipants
+          .filter((unit) => unit.faction === combat.attacker && api.isCombatUnit(unit));
+      const movingAttackOnly = originalCombatAttackers.length > 0 &&
+          originalCombatAttackers.every((unit) => movedAttackers.has(unit.id));
       // A force already fighting inside a besieged fort has nowhere to
       // advance.  An adjacent attacker that eliminates the field defenders,
       // however, may advance into an intact fort when the selected group can
@@ -2245,6 +2263,29 @@ function createCombatSystem(api) {
           if (beginCombatHqRelocation(state, combat, "post_retreat_advance"))
               return;
           state.state = "advance_select";
+      }
+      else if (defenders.length && movingAttackOnly) {
+          state.pending_retreat = {
+              faction: defenders[0].faction,
+              selected_units: [],
+              units: defenders.map((unit) => unit.id),
+              steps: 1,
+              choices: null,
+              from: combat.target,
+              remaining: Object.fromEntries(defenders.map((unit) => [unit.id, 1])),
+              paths: Object.fromEntries(defenders.map((unit) => [unit.id, [combat.target]])),
+              advance_units: [],
+              advanced_ids: [],
+              maximum: 0,
+              advanced: 0,
+              retreat_paths: [],
+              advance_max_steps: 1,
+              optional: true,
+              can_cancel_with_loss: false,
+              prohibit_damaged_cancel: true,
+          };
+          state.active = defenders[0].faction;
+          state.state = "retreat";
       }
       else if (defenders.length &&
           potentialAdvanceUnits.length &&
@@ -2458,7 +2499,7 @@ function createCombatSystem(api) {
           return false;
       if (!unit.reduced)
           return true;
-      return unit.type === "army" && (unit.supplied || unit.fort_limited_supply) &&
+      return unit.type === "army" && (unit.supplied || unit.limited_supply || unit.fort_limited_supply) &&
           api.combatReplacementOptions(state, unit).length > 0;
   }
 
@@ -2507,7 +2548,6 @@ function createCombatSystem(api) {
           api.spaceById[destination]?.nation === "it" &&
           state.control[destination] === api.AP;
       unit.location = destination;
-      api.recordRoundEnemyEntry(state, unit.faction, destination);
       state.combat.resolution_events ||= [];
       state.combat.resolution_events.push({
           kind: "advance",
@@ -2559,6 +2599,7 @@ function createCombatSystem(api) {
       const faction = units[0].faction;
       if (units.some((unit) => unit.faction !== faction ||
           !api.connectionAllows(unit.location, destination, "advance", faction)) ||
+          !api.canOccupyByEarlyWarDepth(state, faction, destination) ||
           !api.spaceCanActivate(state, destination) ||
           api.unitsAt(state, destination, api.other(faction)).length)
           return false;
@@ -2589,6 +2630,7 @@ function createCombatSystem(api) {
       const faction = units[0].faction;
       return (units.every((unit) => unit.faction === faction &&
           api.connectionAllows(unit.location, pending.target, "advance", faction)) &&
+          api.canOccupyByEarlyWarDepth(state, faction, pending.target) &&
           api.spaceCanActivate(state, pending.target) &&
           !api.unitsAt(state, pending.target, api.other(faction)).length &&
           advanceGroupStackLegal(state, pending.target, ids, faction));
@@ -2612,13 +2654,9 @@ function createCombatSystem(api) {
       const ids = pending?.selected_advance_units || [];
       if (!ids.length)
           return [];
-      const faction = state.combat?.attacker || state.active;
-      const withinEntryLimit = (space) =>
-          api.enteredRoundStartEnemySpaces(state, faction, [space]) <=
-          api.roundEntryLimit(state, faction);
       if (pending.advance_group?.length)
-          return secondAdvanceDestinations(state, pending, ids).filter(withinEntryLimit);
-      return advanceCanEnter(state, ids, pending.target) && withinEntryLimit(pending.target)
+          return secondAdvanceDestinations(state, pending, ids);
+      return advanceCanEnter(state, ids, pending.target)
           ? [pending.target]
           : [];
   }

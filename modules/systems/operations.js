@@ -37,6 +37,8 @@ function createOperationsSystem(api) {
       const movement = movementContext(state);
       if (![...origins].some((origin) => api.connectionAllows(origin, destination, "move", faction)))
         return reason("connection_mode");
+      if (!canOccupyByEarlyWarDepth(state, faction, destination))
+        return reason("early_occupation_depth", "超出占领纵深", "important");
       if (api.unitsAt(state, destination, api.other(faction)).length)
         return reason("enemy_blocked");
       const moving = (movement?.active_units || [])
@@ -83,8 +85,13 @@ function createOperationsSystem(api) {
     }
     if (action === "advance_destination") {
       const ids = state.pending_retreat?.selected_advance_units || [];
+      const advancingFaction = ids.length
+        ? state.units.find((unit) => unit.id === ids[0])?.faction
+        : state.combat?.attacker || faction;
       if (api.unitsAt(state, destination, api.other(faction)).length)
         return reason("enemy_blocked");
+      if (!canOccupyByEarlyWarDepth(state, advancingFaction, destination))
+        return reason("early_occupation_depth", "超出占领纵深", "important");
       if (!api.advanceCanEnter(state, ids, destination)) {
         if (!api.advanceGroupStackLegal(state, destination, ids, faction)) return reason("overstack");
         if (api.intactFort(state, destination)) return reason("fort_blocked");
@@ -219,7 +226,13 @@ function createOperationsSystem(api) {
   function hqAtSupplySource(state, hq, space = hq.location) {
       // The HQ exception is a friendly-controlled supply source, not a
       // same-nationality supply source. Ordinary ports do not count.
-      return api.supplySources(state, hq.faction).includes(space);
+      const source = api.spaceById[space];
+      if (!source || state.control[space] !== hq.faction ||
+          api.unitsAt(state, space, api.other(hq.faction)).length)
+          return false;
+      if (source.supply && source.faction === hq.faction)
+          return true;
+      return space === "brussels";
   }
 
   function hqEndLegal(state, hq, space = hq.location) {
@@ -277,11 +290,36 @@ function createOperationsSystem(api) {
       return (api.nationalityGroup(unit.nation) === api.nationalityGroup(api.spaceById[space]?.nation));
   }
 
+  function activationNationalityCount(units) {
+      const compatibility = units.map((unit) => {
+          const combined = api.pieceById[unit.piece]?.combined_nations;
+          const nations = Array.isArray(combined) && combined.length
+              ? combined
+              : [unit.nation];
+          return {
+              combined: Array.isArray(combined) && combined.length > 0,
+              nations: new Set(nations.map((nation) => api.nationalityGroup(nation))),
+          };
+      });
+      const groups = [];
+      for (const entry of compatibility.filter((candidate) => !candidate.combined)) {
+          const nation = [...entry.nations][0];
+          if (!groups.some((group) => group.size === 1 && group.has(nation)))
+              groups.push(new Set([nation]));
+      }
+      for (const entry of compatibility.filter((candidate) => candidate.combined)) {
+          if (groups.some((group) => [...entry.nations].some((nation) => group.has(nation))))
+              continue;
+          groups.push(entry.nations);
+      }
+      return groups.length;
+  }
+
   function activationCost(state, spaceId, kind, unitIds = null) {
       const selected = selectedActivationUnits(state, spaceId, unitIds);
       if (api.spaceById[spaceId]?.large_area)
           return selected.length ? 1 : Number.POSITIVE_INFINITY;
-      const nations = new Set(selected.map((unit) => api.nationalityGroup(unit.nation)));
+      const nationalityCount = activationNationalityCount(selected);
       const sommeNationality = state.active === api.AP &&
           kind === "attack" &&
           state.markers.somme?.space &&
@@ -299,21 +337,19 @@ function createOperationsSystem(api) {
           allOut?.ignore_activation_nationality_once &&
           !(state.usage_limits[`all_out_activation:${state.turn}:${state.action_round}`] || 0);
       const base = kind === "construct"
-          ? nations.size > 1 && !ignoresNationality
+          ? nationalityCount > 1 && !ignoresNationality
               ? 1
               : 0.5
           : state.ops?.free_activation_cost
               ? state.ops.free_activation_cost
               : ignoresNationality || sommeNationality || allOutAvailable
                   ? 1
-                  : Math.max(1, nations.size);
+                  : Math.max(1, nationalityCount);
       let cost = kind === "construct"
           ? base
           : api.spaceById[spaceId]?.large_area
               ? Math.max(1, base / 2)
               : base;
-      if (selected.some((unit) => unit.fort_limited_supply))
-          cost += 1;
       return cost;
   }
 
@@ -405,6 +441,8 @@ function createOperationsSystem(api) {
 
   function constructionUnits(state, space) {
       return api.unitsAt(state, space, state.active).filter((unit) => api.isCombatUnit(unit) &&
+          !unit.limited_supply &&
+          !unit.fort_limited_supply &&
           !unit.moved &&
           !unit.attacked &&
           unitIsActivated(state, unit, ["move", "construct"]));
@@ -527,6 +565,7 @@ function createOperationsSystem(api) {
           attack_selection: [],
           activated_units: {},
           region_activations: { move: {}, attack: {}, construct: {} },
+          attack_marker_spaces: [],
           pending_activation: null,
       };
       state.state = "ops_activate";
@@ -593,7 +632,8 @@ function createOperationsSystem(api) {
               const combatUnits = api.unitsAt(state, space.id, faction).filter(api.isCombatUnit);
               if (!combatUnits.length ||
                   (options.nation && !combatUnits.some((unit) => unit.nation === options.nation)) ||
-                  (options.requireSupply && combatUnits.some((unit) => !unit.supplied && !unit.fort_limited_supply)))
+                  (options.requireSupply && combatUnits.some((unit) =>
+                      !unit.supplied && !unit.limited_supply && !unit.fort_limited_supply)))
                   return false;
               return api.neighborsFor(space.id, "attack", faction).some((target) =>
                   combatUnits.every((unit) => api.attacksTarget(state, unit, target)) &&
@@ -859,31 +899,46 @@ function createOperationsSystem(api) {
       state.ops.preactivation_sr_selected = null;
   }
 
-  function roundEntryLimit(state, faction) {
-      if (faction !== api.CP)
-          return Number.POSITIVE_INFINITY;
+  function earlyWarOccupationLimit(state, faction) {
       const race = api.activeRule(state, "race_to_sea");
-      return race?.previous_enemy_control_entry_limit || 2;
+      return faction === api.CP && race
+          ? Number(race.occupation_depth_limit) || 3
+          : 2;
   }
 
-  function enteredRoundStartEnemySpaces(state, faction, path) {
-      const enemy = api.other(faction);
-      const entered = new Set(state.round_enemy_entries?.[faction] || []);
-      for (const space of path)
-          if (state.round_start_control[space] === enemy)
-              entered.add(space);
-      return entered.size;
+  function occupationDepths(state, faction) {
+      const snapshot = state.action_start_control;
+      if (!snapshot || snapshot.actor !== faction || !snapshot.spaces)
+          return new Map();
+      const depths = new Map();
+      const queue = [];
+      for (const [space, controller] of Object.entries(snapshot.spaces)) {
+          if (controller !== faction || !api.spaceCanActivate(state, space))
+              continue;
+          depths.set(space, 0);
+          queue.push(space);
+      }
+      while (queue.length) {
+          const current = queue.shift();
+          const depth = depths.get(current);
+          for (const next of api.neighborsFor(current, "move", faction)) {
+              if (depths.has(next) || !api.spaceCanActivate(state, next))
+                  continue;
+              depths.set(next, depth + 1);
+              queue.push(next);
+          }
+      }
+      return depths;
   }
 
-  function recordRoundEnemyEntry(state, faction, spaces) {
-      state.round_enemy_entries ||= { cp: [], ap: [] };
-      state.round_enemy_entries[faction] ||= [];
-      const entered = new Set(state.round_enemy_entries[faction]);
-      const enemy = api.other(faction);
-      for (const space of Array.isArray(spaces) ? spaces : [spaces])
-          if (space && state.round_start_control[space] === enemy)
-              entered.add(space);
-      state.round_enemy_entries[faction] = [...entered];
+  function occupationDepth(state, faction, space, depths = occupationDepths(state, faction)) {
+      return depths.get(space) ?? Number.POSITIVE_INFINITY;
+  }
+
+  function canOccupyByEarlyWarDepth(state, faction, space, depths = occupationDepths(state, faction)) {
+      if (!state.action_start_control || state.action_start_control.actor !== faction)
+          return true;
+      return occupationDepth(state, faction, space, depths) <= earlyWarOccupationLimit(state, faction);
   }
 
   function schlieffenOverstackCandidates(state) {
@@ -944,6 +999,7 @@ function createOperationsSystem(api) {
       if (!canLeaveBesiegedFort(state, unit))
           return {};
       const seen = new Map([[unit.location, []]]);
+      const occupationDepthBySpace = occupationDepths(state, unit.faction);
       const queue = [unit.location];
       while (queue.length) {
           const current = queue.shift();
@@ -966,12 +1022,11 @@ function createOperationsSystem(api) {
               if (api.unitsAt(state, next, api.other(unit.faction)).length)
                   continue;
               const nextPath = [...path, next];
+              if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
+                  continue;
               if (!canPotentiallyEnterFort(state, unit, next, nextPath.length))
                   continue;
               if (!earlyEntryAllowed(state, unit, next))
-                  continue;
-              if (enteredRoundStartEnemySpaces(state, unit.faction, nextPath) >
-                  roundEntryLimit(state, unit.faction))
                   continue;
               seen.set(next, nextPath);
               queue.push(next);
@@ -1011,6 +1066,7 @@ function createOperationsSystem(api) {
       if (!canLeaveBesiegedFort(state, unit))
           return [];
       const origin = unit.location;
+      const occupationDepthBySpace = occupationDepths(state, unit.faction);
       const routes = [];
       const queue = [{ current: origin, path: [] }];
       while (queue.length) {
@@ -1033,12 +1089,11 @@ function createOperationsSystem(api) {
               if (api.unitsAt(state, next, api.other(unit.faction)).length)
                   continue;
               const nextPath = [...path, next];
+              if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
+                  continue;
               if (!canPotentiallyEnterFort(state, unit, next, nextPath.length))
                   continue;
               if (!earlyEntryAllowed(state, unit, next))
-                  continue;
-              if (enteredRoundStartEnemySpaces(state, unit.faction, nextPath) >
-                  roundEntryLimit(state, unit.faction))
                   continue;
               const grouped = groupIds.length > 1 && groupIds.includes(unit.id);
               const endpointLegal = api.stackLegal(state, next, unit) &&
@@ -1076,6 +1131,7 @@ function createOperationsSystem(api) {
       const supplied = unit.fort_limited_supply
           ? api.suppliedSpaces(state, unit.faction, unit.nation)
           : null;
+      const occupationDepthBySpace = occupationDepths(state, unit.faction);
       if (!canLeaveBesiegedFort(state, unit))
           throw new Error("Movement would leave an enemy fort without a sufficient siege force");
       if (!path.length ||
@@ -1091,6 +1147,8 @@ function createOperationsSystem(api) {
               throw new Error("Movement path is not connected");
           if (!api.connectionAllows(current, next, "move", unit.faction))
               throw new Error("This faction cannot use the connection");
+          if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
+              throw new Error("Movement exceeds the occupation depth");
           if (!api.spaceCanActivate(state, next))
               throw new Error("The Italian theater is not active");
           if (api.unitsAt(state, next, api.other(unit.faction)).length)
@@ -1101,8 +1159,6 @@ function createOperationsSystem(api) {
               throw new Error("Movement cannot enter an enemy fort without a sufficient siege force");
           if (!earlyEntryAllowed(state, unit, next))
               throw new Error("This unit cannot enter the destination in turns 1-2");
-          if (enteredRoundStartEnemySpaces(state, unit.faction, path.slice(0, index + 1)) > roundEntryLimit(state, unit.faction))
-              throw new Error("Action-round enemy-space entry limit exceeded");
           const intactEnemyFort = api.intactFort(state, next) &&
               !state.besieged.includes(next) &&
               state.control[next] === api.other(unit.faction);
@@ -1209,6 +1265,10 @@ function createOperationsSystem(api) {
           activation_kind: regionActivationBatchForUnit(state, ids[0], ["move"])?.kind ||
               state.activations[origin],
           began_in_fort_limited_supply: Object.fromEntries(units.map((unit) => [unit.id, Boolean(unit.fort_limited_supply)])),
+          began_in_limited_supply: Object.fromEntries(units.map((unit) => [unit.id, Boolean(unit.limited_supply)])),
+          began_adjacent_enemy: Object.fromEntries(units.map((unit) => [unit.id,
+              api.landNeighbors(origin).some((space) =>
+                  api.unitsAt(state, space, api.other(unit.faction)).some(api.isCombatUnit))])),
           spent_by_unit: Object.fromEntries(ids.map((id) => [id, 0])),
       };
       state.state = "movement";
@@ -1367,12 +1427,19 @@ function createOperationsSystem(api) {
   }
 
   function finalizeMovementUnit(state, unit, movement) {
+      const enteredAttackMarker = [movement.origin, ...movement.path].some((space) =>
+          (state.ops?.attack_marker_spaces || []).includes(space) ||
+          (state.ops?.forced_attacks || []).includes(space) ||
+          state.activations?.[space] === "attack");
       unit.movement_path = movement.path.slice();
       unit.moved = true;
       unit.attack_eligible =
           state.turn <= 3 &&
               movement.activation_kind === "move" &&
-              !movement.began_in_fort_limited_supply[unit.id];
+              !movement.began_in_fort_limited_supply[unit.id] &&
+              !movement.began_in_limited_supply?.[unit.id] &&
+              !movement.began_adjacent_enemy?.[unit.id] &&
+              !enteredAttackMarker;
       api.log(state, `[[unit:${unit.id}]]：${[
           movement.origin,
           ...movement.path,
@@ -1442,7 +1509,6 @@ function createOperationsSystem(api) {
           movement.spent_by_unit[movingUnit.id] =
               (movement.spent_by_unit[movingUnit.id] || 0) + 1;
       }
-      recordRoundEnemyEntry(state, unit.faction, requested);
       movement.path.push(requested);
       for (const movingUnit of activeUnits)
           movingUnit.movement_path = movement.path.slice();
@@ -1640,9 +1706,10 @@ function createOperationsSystem(api) {
       else {
           // Construction is calculated once per activated space.  LCU and SCU
           // construction values are alternatives, not cumulative: any LCU
-          // contributes a fixed 3 points; otherwise each SCU contributes 1.
+          // contributes 3 points on the West Front and 2 in Italy; otherwise
+          // each SCU contributes 1.
           const points = activated.some((unit) => unit.type === "army")
-              ? 3
+              ? (api.theaterOf(space) === "italian" ? 2 : 3)
               : activated.filter((unit) => unit.type === "corps").length;
           const cap = ["mountain", "alpine"].includes(terrain) ? 2 : 6;
           const total = Math.min(cap, (state.fortifications[space] || 0) + points);
@@ -1696,10 +1763,10 @@ function createOperationsSystem(api) {
       const selected = selectedActivationUnits(state, space, unitIds);
       const cost = activationCost(state, space, kind, unitIds);
       const allOut = api.activeRule(state, "all_out_war");
-      const nationalities = new Set(selected.map((unit) => unit.nation));
+      const nationalityCount = activationNationalityCount(selected);
       if (state.active === api.AP &&
           allOut?.ignore_activation_nationality_once &&
-          nationalities.size > 1)
+          nationalityCount > 1)
           state.usage_limits[`all_out_activation:${state.turn}:${state.action_round}`] = 1;
       const italianBonus = api.spaceById[space]?.nation === "it" ? state.ops.italian_bonus || 0 : 0;
       const bonusSpent = Math.min(cost, italianBonus);
@@ -1724,6 +1791,11 @@ function createOperationsSystem(api) {
       else {
           state.activations[space] = kind;
           state.ops.activated.push(space);
+      }
+      if (kind === "attack") {
+          state.ops.attack_marker_spaces ||= [];
+          if (!state.ops.attack_marker_spaces.includes(space))
+              state.ops.attack_marker_spaces.push(space);
       }
       state.ops.activated_units ||= {};
       state.ops.activated_units[space] = [
@@ -1909,7 +1981,8 @@ return Object.freeze({
     earlySrDestinationAllowed,
     earlyStackHasAttackers,
     earlyStackUnitIds,
-    enteredRoundStartEnemySpaces,
+    canOccupyByEarlyWarDepth,
+    earlyWarOccupationLimit,
     explainPiece,
     explainSpace,
     finalizeMovementUnit,
@@ -1958,8 +2031,8 @@ return Object.freeze({
     resolveEntrench,
     resolveSrDestination,
     resumeOpsExecutionState,
-    roundEntryLimit,
-    recordRoundEnemyEntry,
+    occupationDepth,
+    occupationDepths,
     routeHasPrefix,
     schlieffenSr,
     schlieffenSrActions,

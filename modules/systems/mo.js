@@ -213,13 +213,17 @@ function createMoSystem(api) {
               ["army", "corps"].includes(unit.type || piece?.type) &&
               api.nationalityGroup(unit.nation || piece?.nation) ===
                   api.nationalityGroup(nation) &&
+              api.acceptsReplacementPoints(unit) &&
               !unit.reduced);
       })
           .map((unit) => unit.id);
   }
 
   function unitRepairCost(unit) {
-      return unit && ["army", "corps"].includes(unit.type) ? 1 : 0;
+      if (!unit) return 0;
+      if (unit.type === "army") return 1;
+      if (unit.type === "corps") return 0.5;
+      return 0;
   }
 
   function moPenaltyLossValue(state, id) {
@@ -232,13 +236,19 @@ function createMoSystem(api) {
   }
 
   function moPenaltyLossSelectionComplete(state, pending) {
-      const legal = moPenaltyLossCandidates(state, pending.penalized, pending.nation);
-      const selected = pending.selected_units || [];
-      const available = legal.reduce((sum, id) => sum + moPenaltyLossValue(state, id), 0);
       const selectedValue = moPenaltySelectedValue(state, pending);
-      return available < pending.loss_required
-          ? legal.every((id) => selected.includes(id))
-          : selectedValue === pending.loss_required;
+      return selectedValue === pending.loss_required;
+  }
+
+  function moPenaltyLossCanPay(state, faction, nation, required = 2) {
+      const values = moPenaltyLossCandidates(state, faction, nation)
+          .map((id) => moPenaltyLossValue(state, id));
+      const search = (index, remaining) => {
+          if (Math.abs(remaining) < 1e-9) return true;
+          if (remaining < 0 || index >= values.length) return false;
+          return search(index + 1, remaining) || search(index + 1, remaining - values[index]);
+      };
+      return search(0, required);
   }
 
   function commitMoPenaltyLoss(state) {
@@ -262,100 +272,6 @@ function createMoSystem(api) {
       advanceMoPenalty(state);
   }
 
-  function landDistanceToEnemySources(origin, faction) {
-      const targets = new Set(api.data.spaces
-          .filter((space) => space.supply && space.faction === api.other(faction))
-          .map((space) => space.id));
-      const seen = new Set([origin]);
-      const queue = [[origin, 0]];
-      while (queue.length) {
-          const [current, distance] = queue.shift();
-          if (targets.has(current))
-              return distance;
-          for (const next of api.landNeighbors(current)) {
-              if (seen.has(next))
-                  continue;
-              seen.add(next);
-              queue.push([next, distance + 1]);
-          }
-      }
-      return Number.POSITIVE_INFINITY;
-  }
-
-  function moPenaltyForwardOptions(state, faction) {
-      const origins = [
-          ...new Set(state.units
-              .filter((unit) => unit.faction === faction && api.isCombatUnit(unit))
-              .map((unit) => unit.location)),
-      ];
-      return origins.flatMap((origin) => {
-          const stack = api.unitsAt(state, origin, faction);
-          const combat = stack.filter(api.isCombatUnit);
-          if (combat.length < 2)
-              return [];
-          const originDistance = landDistanceToEnemySources(origin, faction);
-          const choices = combat.flatMap((leave) => {
-              const moving = stack.filter((unit) => unit.id !== leave.id);
-              const movingCombat = moving.filter(api.isCombatUnit);
-              const targets = api.neighborsFor(origin, "move", faction).filter((target) => {
-                  if (!api.spaceCanActivate(state, target) ||
-                      api.unitsAt(state, target, api.other(faction)).length ||
-                      landDistanceToEnemySources(target, faction) >= originDistance)
-                      return false;
-                  if (!api.spaceById[target]?.large_area) {
-                      const targetStack = api.unitsAt(state, target, faction);
-                      const field = targetStack.filter(api.isCombatUnit).length + movingCombat.length;
-                      const hqs = targetStack.filter((unit) => unit.type === "hq").length +
-                          moving.filter((unit) => unit.type === "hq").length;
-                      if (field > 3 || hqs > 1)
-                          return false;
-                  }
-                  const fort = api.intactFort(state, target);
-                  if (fort &&
-                      api.spaceById[target]?.faction !== faction &&
-                      !state.besieged.includes(target) &&
-                      !api.canBesiegeWithUnits(movingCombat, fort))
-                      return false;
-                  return true;
-              });
-              return targets.length
-                  ? [
-                      {
-                          origin,
-                          leave: leave.id,
-                          moving: moving.map((unit) => unit.id),
-                          targets,
-                      },
-                  ]
-                  : [];
-          });
-          return choices;
-      });
-  }
-
-  function commitMoPenaltyForwardMove(state, pending, target) {
-      const option = moPenaltyForwardOptions(state, pending.penalized).find((entry) => entry.origin === pending.origin &&
-          entry.leave === pending.leave &&
-          entry.targets.includes(target));
-      if (!option)
-          throw new Error("Illegal forward movement for an unfulfilled MO");
-      for (const id of option.moving) {
-          const unit = state.units.find((candidate) => candidate.id === id);
-          unit.location = target;
-          unit.moved = true;
-      }
-      if (option.moving.some((id) => {
-          const unit = state.units.find((candidate) => candidate.id === id);
-          return api.isCombatUnit(unit);
-      }))
-          api.captureSpace(state, target, pending.penalized);
-      api.refreshBesiegedSpace(state, pending.origin);
-      api.refreshBesiegedSpace(state, target);
-      api.updateSupply(state);
-      api.log(state, `${api.spaceById[pending.origin]?.name || pending.origin} 的堆叠留下一个单位，其余向前移动至 ${api.spaceById[target]?.name || target}。`);
-      advanceMoPenalty(state);
-  }
-
   function beginCurrentMoPenalty(state) {
       const resolution = state.mo.penalty_resolution;
       const obligation = resolution?.queue[resolution.index];
@@ -367,7 +283,6 @@ function createMoSystem(api) {
       api.updateSupply(state);
       const chooser = api.other(obligation.faction);
       const attackOptions = moPenaltyAttackOptions(state, obligation.faction);
-      const lossCandidates = moPenaltyLossCandidates(state, obligation.faction, obligation.nation);
       const forcedAttackProbe = {
           penalized: obligation.faction,
           required: 2,
@@ -377,10 +292,8 @@ function createMoSystem(api) {
           moPenaltyAttackSelectionOptions(state, forcedAttackProbe).length
           ? 2
           : 0;
-      const forwardOptions = requiredAttacks
-          ? []
-          : moPenaltyForwardOptions(state, obligation.faction);
-      if (!requiredAttacks && !forwardOptions.length && !lossCandidates.length) {
+      const lossCanPay = moPenaltyLossCanPay(state, obligation.faction, obligation.nation, 2);
+      if (!requiredAttacks && !lossCanPay) {
           state.mo.waived[obligation.nation] ||= [];
           if (!state.mo.waived[obligation.nation].includes(obligation.id)) {
               state.mo.waived[obligation.nation].push(obligation.id);
@@ -401,11 +314,10 @@ function createMoSystem(api) {
           stage: "mode",
           selected: [],
           required: requiredAttacks,
-          loss_required: lossCandidates.length ? 2 : 0,
-          forward_available: Boolean(forwardOptions.length),
+          loss_required: lossCanPay ? 2 : 0,
       };
       state.phase = "未完成强制进攻";
-      state.state = "event";
+      api.enterEventFlow(state);
       state.active = chooser;
       return true;
   }
@@ -588,7 +500,9 @@ function createMoSystem(api) {
   }
 
   function attackQualifiesForMo(attackingUnits, nation) {
-      const nationalAttackers = attackingUnits.filter((unit) => unit.nation === nation);
+      const group = api.nationalityGroup(nation);
+      const nationalAttackers = attackingUnits.filter((unit) =>
+          api.nationalityGroup(unit.nation) === group);
       return (nationalAttackers.some((unit) => unit.type === "army") ||
           nationalAttackers.filter((unit) => unit.type === "corps").length >= 3);
   }
@@ -599,7 +513,7 @@ function createMoSystem(api) {
       for (const id of declaration?.attackers || []) {
           const unit = suppliedUnits.get(id) ||
               state.units.find((candidate) => candidate.id === id);
-          if (!unit || unit.nation !== nation || !unit.location)
+          if (!unit || api.nationalityGroup(unit.nation) !== api.nationalityGroup(nation) || !unit.location)
               continue;
           if (!byOrigin.has(unit.location))
               byOrigin.set(unit.location, []);
@@ -618,7 +532,7 @@ function createMoSystem(api) {
 
   function computeMoMarkerOrigins(state, declaration) {
       const nations = new Set((declaration?.attackers || [])
-          .map((id) => state.units.find((unit) => unit.id === id)?.nation)
+          .map((id) => api.nationalityGroup(state.units.find((unit) => unit.id === id)?.nation))
           .filter(Boolean));
       return Object.fromEntries([...nations]
           .map((nation) => [
@@ -655,7 +569,7 @@ function createMoSystem(api) {
       const target = declaration.target;
       const origins = [
           ...new Set(eligibleAttackers
-              .filter((unit) => unit.nation === nation)
+              .filter((unit) => api.nationalityGroup(unit.nation) === api.nationalityGroup(nation))
               .map((unit) => unit.location)),
       ];
       if (condition.mixed_with &&
@@ -663,7 +577,8 @@ function createMoSystem(api) {
               (!condition.mixed_type || unit.type === condition.mixed_type)))
           return false;
       if (condition.own_army &&
-          !eligibleAttackers.some((unit) => unit.nation === nation && unit.type === "army"))
+          !eligibleAttackers.some((unit) =>
+              api.nationalityGroup(unit.nation) === api.nationalityGroup(nation) && unit.type === "army"))
           return false;
       if (condition.connection &&
           !origins.some((origin) => api.connectionRule(origin, target, condition.connection)))
@@ -941,7 +856,6 @@ return Object.freeze({
     beginCurrentMoPenalty,
     beginMoPenaltyResolution,
     commitMoPenaltyAttacks,
-    commitMoPenaltyForwardMove,
     commitMoPenaltyLoss,
     completeMo,
     computeMoMarkerOrigins,
@@ -951,7 +865,6 @@ return Object.freeze({
     defenseMoChoicesComplete,
     drawMo,
     drawMoForNation,
-    landDistanceToEnemySources,
     markAdvanceMo,
     markMoForAttack,
     markMoRequirement,
@@ -969,7 +882,7 @@ return Object.freeze({
     moMarkerOriginsForNation,
     moPenaltyAttackOptions,
     moPenaltyAttackSelectionOptions,
-    moPenaltyForwardOptions,
+    moPenaltyLossCanPay,
     moPenaltyLossCandidates,
     moPenaltyLossSelectionComplete,
     moPenaltyLossValue,

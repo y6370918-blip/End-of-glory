@@ -22,6 +22,9 @@ const ARMY_REPLACEMENT_PRIORITY = Object.freeze({
   "component-108": [["component-107"], ["component-034"]],
   "component-110": [["component-109"], ["component-107"]],
   "component-166": [["component-107"], ["component-014", "component-034"]],
+  "component-167": [["component-107"], ["component-014", "component-034"]],
+  "component-169": [["component-028"], ["component-031"]],
+  "component-170": [["component-094"], ["component-089"], ["component-100"], ["component-095"], ["component-090"], ["component-101"]],
 });
 
 function createReplacementSystem(api) {
@@ -59,8 +62,8 @@ function createReplacementSystem(api) {
   function beginReplacement(state) {
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = api.CP;
-      state.replacement_active = api.CP;
+      state.active = api.AP;
+      state.replacement_active = api.AP;
       if (api.beginHqReturns(state))
           return;
       continueReplacement(state);
@@ -69,8 +72,8 @@ function createReplacementSystem(api) {
   function continueReplacement(state) {
       state.phase = "补员/升级";
       state.state = "replacement";
-      state.active = api.CP;
-      state.replacement_active = api.CP;
+      state.active = api.AP;
+      state.replacement_active = api.AP;
       if (api.applyRecurringReinforcements(state))
           return;
       const incomeKey = `replacement_income:${state.turn}`;
@@ -109,7 +112,7 @@ function createReplacementSystem(api) {
       }
       if (api.beginFrontMaintenance(state))
           return;
-      api.log(state, "同盟国补员、升级与战线投入。");
+      api.log(state, "协约国补员、升级与战线投入。");
   }
 
   function beginKillingGroundMaintenance(state) {
@@ -128,7 +131,7 @@ function createReplacementSystem(api) {
           usage_key: usageKey,
       };
       state.active = api.CP;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 
@@ -167,10 +170,10 @@ function createReplacementSystem(api) {
           api.resolveNonTaskMo(state, obligation.nation, obligation.id, "exhausted");
           obligation = null;
       }
-      if (state.active === api.CP) {
-          state.active = api.AP;
-          state.replacement_active = api.AP;
-          api.log(state, "协约国补员、升级与战线投入。");
+      if (state.active === api.AP) {
+          state.active = api.CP;
+          state.replacement_active = api.CP;
+          api.log(state, "同盟国补员、升级与战线投入。");
       }
       else {
           if (!api.beginBulgariaFrontResponse(state))
@@ -312,7 +315,7 @@ function createReplacementSystem(api) {
           resume_phase: state.phase,
       };
       state.phase = "老兵替换";
-      state.state = "event";
+      api.enterEventFlow(state);
   }
 
   function commitVeteranUpgrade(state, destination) {
@@ -381,7 +384,7 @@ function createReplacementSystem(api) {
                   pending.immediate_rp_cost);
           state.pending_event = resume;
           state.phase = "行动阶段";
-          state.state = "event";
+          api.enterEventFlow(state);
       }
       else {
           state.pending_event = null;
@@ -455,12 +458,27 @@ function createReplacementSystem(api) {
           const sourceIds = candidate.nation === "fr" && candidate.type === "army"
               ? ["paris", "orleans", "chaumont"]
               : api.supplySources(state, faction, candidate.nation);
-          const spaces = sourceIds.filter((spaceId) =>
-              state.control[spaceId] === faction &&
-              !api.unitsAt(state, spaceId, api.other(faction)).length &&
-              (!rebuildTheater || api.theaterOf(spaceId) === rebuildTheater) &&
-              api.stackLegal(state, spaceId, candidate));
-          if (!spaces.length && candidate.type !== "corps")
+          const spaces = new Set();
+          for (const sourceId of sourceIds) {
+              if (state.control[sourceId] !== faction ||
+                  api.unitsAt(state, sourceId, api.other(faction)).length ||
+                  (rebuildTheater && api.theaterOf(sourceId) !== rebuildTheater))
+                  continue;
+              if (api.stackLegal(state, sourceId, candidate)) {
+                  spaces.add(sourceId);
+                  continue;
+              }
+              // A full printed supply source may overflow into an adjacent
+              // friendly legal space. Ports are explicitly excluded.
+              if (api.spaceById[sourceId]?.port) continue;
+              for (const adjacent of api.landNeighbors(sourceId))
+                  if (state.control[adjacent] === faction &&
+                      !api.unitsAt(state, adjacent, api.other(faction)).length &&
+                      (!rebuildTheater || api.theaterOf(adjacent) === rebuildTheater) &&
+                      api.stackLegal(state, adjacent, candidate))
+                      spaces.add(adjacent);
+          }
+          if (!spaces.size && candidate.type !== "corps")
               return null;
           return {
               kind: "rebuild",
@@ -469,7 +487,7 @@ function createReplacementSystem(api) {
               cost,
               eliminated,
               index,
-              spaces,
+              spaces: [...spaces],
               rebuildUsageKey,
               reserveAllowed: candidate.type === "corps",
           };
@@ -528,7 +546,7 @@ function createReplacementSystem(api) {
               resume_state: state.state,
               resume_phase: state.phase,
           };
-          state.state = "event";
+          api.enterEventFlow(state);
           return;
       }
       if (option.kind === "front") {
@@ -606,7 +624,7 @@ function createReplacementSystem(api) {
               );
           state.pending_event = resume;
           state.phase = "行动阶段";
-          state.state = "event";
+          api.enterEventFlow(state);
       }
       else {
           state.pending_event = null;
@@ -617,6 +635,9 @@ function createReplacementSystem(api) {
   }
 
   function replacementKeys(unit) {
+      const combined = pieceById[unit.piece]?.combined_nations;
+      if (unit.faction === api.CP && Array.isArray(combined) && combined.length)
+          return [...new Set(combined.filter((key) => ["ge", "ah", "east"].includes(key)))];
       if (unit.faction === api.CP)
           return [unit.nation === "ah" ? "ah" : unit.nation === "ge" ? "ge" : "east"];
       if (unit.nation === "fr")

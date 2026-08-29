@@ -22,7 +22,7 @@ function createMovementEventSystem(api) {
           locked: true,
       };
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 
@@ -41,7 +41,7 @@ function createMovementEventSystem(api) {
           locked: true,
       };
       state.active = api.AP;
-      state.state = "event";
+      api.enterEventFlow(state);
       if (!state.pending_event.queue.length) {
           if (!beginWhiteFeatherSearch(state, card, operation))
               api.finishEvent(state, card);
@@ -108,7 +108,7 @@ function createMovementEventSystem(api) {
           mode: null,
       };
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
   }
 
   function beginSpaceRuleEvent(state, card, operation) {
@@ -122,7 +122,7 @@ function createMovementEventSystem(api) {
           space: null,
       };
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
   }
 
   function nearestEnemyUnitDistance(state, origin, faction) {
@@ -156,7 +156,7 @@ function createMovementEventSystem(api) {
       return api.data.spaces
           .filter((space) => space.nation === "fr" &&
           !space.ui?.hidden &&
-          !api.FRENCH_VP_SPACES.has(space.id) &&
+          !space.vp &&
           !isFrenchBorderSpace(space.id) &&
           state.control[space.id] === api.CP &&
           api.unitsAt(state, space.id, api.CP).length > 0 &&
@@ -198,7 +198,7 @@ function createMovementEventSystem(api) {
           markers: [],
       };
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
   }
 
   function hindenburgMovementFrame(pending) {

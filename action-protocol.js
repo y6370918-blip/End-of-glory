@@ -13,6 +13,7 @@
 		one_op: { label: "使用 1 OP" },
 		stop: { label: "结束移动" },
 		decline_advance: { label: "停止" },
+		decline_retreat: { label: "不撤退" },
 		reinforcement_to_reserve: { label: "放入预备区" },
 		cancel: { label: "取消" },
 		regular_attack: { label: "普通进攻" },

@@ -614,7 +614,7 @@ function createEventSystem(api) {
           cards: [...new Set(candidates)],
       };
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 
@@ -776,7 +776,7 @@ function createEventSystem(api) {
           chooser: api.CP,
           spaces: choice.spaces,
       };
-      state.state = "event";
+      api.enterEventFlow(state);
       state.active = api.CP;
       state.phase = "放置突出部";
       return true;
@@ -823,7 +823,7 @@ function createEventSystem(api) {
               selected_units: [],
           };
           state.active = card.faction;
-          state.state = "event";
+          api.enterEventFlow(state);
           return;
       }
       if (rule?.key === "french_offensive_doctrine") {
@@ -843,7 +843,7 @@ function createEventSystem(api) {
               required,
           };
           state.active = api.CP;
-          state.state = "event";
+          api.enterEventFlow(state);
           return;
       }
       if (rule?.key === "italy_entry" && state.turn >= rule.restore_turn) {
@@ -862,7 +862,7 @@ function createEventSystem(api) {
                   required,
               };
               state.active = card.faction;
-              state.state = "event";
+              api.enterEventFlow(state);
               return;
           }
       }
@@ -884,7 +884,7 @@ function createEventSystem(api) {
               operation: api.clone(rule),
           };
           state.active = card.faction;
-          state.state = "event";
+          api.enterEventFlow(state);
           if (gorlitzMoChoices(state).length)
               return;
           finishEvent(state, card);
@@ -934,7 +934,7 @@ function createEventSystem(api) {
               units: [],
               space: null,
           };
-          state.state = "event";
+          api.enterEventFlow(state);
           state.active = chooser;
           api.log(state, `${card.title}：等待事件选择。`);
           return;
@@ -971,12 +971,6 @@ function createEventSystem(api) {
                   throw new Error("No legal non-lethal MO penalty units");
               pending.stage = "loss";
               pending.selected_units = [];
-              return;
-          }
-          if (id === "forward") {
-              if (pending.required || !pending.forward_available)
-                  throw new Error("Forward movement is available only when two attack markers cannot be placed");
-              pending.stage = "forward_origin";
               return;
           }
           throw new Error("Invalid unfulfilled-MO penalty choice");
@@ -1631,16 +1625,6 @@ function createEventSystem(api) {
           return;
       }
       if (pending?.kind === "mo_penalty") {
-          if (pending.stage === "forward_leave") {
-              const legal = new Set(api.moPenaltyForwardOptions(state, pending.penalized)
-                  .filter((entry) => entry.origin === pending.origin)
-                  .map((entry) => entry.leave));
-              if (!Array.isArray(ids) || ids.length !== 1 || !legal.has(ids[0]))
-                  throw new Error("Choose one combat unit to remain behind");
-              pending.leave = ids[0];
-              pending.stage = "forward_target";
-              return;
-          }
           throw new Error("Use the server-owned MO penalty selection actions");
       }
       if (pending?.kind === "bulgaria_choice") {

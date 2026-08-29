@@ -42,8 +42,6 @@ function createViewSystem(api) {
       const choice = spec?.choices?.find((candidate) => candidate.id === pending?.choice);
       if (pending?.kind === "delay_units")
           return 1;
-      if (pending?.kind === "mo_penalty" && pending.stage === "forward_leave")
-          return 1;
       if (pending?.kind === "mass_attrition" && pending.mode === "replacement")
           return 1;
       if (pending?.kind === "mass_attrition")

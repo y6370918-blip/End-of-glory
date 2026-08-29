@@ -364,8 +364,9 @@ function createFrontSystem(api) {
   function unitFrontRpKeys(unit) {
       if (["component-109", "component-110"].includes(unit.piece))
           return ["east"];
-      if (unit.piece === "component-166")
-          return ["ge", "ah"];
+      const combined = api.pieceById[unit.piece]?.combined_nations;
+      if (Array.isArray(combined) && combined.length)
+          return combined.slice();
       return api.replacementKeys(unit);
   }
 
@@ -542,8 +543,8 @@ function createFrontSystem(api) {
       state.usage_limits[`front_maintenance:${state.turn}`] = 1;
       state.pending_event = null;
       state.state = "replacement";
-      state.active = api.CP;
-      state.replacement_active = api.CP;
+      state.active = api.AP;
+      state.replacement_active = api.AP;
       resolveCommittedFrontMos(state);
       api.continueReplacement(state);
       return false;
@@ -590,7 +591,7 @@ function createFrontSystem(api) {
       };
       applyCommittedFrontMaintenance(state, state.pending_event);
       state.phase = "战线消耗";
-      state.state = "event";
+      api.enterEventFlow(state);
       state.active = api.CP;
       advanceFrontMaintenance(state);
       if (state.pending_event?.kind === "front_maintenance") {
@@ -612,6 +613,10 @@ function createFrontSystem(api) {
   function frontMaintenanceLossCandidates(state, pending = state.pending_event) {
       const obligation = pending?.obligations?.[pending.index];
       if (!obligation)
+          return [];
+      // Unit reductions are the last resort. Every legal RP payment or
+      // conversion must be exhausted first.
+      if (frontMaintenanceChoices(state, pending).length)
           return [];
       const rates = frontMaintenanceRates(obligation.pool);
       const choices = [];
@@ -939,7 +944,7 @@ function createFrontSystem(api) {
       }
       pending.automatic_payment_done = true;
       state.phase = "战线投入";
-      state.state = "event";
+      api.enterEventFlow(state);
       if (pending.paid >= pending.cost - 1e-9)
           finishFrontInvestment(state, pending);
   }

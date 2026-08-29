@@ -1,0 +1,6747 @@
+{
+  "schema": 2,
+  "revision": 19,
+  "map": {
+    "path": "assets/map.png",
+    "sha256": "3c4de079f0d896f013468b758205bcb8461055bcb989d32c0360607adb8cb978",
+    "width": 6082,
+    "height": 6000
+  },
+  "regions": [
+    {
+      "id": "01_northwest",
+      "name": "英国、海峡、比利时与法国北部"
+    },
+    {
+      "id": "02_france_central",
+      "name": "法国西部与中部"
+    },
+    {
+      "id": "03_northeast",
+      "name": "阿登、洛林、德国西部与阿尔萨斯"
+    },
+    {
+      "id": "04_france_south",
+      "name": "法国南部、勃艮第与汝拉"
+    },
+    {
+      "id": "05_italy",
+      "name": "意大利与奥匈边境战场"
+    }
+  ],
+  "region_reviews": {
+    "01_northwest": {
+      "status": "confirmed",
+      "revision": 19
+    },
+    "02_france_central": {
+      "status": "confirmed",
+      "revision": 19
+    },
+    "03_northeast": {
+      "status": "confirmed",
+      "revision": 19
+    },
+    "04_france_south": {
+      "status": "confirmed",
+      "revision": 19
+    },
+    "05_italy": {
+      "status": "confirmed",
+      "revision": 19
+    }
+  },
+  "spaces": {
+    "london": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "calais": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 1313,
+          "y": 585,
+          "w": 236,
+          "h": 225
+        }
+      }
+    },
+    "ostend": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "antwerp": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "brussels": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "liege": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3468,
+          "y": 1084,
+          "w": 216,
+          "h": 224
+        }
+      }
+    },
+    "amiens": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 1409,
+          "y": 1527,
+          "w": 225,
+          "h": 227
+        }
+      }
+    },
+    "cambrai": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 2098,
+          "y": 1464,
+          "w": 184,
+          "h": 184
+        }
+      }
+    },
+    "paris": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 1503,
+          "y": 2626,
+          "w": 221,
+          "h": 215
+        }
+      }
+    },
+    "reims": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 2524,
+          "y": 2191,
+          "w": 223,
+          "h": 217
+        }
+      }
+    },
+    "sedan": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3025,
+          "y": 1782,
+          "w": 198,
+          "h": 195
+        }
+      }
+    },
+    "verdun": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saint_mihiel": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bar_le_duc": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3015,
+          "y": 2739,
+          "w": 202,
+          "h": 206
+        }
+      }
+    },
+    "nancy": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3685,
+          "y": 2869,
+          "w": 214,
+          "h": 203
+        }
+      }
+    },
+    "belfort": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "aachen": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3826,
+          "y": 902,
+          "w": 198,
+          "h": 199
+        }
+      }
+    },
+    "koblenz": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "metz": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "strasbourg": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "essen": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "milan": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3342,
+          "y": 5797,
+          "w": 341,
+          "h": 346
+        }
+      }
+    },
+    "verona": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "venice": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "udine": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "trent": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "trieste": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "villach": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 5657,
+          "y": 4313,
+          "w": 184,
+          "h": 198
+        }
+      }
+    },
+    "dover": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saint_omer": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "montreuil": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "ypres": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "veurne": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bruges": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "ghent": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "kortrijk": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "tournai": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "leuven": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "hasselt": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "lille": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 1926,
+          "y": 999,
+          "w": 213,
+          "h": 225
+        }
+      }
+    },
+    "neuve_chapelle": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "valenciennes": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mons": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "charleroi": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "namur": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "abbeville": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "arras": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": false
+      }
+    },
+    "maubeuge": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 2497,
+          "y": 1380,
+          "w": 223,
+          "h": 217
+        }
+      }
+    },
+    "florennes": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bastogne": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3254,
+          "y": 1491,
+          "w": 184,
+          "h": 184
+        }
+      }
+    },
+    "arlon": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dieppe": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "peronne": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "roye": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saint_quentin": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vervins": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mezieres": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "le_havre": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 302,
+          "y": 1832,
+          "w": 517,
+          "h": 521
+        }
+      }
+    },
+    "rouen": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "beauvais": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "noyon": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "laon": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "rethel": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "creil": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vouziers": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3006,
+          "y": 2113,
+          "w": 184,
+          "h": 184
+        }
+      }
+    },
+    "ardennes": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3324,
+          "y": 2077,
+          "w": 184,
+          "h": 184
+        }
+      }
+    },
+    "soissons": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "compiegne": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chantilly": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "argenteuil": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "evreux": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "meaux": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chateau_thierry": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "epernay": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "champagne": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne_billancourt": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vitry": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "sezanne": {
+      "region": "02_france_central",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "toul": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chartres": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dourdan": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "melun": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "provins": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "nogent": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "joinville": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "charmes": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "lomevillie": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "troyes": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mirecourt": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "sens": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "orleans": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dordives": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chaumont": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "neufchateau": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "auxerre": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vierzon": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bourges": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "nevers": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "avallon": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chatillon": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vittel": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vesoul": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dijon": {
+      "region": "04_france_south",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dole": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "besancon": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dusseldorf": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cologne": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "schirches": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bonn": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "hillesheim": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 3827,
+          "y": 1212,
+          "w": 193,
+          "h": 189
+        }
+      }
+    },
+    "mayen": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bitburg": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "wiltz": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mainz": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "trier": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "luxembourg": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bad_kreuznach": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saarbrucken": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "sarrebourg": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "colmar": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "freiburg": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "st_die": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 4155,
+          "y": 3295,
+          "w": 184,
+          "h": 184
+        }
+      }
+    },
+    "epinal": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mulhouse": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "langres": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "tyrol": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 4010,
+          "y": 4248,
+          "w": 347,
+          "h": 345
+        }
+      }
+    },
+    "bozen": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "lienz": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "spittal": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "carnicola": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 5919,
+          "y": 4210,
+          "w": 290,
+          "h": 284
+        }
+      }
+    },
+    "radmannsdorf": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "pergine": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "rovereto": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belluno": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "tolmezzo": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "caporetto": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "gorizia": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "adelsberg": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "pasubio": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "asiago": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vittorio": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "pordenone": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "portogruaro": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "palmanova": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "brescia": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "vicenza": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "treviso": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "vp": true
+      }
+    },
+    "veneto": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "padova": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mantova": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bologna": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "southern_italy": {
+      "region": "05_italy",
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "ui": {
+          "x": 4705,
+          "y": 5802,
+          "w": 334,
+          "h": 353
+        }
+      }
+    },
+    "marfeuilles": {
+      "region": "03_northeast",
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "brighton": {
+      "region": "01_northwest",
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "id": "brighton",
+        "name": "Brighton",
+        "nation": "br",
+        "faction": "ap",
+        "terrain": "clear",
+        "supply": false,
+        "port": true,
+        "ui": {
+          "x": 171,
+          "y": 599,
+          "w": 184,
+          "h": 184
+        },
+        "control": "ap"
+      },
+      "note": "",
+      "evidence": ""
+    }
+  },
+  "edges": {
+    "antwerp|brussels": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "antwerp",
+        "b": "brussels",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "brussels"
+      }
+    },
+    "aachen|liege": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "liege",
+        "b": "aachen",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "aachen"
+      }
+    },
+    "metz|verdun": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "bar_le_duc|verdun": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "verdun",
+        "b": "bar_le_duc",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "verdun"
+      }
+    },
+    "dover|london": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "calais|dover": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "calais|veurne": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne|calais": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "calais|saint_omer": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "ostend|veurne": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "veurne",
+        "b": "ostend",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "veurne|ypres": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "veurne",
+        "b": "ypres",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "ypres"
+      }
+    },
+    "bruges|ostend": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bruges|ghent": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "antwerp|ghent": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "ghent",
+        "b": "antwerp",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "antwerp"
+      }
+    },
+    "brussels|ghent": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "ghent",
+        "b": "brussels",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "brussels"
+      }
+    },
+    "antwerp|hasselt": {
+      "regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "kortrijk|ypres": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saint_omer|ypres": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "lille|ypres": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "neuve_chapelle|ypres": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "kortrijk|tournai": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "kortrijk|lille": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "kortrijk",
+        "b": "lille",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "lille"
+      }
+    },
+    "brussels|tournai": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "mons|tournai": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "tournai|valenciennes": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "lille|tournai": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "brussels|leuven": {
+      "regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "brussels|mons": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "hasselt|leuven": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "hasselt|liege": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne|saint_omer": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "boulogne|montreuil": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "neuve_chapelle|saint_omer": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "abbeville|montreuil": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "montreuil",
+        "b": "abbeville",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "montreuil"
+      }
+    },
+    "montreuil|neuve_chapelle": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "lille|neuve_chapelle": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "neuve_chapelle",
+        "b": "lille",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "lille"
+      }
+    },
+    "arras|neuve_chapelle": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "neuve_chapelle",
+        "b": "arras",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "arras"
+      }
+    },
+    "lille|valenciennes": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "arras|lille": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mons|valenciennes": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "maubeuge|valenciennes": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cambrai|valenciennes": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "charleroi|mons": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "maubeuge|mons": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "charleroi|namur": {
+      "regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "charleroi|florennes": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "charleroi",
+        "b": "florennes",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "florennes"
+      }
+    },
+    "charleroi|maubeuge": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "liege|namur": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "florennes|namur": {
+      "regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "bastogne|namur": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bastogne|liege": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "liege",
+        "b": "bastogne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "bastogne"
+      }
+    },
+    "hillesheim|liege": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "liege",
+        "b": "hillesheim",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "hillesheim"
+      }
+    },
+    "abbeville|dieppe": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "abbeville|amiens": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "amiens|arras": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "arras",
+        "b": "amiens",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "arras"
+      }
+    },
+    "arras|peronne": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "arras",
+        "b": "peronne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "arras"
+      }
+    },
+    "arras|cambrai": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cambrai|maubeuge": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "maubeuge|vervins": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "florennes|maubeuge": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "florennes|mezieres": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "florennes|sedan": {
+      "regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "arlon|bastogne": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bastogne|sedan": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dieppe|rouen": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dieppe|le_havre": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "le_havre|rouen": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "amiens|peronne": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "amiens|roye": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "amiens|beauvais": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cambrai|peronne": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "peronne",
+        "b": "cambrai",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "cambrai"
+      }
+    },
+    "peronne|saint_quentin": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "peronne",
+        "b": "saint_quentin",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "peronne|roye": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "cambrai|saint_quentin": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cambrai|vervins": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "saint_quentin|vervins": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "vervins",
+        "b": "saint_quentin",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "saint_quentin"
+      }
+    },
+    "laon|vervins": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mezieres|vervins": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mezieres|rethel": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mezieres|sedan": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "mezieres",
+        "b": "sedan",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "rethel|sedan": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "sedan",
+        "b": "rethel",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "rethel"
+      }
+    },
+    "beauvais|rouen": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "evreux|rouen": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "beauvais|noyon": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "beauvais|creil": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "noyon|roye": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "noyon|saint_quentin": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "noyon",
+        "b": "saint_quentin",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "noyon|soissons": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "noyon",
+        "b": "soissons",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "compiegne|noyon": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "noyon",
+        "b": "compiegne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "laon|saint_quentin": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "laon|soissons": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "laon",
+        "b": "soissons",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "laon"
+      }
+    },
+    "laon|rethel": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "reims|rethel": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "rethel",
+        "b": "reims",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "reims"
+      }
+    },
+    "rethel|vouziers": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "rethel",
+        "b": "vouziers",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "vouziers"
+      }
+    },
+    "compiegne|soissons": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "soissons",
+        "b": "compiegne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "soissons"
+      }
+    },
+    "chateau_thierry|soissons": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "soissons",
+        "b": "chateau_thierry",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "soissons"
+      }
+    },
+    "reims|soissons": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "chantilly|compiegne": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "compiegne|meaux": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "compiegne",
+        "b": "meaux",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "compiegne"
+      }
+    },
+    "argenteuil|chantilly": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "chantilly",
+        "b": "argenteuil",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "argenteuil"
+      }
+    },
+    "chantilly|meaux": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "argenteuil|paris": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "argenteuil",
+        "b": "paris",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "argenteuil|evreux": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chartres|evreux": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne_billancourt|paris": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "meaux|paris": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "paris",
+        "b": "meaux",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "meaux"
+      }
+    },
+    "melun|paris": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "paris",
+        "b": "melun",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "chateau_thierry|meaux": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "meaux",
+        "b": "chateau_thierry",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "chateau_thierry"
+      }
+    },
+    "meaux|melun": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "meaux",
+        "b": "melun",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "meaux"
+      }
+    },
+    "chateau_thierry|epernay": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chateau_thierry|reims": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "chateau_thierry",
+        "b": "reims",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "epernay|reims": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "epernay",
+        "b": "reims",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "champagne|epernay": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "champagne|reims": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "champagne",
+        "b": "reims",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "champagne|verdun": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "champagne|vitry": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "reims|vouziers": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "ardennes|vouziers": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "verdun|vouziers": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "ardennes|verdun": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "ardennes|luxembourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dourdan|orleans": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "dourdan",
+        "b": "orleans",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "dourdan"
+      }
+    },
+    "dourdan|melun": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "melun|provins": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "melun",
+        "b": "provins",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "provins"
+      }
+    },
+    "melun|sens": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "nogent|provins": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "provins",
+        "b": "nogent",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "nogent|troyes": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bar_le_duc|vitry": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "vitry",
+        "b": "bar_le_duc",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "bar_le_duc"
+      }
+    },
+    "joinville|vitry": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "vitry",
+        "b": "joinville",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "vitry"
+      }
+    },
+    "bar_le_duc|joinville": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "bar_le_duc",
+        "b": "joinville",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "bar_le_duc"
+      }
+    },
+    "bar_le_duc|toul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "bar_le_duc",
+        "b": "toul",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "toul"
+      }
+    },
+    "nancy|toul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "toul",
+        "b": "nancy",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "neufchateau|toul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "toul",
+        "b": "neufchateau",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "toul"
+      }
+    },
+    "charmes|nancy": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "nancy",
+        "b": "charmes",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "charmes"
+      }
+    },
+    "lomevillie|nancy": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "charmes|mirecourt": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "charmes|lomevillie": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chaumont|joinville": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "joinville|neufchateau": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "chaumont|troyes": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "troyes",
+        "b": "chaumont",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "chaumont"
+      }
+    },
+    "chatillon|troyes": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "auxerre|sens": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "sens",
+        "b": "auxerre",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "auxerre"
+      }
+    },
+    "orleans|vierzon": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bourges|vierzon": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bourges|nevers": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "auxerre|nevers": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "nevers",
+        "b": "auxerre",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "auxerre"
+      }
+    },
+    "auxerre|avallon": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "auxerre",
+        "b": "avallon",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "avallon"
+      }
+    },
+    "avallon|chatillon": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "avallon",
+        "b": "chatillon",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "avallon"
+      }
+    },
+    "chatillon|chaumont": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "chatillon",
+        "b": "chaumont",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "chaumont"
+      }
+    },
+    "chaumont|neufchateau": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "chaumont",
+        "b": "neufchateau",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "neufchateau"
+      }
+    },
+    "chaumont|langres": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "neufchateau|vittel": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mirecourt|vittel": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "epinal|vittel": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "vittel",
+        "b": "epinal",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "epinal|st_die": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belfort|epinal": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "colmar|st_die": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "colmar|mulhouse": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belfort|mulhouse": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "colmar|freiburg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "freiburg|mulhouse": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dijon|langres": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "langres",
+        "b": "dijon",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "dijon"
+      }
+    },
+    "dijon|dole": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "besancon|dole": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belfort|besancon": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dusseldorf|essen": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cologne|dusseldorf": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "aachen|dusseldorf": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bonn|cologne": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cologne|schirches": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "aachen|schirches": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bonn|schirches": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bonn|koblenz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "aachen|hillesheim": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "hillesheim|mayen": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bitburg|hillesheim": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "koblenz|mayen": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bitburg|mayen": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bitburg|trier": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove"
+    },
+    "bitburg|wiltz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "luxembourg|wiltz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "arlon|wiltz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "arlon|luxembourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "koblenz|mainz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bad_kreuznach|koblenz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "koblenz|trier": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bad_kreuznach|mainz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bad_kreuznach|trier": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "saarbrucken|trier": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "luxembourg|trier": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bad_kreuznach|saarbrucken": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "luxembourg|metz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "luxembourg|saarbrucken": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "metz|saarbrucken": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saarbrucken|sarrebourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "sarrebourg|strasbourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "sarrebourg",
+        "b": "strasbourg",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "sarrebourg"
+      }
+    },
+    "colmar|strasbourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bozen|tyrol": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "tyrol",
+        "b": "bozen",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "trent|tyrol": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "tyrol",
+        "b": "trent",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "bozen|lienz": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "bozen",
+        "b": "lienz",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "bozen|trent": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "lienz|spittal": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "lienz|villach": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "spittal|villach": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "carnicola|spittal": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "carnicola|radmannsdorf": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "carnicola",
+        "b": "radmannsdorf",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "radmannsdorf|villach": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "adelsberg|radmannsdorf": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "pergine|trent": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "rovereto|trent": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "asiago|pergine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belluno|pergine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "pasubio|rovereto": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belluno|tolmezzo": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belluno|vittorio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "asiago|belluno": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "tolmezzo|villach": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "caporetto|tolmezzo": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "tolmezzo|udine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "caporetto|villach": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "villach",
+        "b": "caporetto",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "caporetto|gorizia": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "caporetto|udine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "gorizia|trieste": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "gorizia|palmanova": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "gorizia",
+        "b": "palmanova",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "palmanova"
+      }
+    },
+    "gorizia|udine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "gorizia",
+        "b": "udine",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "udine"
+      }
+    },
+    "adelsberg|trieste": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "portogruaro|trieste": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "brescia|pasubio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "pasubio|verona": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "pasubio",
+        "b": "verona",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "pasubio"
+      }
+    },
+    "asiago|vicenza": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "asiago|vittorio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "treviso|vittorio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "vittorio",
+        "b": "treviso",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "vittorio"
+      }
+    },
+    "pordenone|vittorio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "pordenone|udine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "pordenone|portogruaro": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "palmanova|udine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "palmanova|portogruaro": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "palmanova|trieste": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "brescia|milan": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "brescia|verona": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mantova|verona": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "verona",
+        "b": "mantova",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "verona"
+      }
+    },
+    "verona|vicenza": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "verona",
+        "b": "vicenza",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "verona"
+      }
+    },
+    "treviso|vicenza": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "padova|vicenza": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "treviso|veneto": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "treviso|venice": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "treviso",
+        "b": "venice",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "treviso"
+      }
+    },
+    "portogruaro|veneto": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "veneto|venice": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "portogruaro|venice": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mantova|milan": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bologna|mantova": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mantova|padova": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "padova|venice": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "padova",
+        "b": "venice",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "padova"
+      }
+    },
+    "bologna|padova": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bologna|southern_italy": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "southern_italy|venice": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "marfeuilles|metz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "marfeuilles|sarrebourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bruges|kortrijk": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "ghent|kortrijk": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "antwerp|bruges": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "kortrijk|veurne": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "cologne|essen": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "arlon|sedan": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "argenteuil|beauvais": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "argenteuil|boulogne_billancourt": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne_billancourt|evreux": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "boulogne_billancourt|chartres": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chantilly|creil": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "creil",
+        "b": "chantilly",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "creil"
+      }
+    },
+    "chantilly|paris": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "chantilly",
+        "b": "paris",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "chantilly"
+      }
+    },
+    "dourdan|paris": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chartres|orleans": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "chartres",
+        "b": "orleans",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "chartres"
+      }
+    },
+    "creil|roye": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "avallon|dijon": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "chatillon|langres": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "joinville|troyes": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "joinville",
+        "b": "troyes",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "joinville"
+      }
+    },
+    "joinville|toul": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "joinville",
+        "b": "toul",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "toul"
+      }
+    },
+    "mirecourt|nancy": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "mirecourt",
+        "b": "nancy",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "mirecourt"
+      }
+    },
+    "mirecourt|neufchateau": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "mirecourt",
+        "b": "neufchateau",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "mirecourt"
+      }
+    },
+    "langres|vittel": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "langres",
+        "b": "vittel",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "vittel"
+      }
+    },
+    "langres|vesoul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "langres",
+        "b": "vesoul",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "vesoul"
+      }
+    },
+    "vesoul|vittel": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "belfort|vesoul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dole|vesoul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "besancon|vesoul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "freiburg|strasbourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "freiburg",
+        "b": "strasbourg",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "freiburg"
+      }
+    },
+    "lomevillie|sarrebourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "lomevillie",
+        "b": "sarrebourg",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "sarrebourg"
+      }
+    },
+    "lomevillie|strasbourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "lomevillie",
+        "b": "strasbourg",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "lomevillie|st_die": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "marfeuilles|nancy": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "saarbrucken|strasbourg": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "koblenz|saarbrucken": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "metz|trier": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "metz|saint_mihiel": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "metz",
+        "b": "saint_mihiel",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "saint_mihiel|verdun": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "verdun",
+        "b": "saint_mihiel",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "saint_mihiel"
+      }
+    },
+    "saint_mihiel|toul": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "epernay|sezanne": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "epernay",
+        "b": "sezanne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "epernay"
+      }
+    },
+    "provins|sezanne": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "sezanne|vitry": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "nogent|sezanne": {
+      "regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "dordives|orleans": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "orleans",
+        "b": "dordives",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "dordives"
+      }
+    },
+    "dordives|sens": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "bozen|pergine": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "bozen",
+        "b": "pergine",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "belluno|lienz": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "lienz",
+        "b": "belluno",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "pergine|rovereto": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "asiago|rovereto": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "caporetto|radmannsdorf": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "adelsberg|gorizia": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "pordenone|treviso": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "portogruaro|treviso": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "treviso",
+        "b": "portogruaro",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "portogruaro"
+      }
+    },
+    "asiago|veneto": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "asiago",
+        "b": "veneto",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "asiago"
+      }
+    },
+    "veneto|vittorio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "vittorio",
+        "b": "veneto",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "vittorio"
+      }
+    },
+    "veneto|vicenza": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "keep"
+    },
+    "mulhouse|st_die": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove"
+    },
+    "brighton|london": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "brighton",
+        "b": "london",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "brighton|le_havre": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "brighton",
+        "b": "le_havre",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap"
+        ],
+        "requires_land_attack_support": true
+      }
+    },
+    "brighton|dieppe": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "brighton",
+        "b": "dieppe",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap"
+        ],
+        "requires_land_attack_support": true
+      }
+    },
+    "boulogne|dover": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "dover",
+        "b": "boulogne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap"
+        ],
+        "requires_land_attack_support": true
+      }
+    },
+    "montreuil|saint_omer": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "montreuil",
+        "b": "saint_omer",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "antwerp|leuven": {
+      "regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "antwerp",
+        "b": "leuven",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "leuven"
+      }
+    },
+    "brussels|charleroi": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "brussels",
+        "b": "charleroi",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "evreux|le_havre": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "le_havre",
+        "b": "evreux",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "noyon|peronne": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "peronne",
+        "b": "noyon",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "laon|reims": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "laon",
+        "b": "reims",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "rethel|vervins": {
+      "regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "01_northwest",
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "vervins",
+        "b": "rethel",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "compiegne|creil": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "creil",
+        "b": "compiegne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "reims|verdun": {
+      "regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "02_france_central",
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "aachen|cologne": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "aachen",
+        "b": "cologne",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "ardennes|metz": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "ardennes",
+        "b": "metz",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "ardennes"
+      }
+    },
+    "epinal|joinville": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "charmes|joinville": {
+      "regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "03_northeast",
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": null
+    },
+    "charmes|epinal": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "charmes",
+        "b": "epinal",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "epinal|mirecourt": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "mirecourt",
+        "b": "epinal",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "langres|neufchateau": {
+      "regions": [
+        "03_northeast"
+      ],
+      "confirmed_regions": [
+        "03_northeast"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "langres",
+        "b": "neufchateau",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "neufchateau"
+      }
+    },
+    "nogent|sens": {
+      "regions": [
+        "04_france_south"
+      ],
+      "confirmed_regions": [
+        "04_france_south"
+      ],
+      "status": "confirmed",
+      "decision": "update",
+      "proposal": {
+        "a": "sens",
+        "b": "nogent",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river": true
+      }
+    },
+    "belluno|bozen": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "bozen",
+        "b": "belluno",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "adelsberg|carnicola": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "adelsberg",
+        "b": "carnicola",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "pergine|vittorio": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "pergine",
+        "b": "vittorio",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "carnicola|villach": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "villach",
+        "b": "carnicola",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "spittal|tolmezzo": {
+      "regions": [
+        "05_italy"
+      ],
+      "confirmed_regions": [
+        "05_italy"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "tolmezzo",
+        "b": "spittal",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "alpine": true
+      }
+    },
+    "mezieres|saint_quentin": {
+      "regions": [
+        "02_france_central"
+      ],
+      "confirmed_regions": [
+        "02_france_central"
+      ],
+      "status": "confirmed",
+      "decision": "remove",
+      "proposal": {
+        "a": "mezieres",
+        "b": "saint_quentin",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ]
+      }
+    },
+    "abbeville|neuve_chapelle": {
+      "regions": [
+        "01_northwest"
+      ],
+      "confirmed_regions": [
+        "01_northwest"
+      ],
+      "status": "confirmed",
+      "decision": "add",
+      "proposal": {
+        "a": "abbeville",
+        "b": "neuve_chapelle",
+        "type": "land",
+        "modes": [
+          "move",
+          "attack",
+          "supply",
+          "sr",
+          "retreat",
+          "advance"
+        ],
+        "factions": [
+          "ap",
+          "cp"
+        ],
+        "river_from": "neuve_chapelle"
+      }
+    }
+  }
+}

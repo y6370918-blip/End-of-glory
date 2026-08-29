@@ -28,7 +28,7 @@ function createCombatEventSystem(api) {
       if (!massAttritionMoChoices(state).length)
           state.pending_event.stage = "losses";
       state.active = api.AP;
-      state.state = "event";
+      api.enterEventFlow(state);
   }
 
   function massAttritionCandidates(state, faction) {
@@ -100,7 +100,7 @@ function createCombatEventSystem(api) {
           resume_ops_card: card.color === "yellow" ? card.id : null,
       };
       state.active = api.AP;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 

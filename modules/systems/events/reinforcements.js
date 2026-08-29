@@ -34,7 +34,7 @@ function createReinforcementEventSystem(api) {
           units: [],
       };
       state.active = operation.chooser;
-      state.state = "event";
+      api.enterEventFlow(state);
       api.log(state, `${card.title}：选择暂时调离地图的单位。`);
   }
 
@@ -171,7 +171,7 @@ function createReinforcementEventSystem(api) {
           next_unit_id_before: nextUnitIdBefore,
       };
       state.active = card.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
       api.log(state, `${card.title}：逐个选择增援部署地区。`);
   }
 
@@ -330,7 +330,7 @@ function createReinforcementEventSystem(api) {
 
   function reinforcementMapSpaces(state, pending, piece, placement, placements) {
       const faction = piece.faction || pending.owner;
-      return api.data.spaces
+      const direct = api.data.spaces
           .filter((space) => !space.ui?.hidden)
           .filter((space) => api.unitsAt(state, space.id, api.other(faction)).length === 0)
           .filter((space) => {
@@ -348,9 +348,24 @@ function createReinforcementEventSystem(api) {
               return (state.control[space.id] === faction &&
                   distanceFromAny(pending.operation.sources || [], space.id, pending.operation.max_distance || 0) <= (pending.operation.max_distance || 0));
           return space.supply && state.control[space.id] === faction;
-      })
+      });
+      const result = new Set(direct
           .filter((space) => reinforcementStackAllows(state, pending, piece, space, placements))
-          .map((space) => space.id);
+          .map((space) => space.id));
+      if (["ap_port_or_supply", "normal_reinforcement", "national_supply"].includes(placement))
+          for (const source of direct) {
+              if (source.port || reinforcementStackAllows(state, pending, piece, source, placements))
+                  continue;
+              for (const adjacent of api.landNeighbors(source.id)) {
+                  const space = api.spaceById[adjacent];
+                  if (space && !space.ui?.hidden &&
+                      state.control[adjacent] === faction &&
+                      !api.unitsAt(state, adjacent, api.other(faction)).length &&
+                      reinforcementStackAllows(state, pending, piece, space, placements))
+                      result.add(adjacent);
+              }
+          }
+      return [...result];
   }
 
   function reinforcementSpaces(state, pending) {

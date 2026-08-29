@@ -63,6 +63,13 @@ function eventStateName(pending) {
   return `event_${kind}`;
 }
 
+function enterEventFlow(state, pending = state?.pending_event) {
+  if (!state) throw new Error("Event flow requires a game state");
+  state.pending_event = pending;
+  state.state = eventStateName(pending);
+  return pending;
+}
+
 function isEventState(name) {
   if (name === GENERIC_EVENT_STATE) return true;
   return typeof name === "string" &&
@@ -71,7 +78,11 @@ function isEventState(name) {
 }
 
 function canonicalizeEventState(state) {
-  if (state?.state === "event") state.state = eventStateName(state.pending_event);
+  if (state?.state === "event" || state?.state === GENERIC_EVENT_STATE ||
+      (typeof state?.state === "string" && state.state.startsWith("event_"))) {
+    const expected = eventStateName(state.pending_event);
+    if (state.state !== expected) state.state = expected;
+  }
   return state?.state;
 }
 
@@ -79,6 +90,7 @@ module.exports = {
   EVENT_KINDS,
   GENERIC_EVENT_STATE,
   canonicalizeEventState,
+  enterEventFlow,
   eventStateName,
   isEventState,
 };

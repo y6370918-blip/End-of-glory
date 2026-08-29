@@ -1,0 +1,44 @@
+[
+  {
+    "flow": "activation",
+    "pug": ["activate_spaces", "activate_region_stack"],
+    "eog": ["ops_activate", "activation_region"],
+    "choice": "space"
+  },
+  {
+    "flow": "group_movement",
+    "pug": ["choose_pieces_to_move", "move_stack"],
+    "eog": ["movement_units", "movement"],
+    "choice": "piece_then_space"
+  },
+  {
+    "flow": "attack_declaration",
+    "pug": ["attack", "confirm_attack"],
+    "eog": ["ops_attack", "attack_mode"],
+    "choice": "pieces_and_target"
+  },
+  {
+    "flow": "combat_cards",
+    "pug": ["confirm_cc"],
+    "eog": ["combat_card_window"],
+    "choice": "hidden_card_or_pass"
+  },
+  {
+    "flow": "losses_and_replacement",
+    "pug": ["apply_defender_losses", "apply_attacker_losses", "choose_lcu_replacement"],
+    "eog": ["combat_losses", "combat_replacement"],
+    "choice": "piece"
+  },
+  {
+    "flow": "retreat_and_advance",
+    "pug": ["retreat", "advance"],
+    "eog": ["retreat", "advance_select", "advance_destination"],
+    "choice": "piece_or_space"
+  },
+  {
+    "flow": "replacement",
+    "pug": ["rp_phase", "rp_rebuild_where"],
+    "eog": ["replacement", "event_replacement_rebuild", "event_veteran_upgrade"],
+    "choice": "piece_then_destination"
+  }
+]

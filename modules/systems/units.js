@@ -39,7 +39,8 @@ function createUnitSystem(context) {
 
   function placeEliminatedUnit(state, unit, reason = "eliminated") {
     normalizeOffMapUnit(unit);
-    if (permanentOnElimination(unit)) {
+    const retreatException = reason === "unable_to_retreat" || reason === "无法撤退";
+    if (permanentOnElimination(unit) && !retreatException) {
       state.permanently_removed_units ||= [];
       state.permanently_removed_units.push({
         ...unit,
@@ -51,6 +52,20 @@ function createUnitSystem(context) {
     state.eliminated ||= { ap: [], cp: [] };
     state.eliminated[unit.faction].push(unit);
     return "eliminated";
+  }
+
+  function permanentlyRemoveOnMapUnit(state, id, reason = "permanent") {
+    const index = state.units.findIndex((unit) => unit.id === id);
+    if (index < 0) return null;
+    const [unit] = state.units.splice(index, 1);
+    normalizeOffMapUnit(unit);
+    state.permanently_removed_units ||= [];
+    state.permanently_removed_units.push({
+      ...unit,
+      removed_by: reason,
+      removed_turn: state.turn,
+    });
+    return unit;
   }
 
   function nationalityGroup(nation) {
@@ -114,7 +129,7 @@ function createUnitSystem(context) {
     unit.attacked = Boolean(unit.attacked);
     unit.supplied = unit.supplied !== false;
     unit.fort_limited_supply = Boolean(unit.fort_limited_supply);
-    delete unit.limited_supply;
+    unit.limited_supply = Boolean(unit.limited_supply);
     return unit;
   }
 
@@ -128,6 +143,7 @@ function createUnitSystem(context) {
     normalizeOffMapUnit,
     nationalityGroup,
     permanentOnElimination,
+    permanentlyRemoveOnMapUnit,
     placeEliminatedUnit,
     stackLegal,
     unitsAt,

@@ -1043,7 +1043,7 @@ const data = {
 			"remove": true,
 			"event": "ap_皮亚韦河防线",
 			"condition": "always",
-			"effect": "若劳合乔治已事件，或CP控制Belluno、Venice、Pordenone、Portogruaro、Tolmezzo、Udine、Palmanova之一，英法LCU以满员面增援；否则以受损面增援。增援1枚英国援意新兵LCU、1枚法国援意新兵LCU、2枚意大利新兵LCU和2枚意大利新兵SCU。英法LCU各可替换意大利境内1枚意大利LCU，被替换单位返回合法补给源。完成后获得2点SR。",
+			"effect": "若劳合乔治已事件，或CP控制Belluno、Venice、Pordenone、Portogruaro、Tolmezzo、Udine、Palmanova之一，英法援意LCU以满员面增援；否则以受损面增援。增援1枚英国意大利LCU、1枚法国意大利LCU、2枚意大利新兵LCU和2枚意大利新兵SCU。英法LCU各可替换意大利境内1枚意大利LCU，被替换单位返回合法补给源。完成后获得2点SR。",
 			"ocr_confidence": 86,
 			"ocr_text": "在被占领的意大利地区，或者\n劳合乔治已事件，英法LCU以\n完好面增援\n增援: 受损英国援意新兵LCU，\n受损法国援意新兵'CU，2意大利\n新兵LCU。在预备投放置2意大利\n新兵scu。可将英法LCU蔡换意大\n利境内的意大利LCU，被替换的\nLCU放回补给源。然后获得2点SR\n点数\nTW BR:4 FR:4 IT:3 A:2",
 			"image": "cards/ap/637.webp",
@@ -1636,7 +1636,7 @@ const data = {
 			"remove": true,
 			"event": "cp_向大海进军",
 			"condition": "always",
-			"effect": "仅T1–T3可事件。使用本牌3 OP进行正常行动；本行动轮CP单位累计最多进入3个行动轮开始时由AP控制的不同地区（通常为2个）。",
+			"effect": "仅T1–T3可事件。使用本牌3 OP进行正常行动；本次CP行动中，可占领距行动开始时CP控制区最短移动距离不超过3的地区（通常为2）。",
 			"ocr_confidence": 91,
 			"ocr_text": "在T3后，不可事件本牌\n用本牌0P进行移动(可导致移动\n中进攻) ，并且本行动轮，同一\n行动轮只能进入至多2个行动轮\n开始时AP控制地区的限制改为3\n\n个地区。\nMB GE:3 AH:2 EAST:2",
 			"image": "cards/cp/700.webp",
@@ -2546,7 +2546,7 @@ const data = {
 			"remove": true,
 			"event": "cp_德国增援_冯贝洛",
 			"condition": "always",
-			"effect": "增援：1个德国老兵LCU、冯贝洛HQ、1个德国新兵LCU；这些单位仅可在意大利战场增援和重建。在预备区放置1个德国老兵SCU和1个德国新兵SCU。",
+			"effect": "增援：1枚德国意大利LCU、冯贝洛HQ、1枚德国意大利新兵LCU；这些单位仅可在意大利战场增援和重建。在预备区放置1枚德国老兵SCU和1枚德国新兵SCU。",
 			"ocr_confidence": 86,
 			"ocr_text": "德国增援-冯贝洛\n增援: 1个德国老兵LCU，冯由\n洛HQ，1个德国新兵LCU。这些\n单位仅可在意大利战场增援和\n重建。在预备区放置1个德国老\n\n兵scu，1个德国新兵scu。\n\nTW 全:3 AH:2 FASI:2",
 			"image": "cards/cp/735.webp",
@@ -5345,19 +5345,19 @@ const data = {
 						"type": "army",
 						"maximum": 2,
 						"incoming_pieces": [
-							"component-093",
-							"component-026"
+							"component-170",
+							"component-169"
 						]
 					},
 					"units": [
 						{
-							"piece": "component-093",
+							"piece": "component-170",
 							"count": 1,
 							"to": "map",
 							"reduced": true
 						},
 						{
-							"piece": "component-026",
+							"piece": "component-169",
 							"count": 1,
 							"to": "map",
 							"reduced": true
@@ -5381,7 +5381,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "若劳合乔治已事件，或CP控制Belluno、Venice、Pordenone、Portogruaro、Tolmezzo、Udine、Palmanova之一，英法LCU以满员面增援；否则以受损面增援。增援1枚英国援意新兵LCU、1枚法国援意新兵LCU、2枚意大利新兵LCU和2枚意大利新兵SCU。英法LCU各可替换意大利境内1枚意大利LCU，被替换单位返回合法补给源。完成后获得2点SR。"
+			"source_text": "若劳合乔治已事件，或CP控制Belluno、Venice、Pordenone、Portogruaro、Tolmezzo、Udine、Palmanova之一，英法援意LCU以满员面增援；否则以受损面增援。增援1枚英国意大利LCU、1枚法国意大利LCU、2枚意大利新兵LCU和2枚意大利新兵SCU。英法LCU各可替换意大利境内1枚意大利LCU，被替换单位返回合法补给源。完成后获得2点SR。"
 		},
 		"638": {
 			"card_id": 638,
@@ -6430,7 +6430,7 @@ const data = {
 				{
 					"type": "rule_modifier",
 					"key": "race_to_sea",
-					"previous_enemy_control_entry_limit": 3,
+					"occupation_depth_limit": 3,
 					"grants_printed_ops": true
 				}
 			],
@@ -6439,7 +6439,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "仅T1–T3可事件。使用本牌3 OP进入正常行动；本行动轮CP单位累计最多进入3个行动轮开始时由AP控制的不同地区。"
+			"source_text": "仅T1–T3可事件。使用本牌3 OP进入正常行动；本次CP行动中，可占领距行动开始时CP控制区最短移动距离不超过3的地区。"
 		},
 		"701": {
 			"card_id": 701,
@@ -8258,7 +8258,7 @@ const data = {
 							"to": "map"
 						},
 						{
-							"piece": "component-033",
+							"piece": "component-167",
 							"count": 1,
 							"to": "map"
 						},
@@ -8280,7 +8280,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "增援：1个德国老兵LCU、冯贝洛HQ、1个德国新兵LCU；这些单位仅可在意大利战场增援和重建。在预备区放置1个德国老兵SCU和1个德国新兵SCU。"
+			"source_text": "增援：1枚德国意大利LCU、冯贝洛HQ、1枚德国意大利新兵LCU；这些单位仅可在意大利战场增援和重建。在预备区放置1枚德国老兵SCU和1枚德国新兵SCU。"
 		},
 		"736": {
 			"card_id": 736,
@@ -10127,6 +10127,7 @@ const data = {
 				"w": 236,
 				"h": 225
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"boulogne",
@@ -10230,6 +10231,7 @@ const data = {
 				"h": 184
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"bruges",
 				"veurne"
@@ -10312,6 +10314,7 @@ const data = {
 				"h": 240
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"brussels",
 				"ghent",
@@ -10407,6 +10410,7 @@ const data = {
 				"h": 184
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"antwerp",
 				"charleroi",
@@ -10649,6 +10653,7 @@ const data = {
 				"w": 225,
 				"h": 227
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"abbeville",
@@ -10770,6 +10775,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"arras",
@@ -10891,6 +10897,7 @@ const data = {
 				"w": 221,
 				"h": 215
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"argenteuil",
@@ -11025,6 +11032,7 @@ const data = {
 				"w": 223,
 				"h": 217
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"champagne",
@@ -11255,6 +11263,7 @@ const data = {
 				"w": 236,
 				"h": 240
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"ardennes",
@@ -11471,6 +11480,7 @@ const data = {
 				"w": 202,
 				"h": 206
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"joinville",
@@ -11580,6 +11590,7 @@ const data = {
 				"w": 214,
 				"h": 203
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"charmes",
@@ -11918,6 +11929,7 @@ const data = {
 				"h": 208
 			},
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"bonn",
 				"mainz",
@@ -12040,6 +12052,7 @@ const data = {
 				"h": 201
 			},
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"ardennes",
 				"luxembourg",
@@ -12175,6 +12188,7 @@ const data = {
 				"h": 240
 			},
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"colmar",
 				"freiburg",
@@ -12296,6 +12310,7 @@ const data = {
 				"h": 215
 			},
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"cologne",
 				"dusseldorf"
@@ -12460,6 +12475,7 @@ const data = {
 				"h": 216
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"brescia",
 				"mantova",
@@ -12568,6 +12584,7 @@ const data = {
 				"h": 207
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"padova",
 				"portogruaro",
@@ -12663,6 +12680,7 @@ const data = {
 				"h": 188
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"gorizia",
 				"palmanova",
@@ -12771,6 +12789,7 @@ const data = {
 				"h": 208
 			},
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"pergine",
 				"rovereto",
@@ -12866,6 +12885,7 @@ const data = {
 				"h": 180
 			},
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"adelsberg",
 				"gorizia"
@@ -13418,6 +13438,7 @@ const data = {
 				"h": 184
 			},
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"kortrijk",
 				"lille",
@@ -14269,6 +14290,7 @@ const data = {
 				"h": 225
 			},
 			"fort": 2,
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"arras",
@@ -16485,6 +16507,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"amiens",
@@ -16593,6 +16616,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"compiegne",
@@ -17389,6 +17413,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"chantilly",
@@ -17739,6 +17764,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"argenteuil",
@@ -17968,6 +17994,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"epernay",
@@ -18508,6 +18535,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"epernay",
@@ -18928,6 +18956,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"dourdan",
@@ -19589,6 +19618,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"chaumont",
@@ -19805,6 +19835,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"auxerre",
@@ -19913,6 +19944,7 @@ const data = {
 				"w": 184,
 				"h": 184
 			},
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"chartres",
@@ -20105,6 +20137,7 @@ const data = {
 			},
 			"fort": 1,
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"chatillon",
 				"joinville",
@@ -21121,6 +21154,7 @@ const data = {
 				"h": 184
 			},
 			"fort": 1,
+			"vp": true,
 			"control": "ap",
 			"connections": [
 				"avallon",
@@ -22019,7 +22053,6 @@ const data = {
 			"connections": [
 				"hillesheim",
 				"mayen",
-				"trier",
 				"wiltz"
 			],
 			"connections_by_mode": {
@@ -22027,13 +22060,11 @@ const data = {
 					"ap": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					],
 					"cp": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					]
 				},
@@ -22041,13 +22072,11 @@ const data = {
 					"ap": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					],
 					"cp": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					]
 				},
@@ -22055,13 +22084,11 @@ const data = {
 					"ap": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					],
 					"cp": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					]
 				},
@@ -22069,13 +22096,11 @@ const data = {
 					"ap": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					],
 					"cp": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					]
 				},
@@ -22083,13 +22108,11 @@ const data = {
 					"ap": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					],
 					"cp": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					]
 				},
@@ -22097,13 +22120,11 @@ const data = {
 					"ap": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					],
 					"cp": [
 						"hillesheim",
 						"mayen",
-						"trier",
 						"wiltz"
 					]
 				}
@@ -22302,7 +22323,6 @@ const data = {
 			},
 			"control": "cp",
 			"connections": [
-				"bitburg",
 				"koblenz",
 				"luxembourg",
 				"metz",
@@ -22311,14 +22331,12 @@ const data = {
 			"connections_by_mode": {
 				"move": {
 					"ap": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
 						"saarbrucken"
 					],
 					"cp": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
@@ -22327,14 +22345,12 @@ const data = {
 				},
 				"attack": {
 					"ap": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
 						"saarbrucken"
 					],
 					"cp": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
@@ -22343,14 +22359,12 @@ const data = {
 				},
 				"supply": {
 					"ap": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
 						"saarbrucken"
 					],
 					"cp": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
@@ -22359,14 +22373,12 @@ const data = {
 				},
 				"sr": {
 					"ap": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
 						"saarbrucken"
 					],
 					"cp": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
@@ -22375,14 +22387,12 @@ const data = {
 				},
 				"retreat": {
 					"ap": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
 						"saarbrucken"
 					],
 					"cp": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
@@ -22391,14 +22401,12 @@ const data = {
 				},
 				"advance": {
 					"ap": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
 						"saarbrucken"
 					],
 					"cp": [
-						"bitburg",
 						"koblenz",
 						"luxembourg",
 						"metz",
@@ -23259,6 +23267,7 @@ const data = {
 				"w": 184,
 				"h": 192
 			},
+			"vp": true,
 			"control": "cp",
 			"connections": [
 				"belfort",
@@ -24616,6 +24625,7 @@ const data = {
 			},
 			"fort": 2,
 			"control": "cp",
+			"vp": true,
 			"connections": [
 				"caporetto",
 				"palmanova",
@@ -25619,6 +25629,7 @@ const data = {
 			},
 			"fort": 2,
 			"control": "ap",
+			"vp": true,
 			"connections": [
 				"portogruaro",
 				"veneto",
@@ -26371,7 +26382,6 @@ const data = {
 				"ap",
 				"cp"
 			],
-			"difficult": true,
 			"river_from": "brussels"
 		},
 		{
@@ -26425,7 +26435,8 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			]
+			],
+			"alpine": true
 		},
 		{
 			"a": "dover",
@@ -27185,7 +27196,6 @@ const data = {
 				"ap",
 				"cp"
 			],
-			"difficult": true,
 			"river_from": "arras"
 		},
 		{
@@ -28076,7 +28086,6 @@ const data = {
 				"ap",
 				"cp"
 			],
-			"difficult": true,
 			"river": true
 		},
 		{
@@ -28128,8 +28137,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "vouziers",
@@ -28163,8 +28171,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "ardennes",
@@ -28181,8 +28188,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "dourdan",
@@ -28709,8 +28715,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "epinal",
@@ -28744,8 +28749,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "st_die",
@@ -28762,8 +28766,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "colmar",
@@ -28780,8 +28783,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "mulhouse",
@@ -28798,8 +28800,7 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			],
-			"difficult": true
+			]
 		},
 		{
 			"a": "freiburg",
@@ -29111,23 +29112,6 @@ const data = {
 		{
 			"a": "mayen",
 			"b": "bitburg",
-			"type": "land",
-			"modes": [
-				"move",
-				"attack",
-				"supply",
-				"sr",
-				"retreat",
-				"advance"
-			],
-			"factions": [
-				"ap",
-				"cp"
-			]
-		},
-		{
-			"a": "bitburg",
-			"b": "trier",
 			"type": "land",
 			"modes": [
 				"move",
@@ -32284,7 +32268,7 @@ const data = {
 			"reduced_combat": 0,
 			"reduced_loss": 1,
 			"image": "pieces/999ed9d6c2b46685.webp",
-			"source": "算子单位图标/德国战斗单位/德国骑兵.png",
+			"source": "算子单位图标/德国战斗单位/德国骑兵scu.png",
 			"tts_count": 9,
 			"face_hash": "999ed9d6c2b46685d27b8d79ea169ee41f8b693456535112cf553e009a2595ef",
 			"back_hash": "41a6189b23710f59fd6f537bf402f69b51302be040b56644ffddcb707049e97d",
@@ -32472,7 +32456,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/36f8f6611bcf7223.webp",
-			"source": "算子单位图标/德国战斗单位/普鲁士骑兵.png",
+			"source": "算子单位图标/德国战斗单位/普鲁士骑兵scu.png",
 			"tts_count": 2,
 			"face_hash": "36f8f6611bcf72230555ce7cb1a6ccb8466155259372852e6e36132723e2f072",
 			"back_hash": "71fa0bcf7630e3b3e682ea84c2038f3b7a36de9e55fa11f727bc7a2969cda6ea",
@@ -32616,7 +32600,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/939481ec96136ae3.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/U艇.png",
+			"source": "算子单位图标/游戏通用标记/U艇.png",
 			"tts_count": 1,
 			"face_hash": "939481ec96136ae3d81a7cc653fd1447c4e2f622d8e73d56ffb809ef0d2bbc09",
 			"back_hash": "939481ec96136ae3d81a7cc653fd1447c4e2f622d8e73d56ffb809ef0d2bbc09"
@@ -32636,7 +32620,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/95bd5b1290934c66.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/俄国战线.png",
+			"source": "算子单位图标/游戏通用标记/俄国战线.png",
 			"tts_count": 1,
 			"face_hash": "95bd5b1290934c66298ad1711feeb406a8170e5224b537aaf1ba214ee75c5564",
 			"back_hash": "95bd5b1290934c66298ad1711feeb406a8170e5224b537aaf1ba214ee75c5564"
@@ -32656,7 +32640,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/b44f58d268920c30.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/土耳其战线.png",
+			"source": "算子单位图标/游戏通用标记/土耳其战线.png",
 			"tts_count": 1,
 			"face_hash": "b44f58d268920c30a0bcaf24df7a53dc70082b4f4ae8cecf3115209bc871f794",
 			"back_hash": "b44f58d268920c30a0bcaf24df7a53dc70082b4f4ae8cecf3115209bc871f794"
@@ -32676,7 +32660,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/2fff99c5359de7cb.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/CP海军阶段b.png",
+			"source": "算子单位图标/游戏标记/CP海军阶段b.png",
 			"tts_count": 1,
 			"face_hash": "2fff99c5359de7cbb9db4a012def41be59f5d6e7863201eb1b4e0b4f6c6022d9",
 			"back_hash": "7398742e2c1b77afe6c23da998a44d454d6d49633975aad97eac36abaf216b8f"
@@ -32696,7 +32680,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/d5719de7600f7131.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/AP海军阶段b.png",
+			"source": "算子单位图标/游戏标记/AP海军阶段b.png",
 			"tts_count": 1,
 			"face_hash": "d5719de7600f7131140be5651bb4a9751e1abc797e3977b353cd74f82aef9995",
 			"back_hash": "c3ddf0a1e5ef3353d718c39e1682a47fe69740ef9cfcd11b84367817aec052e5"
@@ -32716,7 +32700,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/f39f3dd6437ee2a3.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/美国参战.png",
+			"source": "算子单位图标/游戏通用标记/美国参战.png",
 			"tts_count": 1,
 			"face_hash": "f39f3dd6437ee2a38702648e21b7f1778ee08585e1d5200e0dddc4a8aae50189",
 			"back_hash": "f39f3dd6437ee2a38702648e21b7f1778ee08585e1d5200e0dddc4a8aae50189"
@@ -32736,7 +32720,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/fdd0f3791c3c8ecc.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/停战协议.png",
+			"source": "算子单位图标/游戏通用标记/停战协议.png",
 			"tts_count": 1,
 			"face_hash": "fdd0f3791c3c8ecc59f40c7601dc809399549f38f4162916076facfa1cfb9560",
 			"back_hash": "fdd0f3791c3c8ecc59f40c7601dc809399549f38f4162916076facfa1cfb9560"
@@ -33590,7 +33574,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/da147fb39ce9ef1f.webp",
-			"source": "assets/source-recovered/da147fb39ce9ef1f.png",
+			"source": "算子单位图标/补充标记/da147fb39ce9ef1f.png",
 			"tts_count": 1,
 			"face_hash": "da147fb39ce9ef1fdf9e8f372cf81299a1b0b52c7ae6122a8f654b5b08a04299",
 			"back_hash": "2604d6ea2e73191e3f0ea2a786686df520800adff50dd6ff7ec47a647191209e"
@@ -33826,7 +33810,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/6cbc9f5f85f09cf4.webp",
-			"source": "assets/source-recovered/6cbc9f5f85f09cf4.png",
+			"source": "算子单位图标/补充标记/6cbc9f5f85f09cf4.png",
 			"tts_count": 1,
 			"face_hash": "6cbc9f5f85f09cf4dc7949aab9d1b7179cc5ef8303686433d871d4f9cd661586",
 			"back_hash": "2bd3df97a6c02c17ea37c376e714cdc5f982292d680fd63e16dd4b772a00c5cf"
@@ -33942,7 +33926,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/b9e29b2b66877455.webp",
-			"source": "assets/source-recovered/b9e29b2b66877455.png",
+			"source": "算子单位图标/补充标记/b9e29b2b66877455.png",
 			"tts_count": 1,
 			"face_hash": "b9e29b2b668774551634afe726c29f87828758102040aae5044076e7e9c05ae7",
 			"back_hash": "4add965ce5c9e607b1dec1701b5c4dd7713e64b87436146fe0e45820907f76f5"
@@ -33962,7 +33946,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/93cbb515ada585f9.webp",
-			"source": "assets/source-recovered/93cbb515ada585f9.png",
+			"source": "算子单位图标/补充标记/93cbb515ada585f9.png",
 			"tts_count": 1,
 			"face_hash": "93cbb515ada585f9cddcf978926b1fa6f565af674620ce6c5ec950f9f5f93e64",
 			"back_hash": "3517936695733e7fcaab2c58a8a4f8abd6d001e354dfef3d8aada8de720b37c1"
@@ -33982,7 +33966,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/192f38008113d584.webp",
-			"source": "算子单位图标/游戏通用标记/CPauto.png",
+			"source": "",
 			"tts_count": 1,
 			"face_hash": "192f38008113d58430dd796939a24129e57344123db2cc04a9b7fd0e2fa57859",
 			"back_hash": "192f38008113d58430dd796939a24129e57344123db2cc04a9b7fd0e2fa57859"
@@ -34862,7 +34846,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/4f2d2edc34b3caa2.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/CP+1VP.png",
+			"source": "算子单位图标/游戏标记/CP+1VP.png",
 			"tts_count": 1,
 			"face_hash": "4f2d2edc34b3caa2a879cde780591be7e963103d23a2f68eab22502523eb5814",
 			"back_hash": "4f2d2edc34b3caa2a879cde780591be7e963103d23a2f68eab22502523eb5814"
@@ -34882,7 +34866,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/468353939c1f1237.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/AP-1VP.png",
+			"source": "算子单位图标/游戏标记/AP-1VP.png",
 			"tts_count": 1,
 			"face_hash": "468353939c1f1237baaf099488292af8146a4633fb0ce33815124352ff5a5e41",
 			"back_hash": "468353939c1f1237baaf099488292af8146a4633fb0ce33815124352ff5a5e41"
@@ -34902,7 +34886,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/26c8561ea0710015.webp",
-			"source": "assets/source-recovered/26c8561ea0710015.png",
+			"source": "算子单位图标/补充标记/26c8561ea0710015.png",
 			"tts_count": 1,
 			"face_hash": "26c8561ea07100159894cbf053816549fb2ab1031cfe3d22170c6b1c3d9b65ea",
 			"back_hash": "25157955ace4c5870b8bcb5513d51f7b6b2b00f6d2d30e78ce01635f36590734"
@@ -34922,7 +34906,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/2eb7dd45753f788c.webp",
-			"source": "assets/source-recovered/2eb7dd45753f788c.png",
+			"source": "算子单位图标/补充标记/2eb7dd45753f788c.png",
 			"tts_count": 1,
 			"face_hash": "2eb7dd45753f788c05ef3c0664c1ff02e79400758e7b7b44663d55c4e91f6541",
 			"back_hash": "b2c41c22a28168900753a03733230f69d5dcfbeacd27e32825eb1058c81af71f"
@@ -34942,7 +34926,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/38928845cec3a484.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/OPS.png",
+			"source": "算子单位图标/游戏标记/OPS.png",
 			"tts_count": 2,
 			"face_hash": "38928845cec3a4843c9f0d496d81291b29fcec0c698d02648fd45d67155de2cb",
 			"back_hash": "38928845cec3a4843c9f0d496d81291b29fcec0c698d02648fd45d67155de2cb"
@@ -34962,7 +34946,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/cdfc5ab8f144fcab.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/Event.png",
+			"source": "算子单位图标/游戏标记/Event.png",
 			"tts_count": 2,
 			"face_hash": "cdfc5ab8f144fcab532ecd4d96c4d6dade687f46926dc35e05884591a7ed3402",
 			"back_hash": "cdfc5ab8f144fcab532ecd4d96c4d6dade687f46926dc35e05884591a7ed3402"
@@ -34982,7 +34966,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/e9750eb45c9a32b2.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/4rp.png",
+			"source": "算子单位图标/游戏标记/4rp.png",
 			"tts_count": 2,
 			"face_hash": "e9750eb45c9a32b264f35c2deec4e0f7b0477c5f2788fb9246fbd7b4bb620a0a",
 			"back_hash": "3eefbb79233c64c31ead99b5830988fcdc85649fb2e4f0762d220c30666bbcfc"
@@ -35002,7 +34986,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/5b256904d337f07d.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/3rp.png",
+			"source": "算子单位图标/游戏标记/3rp.png",
 			"tts_count": 2,
 			"face_hash": "5b256904d337f07d397dc988409d7fa924f355e3f75edef74d42832d04711cc9",
 			"back_hash": "adcda0307c6ae48269d7b5252ad41813230f962bf2bf63b14bf163b3d9a62110"
@@ -35022,7 +35006,7 @@ const data = {
 			"reduced_combat": 1,
 			"reduced_loss": 1,
 			"image": "pieces/beb1fc413a451a52.webp",
-			"source": "算子单位图标/游戏通用标记/游戏标记/SR.png",
+			"source": "算子单位图标/游戏标记/SR.png",
 			"tts_count": 2,
 			"face_hash": "beb1fc413a451a52dcc7ff25bccc885a09a908a492cd1a39716c90f89b9b3bf5",
 			"back_hash": "beb1fc413a451a52dcc7ff25bccc885a09a908a492cd1a39716c90f89b9b3bf5"
@@ -35043,6 +35027,10 @@ const data = {
 			"reduced_loss": 2,
 			"image": "pieces/cf5e9fd9d5ce694d.webp",
 			"source": "算子单位图标/德国战斗单位/德国意大利.png",
+			"combined_nations": [
+				"ge",
+				"ah"
+			],
 			"tts_count": 1,
 			"face_hash": "cf5e9fd9d5ce694dec400ed42de4d146f82b7b14f4b676eebc193b4af3ff427f",
 			"back_hash": "6122801d771e54cad32c533c668b9f698fc3aa53f62d32bb130ac44ac990812f",
@@ -35053,23 +35041,31 @@ const data = {
 		},
 		{
 			"id": "component-167",
-			"name": "b9e29b2b66877455",
-			"nation": "marker",
-			"faction": null,
-			"type": "marker",
+			"name": "德国意大利新兵",
+			"nation": "ge",
+			"faction": "cp",
+			"type": "army",
 			"veteran": false,
 			"cavalry": false,
 			"mountain": false,
-			"combat": 0,
-			"loss": 0,
-			"movement": 0,
-			"reduced_combat": 1,
-			"reduced_loss": 1,
-			"image": "pieces/b9e29b2b66877455.webp",
-			"source": "assets/source-recovered/b9e29b2b66877455.png",
+			"combat": 4,
+			"loss": 2,
+			"movement": 4,
+			"reduced_combat": 3,
+			"reduced_loss": 2,
+			"image": "pieces/1f1e8f3d57688319.webp",
+			"source": "算子单位图标/德国战斗单位/德国意大利新兵.png",
+			"combined_nations": [
+				"ge",
+				"ah"
+			],
 			"tts_count": 1,
-			"face_hash": "b9e29b2b668774551634afe726c29f87828758102040aae5044076e7e9c05ae7",
-			"back_hash": "4295e9c0328f94fc2ae0105253d8b47e5177c71c873dc754bd7a4ec855210d2b"
+			"face_hash": "1f1e8f3d5768831911d7314016d1be1370aac973ff6da897ed2a1df3afddce41",
+			"back_hash": "4295e9c0328f94fc2ae0105253d8b47e5177c71c873dc754bd7a4ec855210d2b",
+			"accepts_replacement_points": true,
+			"permanent_on_elimination": false,
+			"reduced_movement": 4,
+			"image_back": "pieces/4295e9c0328f94fc.webp"
 		},
 		{
 			"id": "component-168",
@@ -35090,14 +35086,56 @@ const data = {
 			"tts_count": 1,
 			"face_hash": "808b2dc3509abd1dbb5e5d04b2e1c6e0008517e704a18a5c20c6c5eeb82be56f",
 			"back_hash": "2d57f0cec3de28c5331512e5d79a7442acb2345ff2ba835dd4a9beb06563b294"
+		},
+		{
+			"id": "component-169",
+			"name": "法国意大利LCU",
+			"nation": "fr",
+			"faction": "ap",
+			"type": "army",
+			"veteran": false,
+			"cavalry": false,
+			"mountain": false,
+			"combat": 4,
+			"loss": 2,
+			"movement": 4,
+			"reduced_combat": 3,
+			"reduced_loss": 2,
+			"image": "pieces/853fdcd3b87729bd.webp",
+			"source": "算子单位图标/法国战斗单位/法国意大利LCU.png",
+			"tts_count": 1,
+			"face_hash": "853fdcd3b87729bd0cd71982cfab162d9555e6ca9107d305f2de81f1bf011e85",
+			"back_hash": "25157955ace4c5870b8bcb5513d51f7b6b2b00f6d2d30e78ce01635f36590734",
+			"accepts_replacement_points": true,
+			"permanent_on_elimination": false,
+			"reduced_movement": 4,
+			"image_back": "pieces/25157955ace4c587.webp"
+		},
+		{
+			"id": "component-170",
+			"name": "英国意大利LCU",
+			"nation": "br",
+			"faction": "ap",
+			"type": "army",
+			"veteran": false,
+			"cavalry": false,
+			"mountain": false,
+			"combat": 4,
+			"loss": 2,
+			"movement": 4,
+			"reduced_combat": 3,
+			"reduced_loss": 2,
+			"image": "pieces/89a759c998775d6c.webp",
+			"source": "算子单位图标/英国战斗单位/英国意大利LCU.png",
+			"tts_count": 1,
+			"face_hash": "89a759c998775d6ca7f21d35fb5133b802f4f28f233e2c51ea51e129f694133b",
+			"back_hash": "b2c41c22a28168900753a03733230f69d5dcfbeacd27e32825eb1058c81af71f",
+			"accepts_replacement_points": true,
+			"permanent_on_elimination": false,
+			"reduced_movement": 4,
+			"image_back": "pieces/b2c41c22a2816890.webp"
 		}
 	],
-	"setup": {
-		"historical": {
-			"setup_source": "rules.js",
-			"note": "Historical units, reserve boxes, and upgrade pools are set explicitly by set_up_historical_scenario()."
-		}
-	},
 	"ui": {
 		"map": {
 			"width": 6082,
@@ -36974,111 +37012,6 @@ const data = {
 		],
 		"pieces": [
 			{
-				"id": "1ad929d0ed37d849",
-				"source": "assets/source-recovered/1ad929d0ed37d849.png",
-				"name": "1ad929d0ed37d849",
-				"image": "pieces/1ad929d0ed37d849.webp",
-				"sha256": "1ad929d0ed37d8497354d5a28cfbf46eb2f046e42bfd254f38fd47b909297282"
-			},
-			{
-				"id": "2604d6ea2e73191e",
-				"source": "assets/source-recovered/2604d6ea2e73191e.png",
-				"name": "2604d6ea2e73191e",
-				"image": "pieces/2604d6ea2e73191e.webp",
-				"sha256": "2604d6ea2e73191e3f0ea2a786686df520800adff50dd6ff7ec47a647191209e"
-			},
-			{
-				"id": "26c8561ea0710015",
-				"source": "assets/source-recovered/26c8561ea0710015.png",
-				"name": "26c8561ea0710015",
-				"image": "pieces/26c8561ea0710015.webp",
-				"sha256": "26c8561ea07100159894cbf053816549fb2ab1031cfe3d22170c6b1c3d9b65ea"
-			},
-			{
-				"id": "2bd3df97a6c02c17",
-				"source": "assets/source-recovered/2bd3df97a6c02c17.png",
-				"name": "2bd3df97a6c02c17",
-				"image": "pieces/2bd3df97a6c02c17.webp",
-				"sha256": "2bd3df97a6c02c17ea37c376e714cdc5f982292d680fd63e16dd4b772a00c5cf"
-			},
-			{
-				"id": "2eb7dd45753f788c",
-				"source": "assets/source-recovered/2eb7dd45753f788c.png",
-				"name": "2eb7dd45753f788c",
-				"image": "pieces/2eb7dd45753f788c.webp",
-				"sha256": "2eb7dd45753f788c05ef3c0664c1ff02e79400758e7b7b44663d55c4e91f6541"
-			},
-			{
-				"id": "3517936695733e7f",
-				"source": "assets/source-recovered/3517936695733e7f.png",
-				"name": "3517936695733e7f",
-				"image": "pieces/3517936695733e7f.webp",
-				"sha256": "3517936695733e7fcaab2c58a8a4f8abd6d001e354dfef3d8aada8de720b37c1"
-			},
-			{
-				"id": "4add965ce5c9e607",
-				"source": "assets/source-recovered/4add965ce5c9e607.png",
-				"name": "4add965ce5c9e607",
-				"image": "pieces/4add965ce5c9e607.webp",
-				"sha256": "4add965ce5c9e607b1dec1701b5c4dd7713e64b87436146fe0e45820907f76f5"
-			},
-			{
-				"id": "6cbc9f5f85f09cf4",
-				"source": "assets/source-recovered/6cbc9f5f85f09cf4.png",
-				"name": "6cbc9f5f85f09cf4",
-				"image": "pieces/6cbc9f5f85f09cf4.webp",
-				"sha256": "6cbc9f5f85f09cf4dc7949aab9d1b7179cc5ef8303686433d871d4f9cd661586"
-			},
-			{
-				"id": "93cbb515ada585f9",
-				"source": "assets/source-recovered/93cbb515ada585f9.png",
-				"name": "93cbb515ada585f9",
-				"image": "pieces/93cbb515ada585f9.webp",
-				"sha256": "93cbb515ada585f9cddcf978926b1fa6f565af674620ce6c5ec950f9f5f93e64"
-			},
-			{
-				"id": "9f29d927d5d2ec4d",
-				"source": "assets/source-recovered/9f29d927d5d2ec4d.png",
-				"name": "9f29d927d5d2ec4d",
-				"image": "pieces/9f29d927d5d2ec4d.webp",
-				"sha256": "9f29d927d5d2ec4dc63a7e48af6ad45ceae05441e1a66519af134e7e7ec4c4d4"
-			},
-			{
-				"id": "b91eb72846c92981",
-				"source": "assets/source-recovered/b91eb72846c92981.png",
-				"name": "b91eb72846c92981",
-				"image": "pieces/b91eb72846c92981.webp",
-				"sha256": "b91eb72846c929818b00c895ee68dda6d899569d519010a3fdc155c40e8d36f1"
-			},
-			{
-				"id": "b9e29b2b66877455",
-				"source": "assets/source-recovered/b9e29b2b66877455.png",
-				"name": "b9e29b2b66877455",
-				"image": "pieces/b9e29b2b66877455.webp",
-				"sha256": "b9e29b2b668774551634afe726c29f87828758102040aae5044076e7e9c05ae7"
-			},
-			{
-				"id": "cdc4bacfb03d7c4d",
-				"source": "assets/source-recovered/cdc4bacfb03d7c4d.png",
-				"name": "cdc4bacfb03d7c4d",
-				"image": "pieces/cdc4bacfb03d7c4d.webp",
-				"sha256": "cdc4bacfb03d7c4d6da56bb29a56eae9f8ee1f9e38a7c0fddf6b7ffceb69f356"
-			},
-			{
-				"id": "d4836580213510c5",
-				"source": "assets/source-recovered/d4836580213510c5.png",
-				"name": "d4836580213510c5",
-				"image": "pieces/d4836580213510c5.webp",
-				"sha256": "d4836580213510c5f81a54bb5cd1ff345ad205115c3c809a894a6c7dc658859c"
-			},
-			{
-				"id": "da147fb39ce9ef1f",
-				"source": "assets/source-recovered/da147fb39ce9ef1f.png",
-				"name": "da147fb39ce9ef1f",
-				"image": "pieces/da147fb39ce9ef1f.webp",
-				"sha256": "da147fb39ce9ef1fdf9e8f372cf81299a1b0b52c7ae6122a8f654b5b08a04299"
-			},
-			{
 				"id": "e560841a9f80cbbe",
 				"source": "算子单位图标/事件标记/U艇.png",
 				"name": "U艇",
@@ -38668,13 +38601,6 @@ const data = {
 				"sha256": "ac05974cdba77856fb508d161fe52434a65546d15dcfa2d870b0210b334d6f7d"
 			},
 			{
-				"id": "adf9a0e7cc54b6d4",
-				"source": "算子单位图标/英国战斗单位/英联邦LCUnew.png",
-				"name": "英联邦LCUnew",
-				"image": "pieces/adf9a0e7cc54b6d4.webp",
-				"sha256": "adf9a0e7cc54b6d40d1c92fa1936a958b80675494ba3eff705006df9934acb3c"
-			},
-			{
 				"id": "a07047c48cf82605",
 				"source": "算子单位图标/英国战斗单位/英联邦新兵.png",
 				"name": "英联邦新兵",
@@ -38708,6 +38634,83 @@ const data = {
 				"name": "英联邦新兵骑兵scub",
 				"image": "pieces/78e67ecd2e853b70.webp",
 				"sha256": "78e67ecd2e853b70fc324f359bdd31a16db87272c1ae8b52dc04ec82741a6ee9"
+			},
+			{
+				"id": "2604d6ea2e73191e",
+				"source": "算子单位图标/补充标记/2604d6ea2e73191e.png",
+				"name": "2604d6ea2e73191e",
+				"image": "pieces/2604d6ea2e73191e.webp",
+				"sha256": "2604d6ea2e73191e3f0ea2a786686df520800adff50dd6ff7ec47a647191209e"
+			},
+			{
+				"id": "26c8561ea0710015",
+				"source": "算子单位图标/补充标记/26c8561ea0710015.png",
+				"name": "26c8561ea0710015",
+				"image": "pieces/26c8561ea0710015.webp",
+				"sha256": "26c8561ea07100159894cbf053816549fb2ab1031cfe3d22170c6b1c3d9b65ea"
+			},
+			{
+				"id": "2bd3df97a6c02c17",
+				"source": "算子单位图标/补充标记/2bd3df97a6c02c17.png",
+				"name": "2bd3df97a6c02c17",
+				"image": "pieces/2bd3df97a6c02c17.webp",
+				"sha256": "2bd3df97a6c02c17ea37c376e714cdc5f982292d680fd63e16dd4b772a00c5cf"
+			},
+			{
+				"id": "2eb7dd45753f788c",
+				"source": "算子单位图标/补充标记/2eb7dd45753f788c.png",
+				"name": "2eb7dd45753f788c",
+				"image": "pieces/2eb7dd45753f788c.webp",
+				"sha256": "2eb7dd45753f788c05ef3c0664c1ff02e79400758e7b7b44663d55c4e91f6541"
+			},
+			{
+				"id": "3517936695733e7f",
+				"source": "算子单位图标/补充标记/3517936695733e7f.png",
+				"name": "3517936695733e7f",
+				"image": "pieces/3517936695733e7f.webp",
+				"sha256": "3517936695733e7fcaab2c58a8a4f8abd6d001e354dfef3d8aada8de720b37c1"
+			},
+			{
+				"id": "4add965ce5c9e607",
+				"source": "算子单位图标/补充标记/4add965ce5c9e607.png",
+				"name": "4add965ce5c9e607",
+				"image": "pieces/4add965ce5c9e607.webp",
+				"sha256": "4add965ce5c9e607b1dec1701b5c4dd7713e64b87436146fe0e45820907f76f5"
+			},
+			{
+				"id": "6cbc9f5f85f09cf4",
+				"source": "算子单位图标/补充标记/6cbc9f5f85f09cf4.png",
+				"name": "6cbc9f5f85f09cf4",
+				"image": "pieces/6cbc9f5f85f09cf4.webp",
+				"sha256": "6cbc9f5f85f09cf4dc7949aab9d1b7179cc5ef8303686433d871d4f9cd661586"
+			},
+			{
+				"id": "93cbb515ada585f9",
+				"source": "算子单位图标/补充标记/93cbb515ada585f9.png",
+				"name": "93cbb515ada585f9",
+				"image": "pieces/93cbb515ada585f9.webp",
+				"sha256": "93cbb515ada585f9cddcf978926b1fa6f565af674620ce6c5ec950f9f5f93e64"
+			},
+			{
+				"id": "b91eb72846c92981",
+				"source": "算子单位图标/补充标记/b91eb72846c92981.png",
+				"name": "b91eb72846c92981",
+				"image": "pieces/b91eb72846c92981.webp",
+				"sha256": "b91eb72846c929818b00c895ee68dda6d899569d519010a3fdc155c40e8d36f1"
+			},
+			{
+				"id": "b9e29b2b66877455",
+				"source": "算子单位图标/补充标记/b9e29b2b66877455.png",
+				"name": "b9e29b2b66877455",
+				"image": "pieces/b9e29b2b66877455.webp",
+				"sha256": "b9e29b2b668774551634afe726c29f87828758102040aae5044076e7e9c05ae7"
+			},
+			{
+				"id": "da147fb39ce9ef1f",
+				"source": "算子单位图标/补充标记/da147fb39ce9ef1f.png",
+				"name": "da147fb39ce9ef1f",
+				"image": "pieces/da147fb39ce9ef1f.webp",
+				"sha256": "da147fb39ce9ef1fdf9e8f372cf81299a1b0b52c7ae6122a8f654b5b08a04299"
 			}
 		]
 	}

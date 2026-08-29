@@ -22,6 +22,8 @@
 		"test:campaign": "node tools/run_campaign_tests.mjs",
 		"test:e2e": "playwright test --grep-invert=@visual",
 		"test:visual": "playwright test --grep=@visual",
+		"visual:compare": "node tools/ui_compare.mjs",
+		"package:server": "npm run build && npm run audit:connections && npm run audit:map:confirmed && node tools/package_server.mjs",
 		"typecheck": "tsc -p tsconfig.json",
 		"lint": "eslint ."
 	},

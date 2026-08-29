@@ -394,6 +394,10 @@ function createCombatStates(api) {
       message: "撤退。",
       prompt(state, builder) {
         const pending = state.pending_retreat;
+        const hasRetreated = Object.values(pending.paths || {}).some(
+          (path) => Array.isArray(path) && path.length > 1,
+        );
+        if (pending.optional && !hasRetreated) builder.enable("decline_retreat");
         pending.selected_units ||= [];
         const selected = pending.selected_units;
         if (selected.length) {
@@ -434,6 +438,16 @@ function createCombatStates(api) {
         }
         if (pending.can_cancel_with_loss)
           builder.addAll("cancel_retreat", pending.units.filter((id) => api.canCancelRetreatWithUnit(state, id)));
+      },
+      decline_retreat(state) {
+        const pending = state.pending_retreat;
+        const hasRetreated = Object.values(pending?.paths || {}).some(
+          (path) => Array.isArray(path) && path.length > 1,
+        );
+        if (!pending?.optional || hasRetreated)
+          throw new Error("Retreat can no longer be declined");
+        api.clearUndo(state);
+        api.finishCombatSequence(state);
       },
       select_retreat_unit(state, id) {
         const pending = state.pending_retreat;

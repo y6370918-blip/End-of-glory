@@ -5,6 +5,7 @@ const { semanticDiff } = require("./semantic-diff.js");
 const HINT_ORDER = Object.freeze({
   rule_forbidden: 0,
   event_restriction: 0,
+  early_occupation_depth: 0,
   theater_inactive: 0,
   not_adjacent: 1,
   connection_mode: 1,
@@ -25,6 +26,7 @@ const HINT_ORDER = Object.freeze({
 const HINT_LABELS = Object.freeze({
   rule_forbidden: "规则禁止在当前状态执行此动作",
   event_restriction: "当前事件或卡牌限制此动作",
+  early_occupation_depth: "超出占领纵深",
   theater_inactive: "该战区尚未启用",
   not_adjacent: "目标与当前位置不相邻",
   connection_mode: "这条连接不允许当前行动使用",
@@ -44,18 +46,26 @@ const HINT_LABELS = Object.freeze({
 
 function supplyStatus(unit) {
   if (unit?.supplied !== false) return "full";
+  if (unit?.limited_supply) return "limited";
   if (unit?.fort_limited_supply) return "fort_limited";
   return "none";
 }
 
 function supplyEffects(unit) {
   switch (supplyStatus(unit)) {
+    case "limited":
+      return [
+        { code: "attack_column", label: "作为进攻单位时火力列左移 1 列" },
+        { code: "movement_attack", label: "不能移动后进攻" },
+        { code: "construction", label: "不能修筑战壕或防御工事" },
+        { code: "replacement_points", label: "不能使用补员点" },
+      ];
     case "fort_limited":
       return [
-        { code: "activation_cost", label: "参与地区激活时额外花费 1 OP" },
         { code: "attack_column", label: "作为进攻单位时火力列左移 1 列" },
-        { code: "movement_stop", label: "离开要塞有限补给范围后必须立即停止移动" },
-        { code: "replacement", label: "可以提供 LCU 被消灭后的 SCU 替换" },
+        { code: "movement_attack", label: "不能移动后进攻" },
+        { code: "construction", label: "不能修筑战壕或防御工事" },
+        { code: "replacement_points", label: "不能使用补员点" },
       ];
     case "none":
       return [

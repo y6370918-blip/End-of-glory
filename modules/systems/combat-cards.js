@@ -371,7 +371,7 @@ function createCombatCardSystem(api) {
           };
           if (combatHqReinforcementSpaces(state, pending).length) {
               state.pending_event = pending;
-              state.state = "event";
+              api.enterEventFlow(state);
           }
       }
       if (effect.first_use_hq &&
@@ -534,7 +534,7 @@ function createCombatCardSystem(api) {
                   reinforcement.resume_side = state.combat_window.attacker;
                   state.pending_event = reinforcement;
                   state.active = reinforcement.owner;
-                  state.state = "event";
+                  api.enterEventFlow(state);
                   return;
               }
           }
@@ -823,7 +823,7 @@ function createCombatCardSystem(api) {
               hq_piece: effect.first_use_hq || null,
               resume: "post_window",
           };
-          state.state = "event";
+          api.enterEventFlow(state);
           return;
       }
       if (effect.repair_rp &&

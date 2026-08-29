@@ -8,9 +8,7 @@ const ui = {
 	mouseFocus: false,
 	counterVisibility: 0,
 	supplyOverlayFaction: null,
-	supplyOverlaySpaces: new Set(),
-	windowZ: 20000,
-	trackTurn: null
+	supplyOverlaySpaces: new Set()
 }
 
 let targetIndex = { spaces: new Map(), pieces: new Map(), cards: new Map(), options: new Map() }
@@ -55,6 +53,7 @@ const pieceById = Object.fromEntries(eog_data.pieces.map((piece) => [piece.id, p
 const cardById = Object.fromEntries(eog_data.cards.map((card) => [card.id, card]))
 const moById = Object.fromEntries(Object.values(eog_data.mo || {}).flat().map((mo) => [mo.id, mo]))
 const pieceAssetByName = Object.fromEntries((eog_data.assets?.pieces || []).map((asset) => [asset.name, asset.image]))
+const commitmentLabels = Object.freeze({ mobilization: "动员战", limited: "有限战争", total: "全面战争" })
 const activationMarkerImages = Object.freeze({
 	move: pieceAssetByName.Move,
 	attack: pieceAssetByName.Attack,
@@ -867,8 +866,7 @@ function layoutCollapsedStack(members) {
 	}
 }
 
-function layoutFocusedMapStack(frame, stack, members) {
-	const baseY = sourceToDisplay(spaceById[frame.spaceId].ui.y)
+function layoutFocusedVerticalStack(baseY, stack, members) {
 	const totalHeight =
 		members.reduce((sum, element) => sum + memberSize(element), 0) +
 		Math.max(0, members.length - 1) * counterMetrics.focusGap
@@ -885,29 +883,23 @@ function layoutFocusedMapStack(frame, stack, members) {
 	setFocusBounds(stack, members)
 }
 
+function layoutFocusedMapStack(frame, stack, members) {
+	const baseY = sourceToDisplay(spaceById[frame.spaceId].ui.y)
+	layoutFocusedVerticalStack(baseY, stack, members)
+}
+
 function layoutFocusedReserveStack(frame, stack, members) {
-	const layout = frame.zone === "eliminated"
-		? eliminatedBoxLayouts[frame.faction]
-		: frame.zone === "upgrade"
-			? upgradeBoxLayouts[frame.faction]
-			: reserveBoxLayouts[frame.faction]
-	const groups = frame.zone === "eliminated"
-		? layout.nations
-		: frame.zone === "upgrade"
-			? Object.keys(layout.pieces)
-			: layout.groups
-	const groupIndex = groups.indexOf(frame.zone === "eliminated" ? frame.nation : frame.zone === "upgrade" ? frame.piece : frame.group)
-	const direction = groupIndex < groups.length / 2 ? 1 : -1
-	let cursor = 0
-	for (const [index, element] of members.entries()) {
-		if (index)
-			cursor += direction *
-				((memberSize(members[index - 1]) + memberSize(element)) / 2 + counterMetrics.focusGap)
-		element.style.left = `${cursor}px`
-		element.style.top = "0px"
-		element.style.zIndex = String(10 + index)
+	let baseY
+	if (frame.zone === "eliminated") {
+		const layout = eliminatedBoxLayouts[frame.faction]
+		baseY = sourceToDisplay(layout.rows[`${frame.type}:${frame.face}`] ?? layout.rows[`corps:${frame.face}`])
+	} else if (frame.zone === "upgrade") {
+		baseY = sourceToDisplay(upgradeBoxLayouts[frame.faction].pieces[frame.piece][1])
+	} else {
+		const layout = reserveBoxLayouts[frame.faction]
+		baseY = sourceToDisplay(frame.face === "full" ? layout.fullY : layout.reducedY)
 	}
-	setFocusBounds(stack, members)
+	layoutFocusedVerticalStack(baseY, stack, members)
 }
 
 function stackMemberCount(frame) {
@@ -1100,12 +1092,12 @@ function renderActions() {
 }
 
 function renderHand() {
-	const hand = byId("hand")
+	const hand = byId("cards")
 	hand.replaceChildren()
 	const faction = Array.isArray(view.hands?.ap) ? "ap" : Array.isArray(view.hands?.cp) ? "cp" : null
 	const opening = view.opening_cards || []
 	const own = opening.length ? opening : faction ? view.hands[faction] : []
-	byId("hand-title").textContent = opening.length ? "开局选牌" : "手牌"
+	byId("hand-panel").querySelector(".panel-head").textContent = opening.length ? "开局选牌" : "手牌"
 	for (const id of own) {
 		const card = effectiveCard(cardById[id])
 		const element = gameCardElement(id)
@@ -1240,11 +1232,20 @@ function showCard(card) {
 function dieElement(faction, value) {
 	const die = document.createElement("span")
 	const face = Number(value)
-	die.className = `die ${factionCode(faction) || ""} d${face}`.trim()
-	die.textContent = String(value)
-	die.title = `骰点 ${value}`
+	const code = factionCode(faction)
+	if (!Number.isInteger(face) || face < 1 || face > 6) {
+		die.className = "die-value"
+		die.textContent = String(value)
+		die.title = `无效骰点 ${value}`
+		return die
+	}
+	die.className = `die${code ? ` ${code}` : ""} d${face}`
+	die.dataset.face = String(face)
+	die.textContent = String(face)
+	const owner = code === "ap" ? "协约国" : code === "cp" ? "同盟国" : ""
+	die.title = `${owner}骰点 ${face}`
 	die.setAttribute("role", "img")
-	die.setAttribute("aria-label", `骰点 ${value}`)
+	die.setAttribute("aria-label", `${owner}骰点 ${face}`)
 	return die
 }
 
@@ -1273,10 +1274,10 @@ function gameCardElement(id) {
 function renderCombatCards() {
 	const cards = view.combat_cards || { played: { ap: [], cp: [] }, hidden_counts: {}, available: [], retained: { ap: [], cp: [] }, active: [] }
 	const handFaction = Array.isArray(view.hands?.ap) ? "ap" : Array.isArray(view.hands?.cp) ? "cp" : null
-	const played = byId("combat-cards-played")
-	const available = byId("combat-cards-available")
-	const retained = byId("combat-cards-retained")
-	const retainedZone = byId("combat-cards-retained-zone")
+	const played = byId("combat_cards")
+	const available = byId("unused_combat_cards")
+	const retained = byId("active_cards")
+	const retainedZone = byId("active_card_zone")
 	played.replaceChildren()
 	available.replaceChildren()
 	retained.replaceChildren()
@@ -1321,129 +1322,14 @@ function renderCombatCards() {
 	retainedZone.hidden = retained.childElementCount === 0
 	const hasCards =
 		played.childElementCount > 0 ||
-		available.childElementCount > 0 ||
-		retained.childElementCount > 0
-	byId("combat-zone").hidden = !hasCards
+		available.childElementCount > 0
+	byId("cc-list").hidden = !hasCards
 }
 
-const infoWindowKinds = Object.freeze({
-	score: "overview-window",
-	ap_cards: "ap-cards-window",
-	cp_cards: "cp-cards-window",
-	reinforcements: "unit-pools-window",
-	track: "track-window"
-})
-
-const factionNames = Object.freeze({ ap: "协约国", cp: "同盟国" })
 const nationNames = Object.freeze({
 	fr: "法国", br: "英国", it: "意大利", us: "美国", be: "比利时",
 	ge: "德国", ah: "奥匈", east: "东线", a: "共同", pr: "普鲁士", ba: "巴伐利亚", sa: "萨克森", wu: "符腾堡"
 })
-
-function preferenceKey(suffix) {
-	return `${window.params?.title_id || "end-of-glory"}/${suffix}`
-}
-
-function bringInfoWindowToFront(windowElement) {
-	ui.windowZ += 1
-	windowElement.style.zIndex = String(ui.windowZ)
-}
-
-function clampInfoWindow(windowElement) {
-	if (window.innerWidth <= 800 || windowElement.hidden) return
-	const margin = 8
-	const rect = windowElement.getBoundingClientRect()
-	const width = Math.min(rect.width, window.innerWidth - margin * 2)
-	const height = Math.min(rect.height, window.innerHeight - margin * 2)
-	const left = Math.min(Math.max(rect.left, margin), window.innerWidth - width - margin)
-	const top = Math.min(Math.max(rect.top, margin), window.innerHeight - height - margin)
-	Object.assign(windowElement.style, { width: `${width}px`, height: `${height}px`, left: `${left}px`, top: `${top}px` })
-}
-
-function saveInfoWindowLayout(windowElement) {
-	if (window.innerWidth <= 800) return
-	const rect = windowElement.getBoundingClientRect()
-	localStorage.setItem(preferenceKey(`window-v2/${windowElement.id}`), JSON.stringify({
-		left: rect.left,
-		top: rect.top,
-		width: rect.width,
-		height: rect.height
-	}))
-}
-
-function restoreInfoWindowLayout(windowElement, index) {
-	if (window.innerWidth <= 800) return
-	let saved = null
-	try { saved = JSON.parse(localStorage.getItem(preferenceKey(`window-v2/${windowElement.id}`))) } catch { saved = null }
-	const cardWindow = windowElement.classList.contains("info-window-card")
-	const defaults = {
-		left: 36 + index * 42,
-		top: 68 + index * 34,
-		width: cardWindow ? 350 : windowElement.classList.contains("info-window-wide") ? 980 : 660,
-		height: cardWindow ? 520 : 600
-	}
-	const layout = saved && [saved.left, saved.top, saved.width, saved.height].every(Number.isFinite) ? saved : defaults
-	Object.assign(windowElement.style, {
-		left: `${layout.left}px`, top: `${layout.top}px`, width: `${layout.width}px`, height: `${layout.height}px`
-	})
-}
-
-function startInfoWindowPointer(event, windowElement, mode) {
-	if (window.innerWidth <= 800 || event.button !== 0) return
-	if (event.target.closest("button")) return
-	event.preventDefault()
-	bringInfoWindowToFront(windowElement)
-	const rect = windowElement.getBoundingClientRect()
-	const startX = event.clientX
-	const startY = event.clientY
-	const move = (moveEvent) => {
-		const dx = moveEvent.clientX - startX
-		const dy = moveEvent.clientY - startY
-		if (mode === "move") {
-			windowElement.style.left = `${rect.left + dx}px`
-			windowElement.style.top = `${rect.top + dy}px`
-		} else {
-			let left = rect.left
-			let top = rect.top
-			let width = rect.width
-			let height = rect.height
-			if (mode.includes("e")) width += dx
-			if (mode.includes("s")) height += dy
-			if (mode.includes("w")) { width -= dx; left += dx }
-			if (mode.includes("n")) { height -= dy; top += dy }
-			width = Math.max(420, Math.min(width, window.innerWidth - 16))
-			height = Math.max(280, Math.min(height, window.innerHeight - 16))
-			if (mode.includes("w")) left = rect.right - width
-			if (mode.includes("n")) top = rect.bottom - height
-			Object.assign(windowElement.style, { left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` })
-		}
-		clampInfoWindow(windowElement)
-	}
-	const stop = () => {
-		document.removeEventListener("pointermove", move)
-		document.removeEventListener("pointerup", stop)
-		saveInfoWindowLayout(windowElement)
-	}
-	document.addEventListener("pointermove", move)
-	document.addEventListener("pointerup", stop)
-}
-
-function initializeInfoWindows() {
-	Object.values(infoWindowKinds).forEach((id, index) => {
-		const windowElement = byId(id)
-		restoreInfoWindowLayout(windowElement, index)
-		windowElement.addEventListener("pointerdown", () => bringInfoWindowToFront(windowElement))
-		windowElement.querySelector(".info-window-header").addEventListener("pointerdown", (event) => startInfoWindowPointer(event, windowElement, "move"))
-		windowElement.querySelector(".info-window-close").addEventListener("click", () => { windowElement.hidden = true })
-		for (const corner of ["nw", "ne", "sw", "se"]) {
-			const handle = document.createElement("span")
-			handle.className = `info-window-resize ${corner}`
-			handle.addEventListener("pointerdown", (event) => startInfoWindowPointer(event, windowElement, corner))
-			windowElement.append(handle)
-		}
-	})
-	window.addEventListener("resize", () => Object.values(infoWindowKinds).forEach((id) => clampInfoWindow(byId(id))))
-}
 
 function infoSection(title, className = "") {
 	const section = document.createElement("section")
@@ -1471,7 +1357,7 @@ function visibleHandCount(faction) {
 }
 
 function renderOverviewInfo() {
-	const detail = byId("overview-detail")
+	const detail = byId("score").querySelector(".dialog_body")
 	const state = infoSection("当前局势", "info-summary-grid")
 	state.append(
 		infoStat("回合", view.turn), infoStat("行动轮", view.action_round || "—"),
@@ -1641,274 +1527,202 @@ function appendCardCatalogGroup(catalog, title, ids, hidden = false) {
 	}
 }
 
-function renderCardInfo(faction) {
-	const detail = byId(`${faction}-cards-detail`)
+function renderCardInfo(faction, discardOnly = false) {
+	const dialog = byId(discardOnly ? `${faction}_discard_dialog` : `${faction}_card_dialog`)
+	const detail = dialog.querySelector(".dialog_body")
 	const hand = view.hands?.[faction]
 	const catalog = document.createElement("dl")
 	catalog.className = `info-card-catalog ${faction}`
-	appendCardCatalogGroup(catalog, "手牌", Array.isArray(hand) ? hand : Number(hand || 0), !Array.isArray(hand))
-	appendCardCatalogGroup(catalog, "牌库", view.deck_cards?.[faction] || [])
+	if (!discardOnly) {
+		appendCardCatalogGroup(catalog, "手牌", Array.isArray(hand) ? hand : Number(hand || 0), !Array.isArray(hand))
+		appendCardCatalogGroup(catalog, "牌库", view.deck_cards?.[faction] || [])
+	}
 	appendCardCatalogGroup(catalog, "弃牌堆", view.discard?.[faction] || [])
 	appendCardCatalogGroup(catalog, "移出游戏", view.removed?.[faction] || [])
-	appendCardCatalogGroup(catalog, "保留战斗牌", view.combat_cards?.retained?.[faction] || [])
-	appendCardCatalogGroup(catalog, "持续生效", (view.combat_cards?.active || []).filter((entry) => entry.faction === faction).map((entry) => entry.id))
+	if (!discardOnly) {
+		appendCardCatalogGroup(catalog, "保留战斗牌", view.combat_cards?.retained?.[faction] || [])
+		appendCardCatalogGroup(catalog, "持续生效", (view.combat_cards?.active || []).filter((entry) => entry.faction === faction).map((entry) => entry.id))
+	}
 	detail.replaceChildren(catalog)
 }
 
-function showUnitInfo(unit, context) {
-	const piece = pieceById[unit.piece]
-	const detail = byId("unit-detail")
-	const image = document.createElement("img")
-	image.className = `unit-detail-face ${piece?.type === "army" ? "lcu" : "small"}`
-	image.src = `assets/${unit.reduced && piece?.image_back ? piece.image_back : piece?.image}`
-	image.alt = piece?.name || unit.id
-	const text = document.createElement("div")
-	text.append(
-		infoStat("单位", piece?.name || unit.id), infoStat("区域", context),
-		infoStat("阵营", factionNames[unit.faction || piece?.faction] || unit.faction || piece?.faction),
-		infoStat("国籍", nationNames[unit.nation || piece?.nation] || unit.nation || piece?.nation),
-		infoStat("状态", unit.reduced ? "减员" : "满编")
-	)
-	detail.replaceChildren(image, text)
-	byId("unit-dialog").showModal()
-}
-
-function infoPiece(unit, context) {
-	const piece = pieceById[unit.piece]
-	const button = document.createElement("button")
-	button.type = "button"
-	button.className = `info-piece ${piece?.type === "army" ? "lcu" : "small"}`
-	const image = document.createElement("img")
-	image.src = `assets/${unit.reduced && piece?.image_back ? piece.image_back : piece?.image}`
-	image.alt = piece?.name || unit.id
-	button.title = `${piece?.name || unit.id} · ${context}${unit.due_turn != null ? ` · T${unit.due_turn}返回` : ""}`
-	button.append(image)
-	button.addEventListener("click", () => {
-		const frame = currentPieceScene?.units.get(unit.id)
-		if (frame) return activateLogReference("unit", unit.id)
-		showUnitInfo(unit, context)
-	})
-	return button
-}
-
-function appendUnitPool(container, faction, title, units) {
-	const section = infoSection(`${faction.toUpperCase()} · ${title}`, "unit-pool-section")
-	const groups = new Map()
-	for (const unit of units || []) {
-		const key = unit.nation || pieceById[unit.piece]?.nation || "other"
-		if (!groups.has(key)) groups.set(key, [])
-		groups.get(key).push(unit)
+function reinforcementDestinationLabel(operation, unit, piece) {
+	if (unit.to === "upgrade") return "升级区"
+	if (unit.to === "eliminated") return "消灭区"
+	if (unit.to === "map") return unit.map_spaces?.length
+		? unit.map_spaces.map((id) => spaceById[id]?.name || id).join("/")
+		: "地图"
+	if (unit.to === "reserve" && piece?.type === "corps") {
+		const map = unit.map_spaces?.length
+			? unit.map_spaces.map((id) => spaceById[id]?.name || id).join("/")
+			: "地图"
+		return `${map}/预备区`
 	}
-	for (const [nation, entries] of groups) {
-		const group = document.createElement("div")
-		group.className = "unit-pool-group"
-		const label = document.createElement("strong")
-		label.textContent = nationNames[nation] || nation.toUpperCase()
-		const pieces = document.createElement("div")
-		pieces.className = "unit-pool-pieces"
-		entries.sort((a, b) => (pieceById[b.piece]?.type || "").localeCompare(pieceById[a.piece]?.type || "") || (pieceById[a.piece]?.name || "").localeCompare(pieceById[b.piece]?.name || ""))
-		for (const unit of entries) pieces.append(infoPiece(unit, title))
-		group.append(label, pieces)
-		section.append(group)
-	}
-	if (!(units || []).length) section.append("无")
-	container.append(section)
+	return "预备区"
 }
 
-function renderUnitPoolsInfo() {
-	const detail = byId("unit-pools-detail")
-	detail.replaceChildren()
+function reinforcementPlacementLabel(operation) {
+	const labels = {
+		national_supply: "本国补给源",
+		ap_port_or_supply: "协约国港口或补给源",
+		within_sources: "牌面指定范围",
+		italian_front: "意大利战场",
+		friendly_occupied: "德国补给源或友军占领区"
+	}
+	if (operation.placement === "within_sources" && operation.sources?.length) {
+		const sources = operation.sources.map((id) => spaceById[id]?.name || id).join("、")
+		return `${labels.within_sources}（${sources}）`
+	}
+	return labels[operation.placement] || operation.placement || "按牌面规则"
+}
+
+function reinforcementNotes(operation) {
+	const notes = [`部署：${reinforcementPlacementLabel(operation)}`]
+	if (operation.naval_map_space)
+		notes.push(`海军事件的地图增援部署到${spaceById[operation.naval_map_space]?.name || operation.naval_map_space}`)
+	if (operation.rebuild)
+		notes.push(`${operation.rebuild.optional ? "可选" : "必须"}重建至多${operation.rebuild.count}枚单位${operation.rebuild.reduced ? "（减员面）" : ""}`)
+	if (operation.free_sr)
+		notes.push(`免费战略转移${operation.free_sr.turn_one_count != null ? `：T1 ${operation.free_sr.turn_one_count}枚，之后${operation.free_sr.count}枚` : `${operation.free_sr.count}枚`}`)
+	if (operation.sr_points) notes.push(`完成后获得${operation.sr_points}点战略转移`)
+	if (operation.conditional_full) notes.push("牌面条件满足时，条件增援以满编面部署")
+	if (operation.reduced_armies_unless_event) notes.push("意大利参战前，增援LCU以减员面部署")
+	if (operation.optional_deploy)
+		notes.push(`满足条件时可支付${operation.optional_deploy.rp?.amount || 0} ${String(operation.optional_deploy.rp?.nation || "").toUpperCase()} RP部署${operation.optional_deploy.count}枚LCU`)
+	return notes
+}
+
+function reinforcementUnitElement(operation, definition) {
+	const piece = pieceById[definition.piece]
+	const item = document.createElement("div")
+	item.className = `reinforcement-unit ${piece?.type || "unknown"}${definition.reduced ? " reduced" : ""}`
+	const counter = document.createElement("div")
+	counter.className = "reinforcement-counter"
+	const image = document.createElement("img")
+	const face = definition.reduced && piece?.image_back ? piece.image_back : piece?.image
+	if (face) image.src = `assets/${face}`
+	image.alt = piece?.name || definition.piece
+	image.loading = "lazy"
+	const count = document.createElement("strong")
+	count.className = "reinforcement-count"
+	count.textContent = `×${definition.count}`
+	counter.append(image, count)
+	const detail = document.createElement("div")
+	detail.className = "reinforcement-unit-detail"
+	const name = document.createElement("strong")
+	name.textContent = piece?.name || definition.piece
+	const destination = document.createElement("span")
+	destination.textContent = reinforcementDestinationLabel(operation, definition, piece)
+	const flags = []
+	if (definition.reduced) flags.push("减员面")
+	if (definition.unique) flags.push("唯一")
+	if (flags.length) destination.textContent += ` · ${flags.join(" · ")}`
+	detail.append(name, destination)
+	item.append(counter, detail)
+	return item
+}
+
+function renderReinforcementBoard() {
+	const board = byId("reinforcement-board")
+	if (!board || board.childElementCount) return
 	for (const faction of ["ap", "cp"]) {
-		appendUnitPool(detail, faction, "预备区", view.reserves?.[faction] || [])
-		appendUnitPool(detail, faction, "升级池", view.upgrade_pool?.[faction] || [])
-		appendUnitPool(detail, faction, "消灭单位", view.eliminated?.[faction] || [])
-		appendUnitPool(detail, faction, "永久移除", (view.permanently_removed_units || []).filter((unit) => (unit.faction || pieceById[unit.piece]?.faction) === faction))
-		appendUnitPool(detail, faction, "HQ回合轨", view.hq_turn_track?.[faction] || [])
-	}
-}
-
-function actionTypeLabel(type) {
-	return { ops: "OPS", one_op: "1 OP", sr: "SR", rp: "RP", event: "EVENT" }[type] || String(type || "—").toUpperCase()
-}
-
-const trackSnapshotByTurn = new Map()
-let trackSnapshotProbe = null
-let trackLatestSnapshotCount = null
-let trackLatestTurn = 1
-
-function replayPosition() {
-	const match = String(view?.prompt || "").match(/Replay\s+(\d+)\s*\/\s*(\d+)/i)
-	return match ? { snap: Number(match[1]), count: Number(match[2]) } : null
-}
-
-function snapshotNavigationAvailable() {
-	return typeof window.request_snap === "function" && Boolean(byId("replay_panel")?.isConnected)
-}
-
-function resolveTrackSnapshotProbe() {
-	const replay = replayPosition()
-	if (!trackSnapshotProbe || !replay || replay.snap !== trackSnapshotProbe.snap) return
-	const probe = trackSnapshotProbe
-	trackSnapshotProbe = null
-	trackLatestSnapshotCount = replay.count
-	probe.resolve({ snap: replay.snap, count: replay.count, turn: Number(view.turn) || 1 })
-}
-
-function requestTrackSnapshot(snap) {
-	if (!snapshotNavigationAvailable() || !Number.isInteger(snap) || snap < 1) return Promise.resolve(null)
-	return new Promise((resolve) => {
-		trackSnapshotProbe = { snap, resolve }
-		window.request_snap(snap, () => {
-			if (trackSnapshotProbe?.snap !== snap) return
-			trackSnapshotProbe = null
-			resolve(null)
-		})
-		window.setTimeout(() => {
-			if (trackSnapshotProbe?.snap !== snap) return
-			trackSnapshotProbe = null
-			resolve(null)
-		}, 5000)
-	})
-}
-
-async function goToTrackTurn(targetTurn) {
-	targetTurn = Math.max(1, Math.min(trackLatestTurn, Number(targetTurn) || 1))
-	ui.trackTurn = targetTurn
-	if (!snapshotNavigationAvailable()) { renderTrackInfo(); return }
-	const cached = trackSnapshotByTurn.get(targetTurn)
-	if (cached) { await requestTrackSnapshot(cached); ui.trackTurn = targetTurn; renderTrackInfo(); return }
-	let replay = replayPosition()
-	if (!replay) {
-		const first = await requestTrackSnapshot(1)
-		if (!first) { renderTrackInfo(); return }
-		replay = { snap: first.snap, count: first.count }
-	}
-	let low = 1
-	let high = replay.count
-	let best = 1
-	while (low <= high) {
-		const middle = Math.floor((low + high) / 2)
-		const result = await requestTrackSnapshot(middle)
-		if (!result) break
-		if (result.turn <= targetTurn) {
-			best = middle
-			low = middle + 1
-		} else high = middle - 1
-	}
-	trackSnapshotByTurn.set(targetTurn, best)
-	await requestTrackSnapshot(best)
-	ui.trackTurn = targetTurn
-	renderTrackInfo()
-}
-
-async function returnToLatestSnapshot() {
-	const replay = replayPosition()
-	const count = replay?.count || trackLatestSnapshotCount
-	if (!count) return
-	await requestTrackSnapshot(count)
-	ui.trackTurn = Number(view.turn) || trackLatestTurn
-	renderTrackInfo()
-}
-
-function trackTurnBounds() {
-	const turns = (view.action_history || []).map((entry) => Number(entry.turn)).filter(Number.isFinite)
-	return { min: Math.min(1, ...turns), max: Math.max(trackLatestTurn, Number(view.turn) || 1, ...turns) }
-}
-
-function renderTrackInfo() {
-	const detail = byId("track-detail")
-	const bounds = trackTurnBounds()
-	const selectedTurn = Math.max(bounds.min, Math.min(bounds.max, Number(ui.trackTurn) || Number(view.turn) || 1))
-	ui.trackTurn = selectedTurn
-	const toolbar = document.createElement("div")
-	toolbar.className = "track-toolbar"
-	const previous = document.createElement("button")
-	previous.type = "button"
-	previous.textContent = "‹"
-	previous.disabled = !snapshotNavigationAvailable() || selectedTurn <= bounds.min
-	previous.addEventListener("click", () => goToTrackTurn(selectedTurn - 1))
-	const select = document.createElement("select")
-	for (let turn = bounds.min; turn <= bounds.max; turn += 1) {
-		const option = document.createElement("option")
-		option.value = String(turn)
-		option.textContent = `回合 ${turn}`
-		option.selected = turn === selectedTurn
-		select.append(option)
-	}
-	select.addEventListener("change", () => goToTrackTurn(Number(select.value)))
-	select.disabled = !snapshotNavigationAvailable()
-	const next = document.createElement("button")
-	next.type = "button"
-	next.textContent = "›"
-	next.disabled = !snapshotNavigationAvailable() || selectedTurn >= bounds.max
-	next.addEventListener("click", () => goToTrackTurn(selectedTurn + 1))
-	const latest = document.createElement("button")
-	latest.type = "button"
-	latest.textContent = "返回最新局面"
-	latest.disabled = !snapshotNavigationAvailable() || (!replayPosition() && !trackLatestSnapshotCount)
-	latest.addEventListener("click", returnToLatestSnapshot)
-	toolbar.append(previous, select, next, latest)
-	const summary = document.createElement("div")
-	summary.className = "track-summary"
-	summary.append(
-		infoStat("行动方", roleLabel(view.active)), infoStat("AR", view.action_round || "—"),
-		infoStat("阶段", view.phase), infoStat("日志位置", Array.isArray(view.log) ? view.log.length : view.log)
-	)
-	const grid = document.createElement("div")
-	grid.className = "track-grid"
-	for (const faction of ["cp", "ap"]) {
-		const label = document.createElement("strong")
-		label.className = `track-faction ${faction}`
-		label.textContent = faction.toUpperCase()
-		grid.append(label)
-		for (let round = 1; round <= (eog_data.title?.action_rounds || 6); round += 1) {
-			const entry = (view.action_history || []).find((candidate) => candidate.turn === selectedTurn && candidate.round === round && candidate.faction === faction)
-			const slot = document.createElement("button")
-			slot.type = "button"
-			slot.className = `track-slot ${faction}${selectedTurn === view.turn && round === view.action_round && roleLabel(view.active) === factionNames[faction] ? " current" : ""}`
-			if (entry) {
-				const card = cardById[entry.card]
-				slot.innerHTML = `<strong>${actionTypeLabel(entry.type)}</strong><span>${card ? `${entry.card} · ${card.title}` : "1 OP"}</span>`
-				if (card) slot.addEventListener("click", () => showCard(card))
-			} else slot.innerHTML = `<strong>AR${round}</strong><span>无结构化记录</span>`
-			grid.append(slot)
+		const factionBoard = document.createElement("section")
+		factionBoard.className = `reinforcement-faction ${faction}`
+		const heading = document.createElement("h2")
+		heading.textContent = faction === "ap" ? "协约国增援" : "同盟国增援"
+		factionBoard.append(heading)
+		for (const commitment of ["mobilization", "limited", "total"]) {
+			const cards = eog_data.cards
+				.filter((card) => card.faction === faction && card.commitment === commitment)
+				.map((card) => ({
+					card,
+					operations: (eog_data.card_effects?.[card.id]?.operations || []).filter((operation) => operation.type === "reinforcement")
+				}))
+				.filter((entry) => entry.operations.length)
+				.sort((a, b) => Number(a.card.number || a.card.id) - Number(b.card.number || b.card.id))
+			if (!cards.length) continue
+			const stage = document.createElement("section")
+			stage.className = "reinforcement-stage"
+			const stageHeading = document.createElement("h3")
+			stageHeading.textContent = commitmentLabels[commitment] || commitment
+			stage.append(stageHeading)
+			for (const { card, operations } of cards) {
+				const row = document.createElement("article")
+				row.className = "reinforcement-card"
+				row.dataset.card = card.id
+				const title = document.createElement("button")
+				title.type = "button"
+				title.className = "reinforcement-card-title"
+				title.textContent = `${card.number || card.id} · ${card.title}`
+				title.addEventListener("click", () => showCard(card))
+				const contents = document.createElement("div")
+				contents.className = "reinforcement-contents"
+				for (const operation of operations)
+					for (const unit of operation.units || []) contents.append(reinforcementUnitElement(operation, unit))
+				const notes = document.createElement("ul")
+				notes.className = "reinforcement-notes"
+				for (const operation of operations)
+					for (const note of reinforcementNotes(operation)) {
+						const item = document.createElement("li")
+						item.textContent = note
+						notes.append(item)
+					}
+				row.append(title, contents, notes)
+				stage.append(row)
+			}
+			factionBoard.append(stage)
 		}
+		board.append(factionBoard)
 	}
-	const log = document.createElement("div")
-	log.className = "track-log"
-	for (const entry of Array.isArray(view.log) ? view.log : []) {
-		const element = onLog(entry)
-		if (/^T\d+ 行动轮/.test(String(entry))) element.classList.add("turn-heading")
-		log.append(element)
-	}
-	detail.replaceChildren(toolbar, summary, grid, log)
 }
 
-function renderOpenInfoWindows() {
-	if (!byId("overview-window").hidden) renderOverviewInfo()
-	if (!byId("ap-cards-window").hidden) renderCardInfo("ap")
-	if (!byId("cp-cards-window").hidden) renderCardInfo("cp")
-	if (!byId("unit-pools-window").hidden) renderUnitPoolsInfo()
-	if (!byId("track-window").hidden) renderTrackInfo()
+function updateReinforcementBoardState() {
+	const current = Number(view.pending_event?.card)
+	for (const row of document.querySelectorAll(".reinforcement-card.current")) row.classList.remove("current")
+	if (Number.isFinite(current))
+		document.querySelector(`.reinforcement-card[data-card="${current}"]`)?.classList.add("current")
+}
+
+function showReinforcements() {
+	byId("info-menu").open = false
+	const panel = byId("reinforcement-panel")
+	panel?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" })
+}
+
+function locateUnitPools(faction) {
+	byId("info-menu").open = false
+	const prefixes = [`reserve:${faction}:`, `eliminated:${faction}:`, `upgrade:${faction}:`]
+	const match = [...stackElements].find(([key, element]) => prefixes.some((prefix) => key.startsWith(prefix)) && element.isConnected)
+	if (!match) return
+	const [key, element] = match
+	focusStack(key)
+	element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" })
+}
+
+function renderOpenDialogs() {
+	if (!byId("score").hidden) renderOverviewInfo()
+	for (const faction of ["ap", "cp"]) {
+		if (!byId(`${faction}_card_dialog`).hidden) renderCardInfo(faction)
+		if (!byId(`${faction}_discard_dialog`).hidden) renderCardInfo(faction, true)
+	}
 }
 
 function showInfo(kind) {
-	if (kind === "discard") {
-		showInfo(Array.isArray(view.hands?.ap) ? "ap_cards" : "cp_cards")
-		return
+	if (kind === "discard") kind = `${Array.isArray(view.hands?.ap) ? "ap" : "cp"}_discard`
+	const ids = {
+		score: "score",
+		ap_cards: "ap_card_dialog",
+		cp_cards: "cp_card_dialog",
+		ap_discard: "ap_discard_dialog",
+		cp_discard: "cp_discard_dialog"
 	}
-	const id = infoWindowKinds[kind]
+	const id = ids[kind]
 	if (!id) return
-	if (byId("info-menu")) byId("info-menu").open = false
-	const windowElement = byId(id)
-	windowElement.hidden = false
-	clampInfoWindow(windowElement)
-	bringInfoWindowToFront(windowElement)
+	byId("info-menu").open = false
+	const dialog = byId(id)
+	dialog.hidden = false
 	if (kind === "score") renderOverviewInfo()
-	else if (kind === "ap_cards") renderCardInfo("ap")
-	else if (kind === "cp_cards") renderCardInfo("cp")
-	else if (kind === "reinforcements") renderUnitPoolsInfo()
-	else if (kind === "track") { ui.trackTurn = Number(view.turn) || 1; renderTrackInfo() }
+	else renderCardInfo(kind.startsWith("ap") ? "ap" : "cp", kind.endsWith("discard"))
 }
 
 function setCounterStyle(style) {
@@ -2089,49 +1903,32 @@ function renderToolbarState() {
 }
 
 function renderStatus() {
-	const turnInfo = byId("turn_info")
-	const summary = document.createElement("button")
-	summary.type = "button"
-	summary.className = "sidebar-summary"
-	summary.textContent = `回合 ${view.turn} · 行动轮 ${view.action_round || "—"}\nVP ${view.vp} · 战争状态 ${view.war_status.ap}/${view.war_status.cp}`
-	summary.addEventListener("click", () => showInfo("score"))
-	const notices = document.createElement("div")
-	notices.className = "sidebar-notices"
+	byId("ap_deck_size").textContent = `协约国牌库：${view.deck_count?.ap ?? 0} 张`
+	byId("cp_deck_size").textContent = `同盟国牌库：${view.deck_count?.cp ?? 0} 张`
+	const notices = byId("violations")
+	const lines = []
 	const currentMo = (view.mo?.own || []).length + Object.values(view.mo?.opponent_counts || {}).reduce((sum, count) => sum + Number(count || 0), 0)
-	if (currentMo) notices.append(infoStat("MO待完成", currentMo, "warning"))
-	if (view.supply_warnings?.spaces?.length) notices.append(infoStat("补给警告", view.supply_warnings.spaces.length, "warning"))
-	if (view.rollback_proposal) notices.append(infoStat("回滚待审查", view.rollback_proposal.label, "warning"))
-	turnInfo.replaceChildren(summary, notices)
+	if (currentMo) lines.push(`MO待完成：${currentMo}`)
+	if (view.supply_warnings?.spaces?.length) lines.push(`补给警告：${view.supply_warnings.spaces.length}`)
+	if (view.rollback_proposal) lines.push(`回滚待审查：${view.rollback_proposal.label}`)
+	notices.textContent = lines.join("\n")
 	byId("status").textContent =
 		`T${view.turn} · AR ${view.action_round || "—"} · VP ${view.vp}`
 }
 
 function renderRoles() {
+	for (const [faction, roleName] of [["ap", "Allied Powers"], ["cp", "Central Powers"]]) {
+		const hand = view.hands?.[faction]
+		const handCount = Array.isArray(hand) ? hand.length : Number(hand || 0)
+		const element = byId(`role_${roleName.replace(/\W/g, "_")}`)
+		if (element) element.classList.add(`${faction}-role`)
+		const stat = byId(`${faction}_hand`)
+		if (stat) stat.textContent = `手牌 ${handCount}`
+	}
 	if (typeof roles === "undefined" || !Array.isArray(roles)) return
 	for (const role of roles) {
 		const faction = role.role === "Allied Powers" ? "ap" : role.role === "Central Powers" ? "cp" : null
-		if (!faction) continue
-		const hand = view.hands?.[faction]
-		const handCount = Array.isArray(hand) ? hand.length : Number(hand || 0)
-		const rpTotal = Object.values(view.rp?.[faction] || {}).reduce(
-			(sum, value) => sum + Number(value || 0),
-			0
-		)
-		role.element.classList.add(`${faction}-role`)
-		role.name.querySelector("span").textContent = faction === "ap" ? "协约国" : "同盟国"
-		role.stat.textContent = `手牌 ${handCount} · 牌库 ${view.deck_count?.[faction] ?? "—"}`
-		role.stat.classList.add("role-stat-link")
-		role.stat.title = `查看${factionNames[faction]}卡牌信息`
-		role.stat.tabIndex = 0
-		role.stat.setAttribute("role", "button")
-		role.stat.onclick = () => showInfo(`${faction}_cards`)
-		role.stat.onkeydown = (event) => {
-			if (event.key !== "Enter" && event.key !== " ") return
-			event.preventDefault()
-			showInfo(`${faction}_cards`)
-		}
-		const info = role.element.querySelector(".role_info")
-		if (info) info.textContent = `补员 ${rpTotal} · 战争状态 ${view.war_status?.[faction] ?? 0}`
+		if (faction) role.name.querySelector("span").textContent = faction === "ap" ? "协约国" : "同盟国"
 	}
 }
 
@@ -2166,42 +1963,41 @@ function activateLogReference(kind, value) {
 	}
 }
 
+function appendLogReference(element, kind, value) {
+	if (kind === "die") {
+		const [faction, face] = value.includes(":") ? value.split(":", 2) : [null, value]
+		element.append(dieElement(faction, face))
+		return
+	}
+	const token = document.createElement("button")
+	token.className = `log-ref log-${kind}`
+	token.type = "button"
+	if (kind === "space") token.textContent = spaceById[value]?.name || value
+	else if (kind === "unit") {
+		token.textContent = eventUnitLabel(value)
+		const faction = unitById.get(value)?.faction || (view.units || []).find((unit) => unit.id === value)?.faction
+		if (faction) token.classList.add(`${faction}-unit`)
+	}
+	else if (kind === "card") {
+		const card = cardById[Number(value)]
+		token.textContent = card?.title || value
+		if (card?.faction) token.classList.add(`${card.faction}-card`)
+	}
+	else if (kind === "mo") token.textContent = currentMoEntry(value)?.name || value
+	token.addEventListener("pointerenter", () => highlightLogReference(kind, value, true))
+	token.addEventListener("pointerleave", () => highlightLogReference(kind, value, false))
+	token.addEventListener("click", () => activateLogReference(kind, value))
+	element.append(token)
+}
+
 function appendLogText(element, text) {
-	const pattern = /\[\[(space|unit|card|die|mo):([^\]]+)\]\]/g
+	const pattern = /\[\[(space|unit|card|die|mo):([^\]]+)\]\]|\b([BW])([1-6])\b|([⚀-⚅])/gu
 	let start = 0
 	for (const match of text.matchAll(pattern)) {
 		element.append(document.createTextNode(text.slice(start, match.index)))
-		const kind = match[1]
-		const value = match[2]
-		const token = document.createElement(kind === "die" ? "span" : "button")
-		token.className = `log-ref log-${kind}`
-		if (kind === "space") token.textContent = spaceById[value]?.name || value
-		else if (kind === "unit") {
-			token.textContent = eventUnitLabel(value)
-			const faction = unitById.get(value)?.faction || (view.units || []).find((unit) => unit.id === value)?.faction
-			if (faction) token.classList.add(`${faction}-unit`)
-		}
-		else if (kind === "card") {
-			const card = cardById[Number(value)]
-			token.textContent = card?.title || value
-			if (card?.faction) token.classList.add(`${card.faction}-card`)
-		}
-		else if (kind === "mo") token.textContent = currentMoEntry(value)?.name || value
-		else {
-			const [faction, die] = value.split(":")
-			token.className = dieElement(faction, die).className
-			token.textContent = die
-			token.title = `骰点 ${die}`
-			token.setAttribute("role", "img")
-			token.setAttribute("aria-label", `骰点 ${die}`)
-		}
-		if (kind !== "die") {
-			token.type = "button"
-			token.addEventListener("pointerenter", () => highlightLogReference(kind, value, true))
-			token.addEventListener("pointerleave", () => highlightLogReference(kind, value, false))
-			token.addEventListener("click", () => activateLogReference(kind, value))
-		}
-		element.append(token)
+		if (match[1]) appendLogReference(element, match[1], match[2])
+		else if (match[3]) element.append(dieElement(match[3] === "W" ? "ap" : "cp", match[4]))
+		else element.append(dieElement(null, match[5].codePointAt(0) - 0x267f))
 		start = match.index + match[0].length
 	}
 	element.append(document.createTextNode(text.slice(start)))
@@ -2220,7 +2016,10 @@ function onLog(text, index = 0) {
 	let content = String(text || "")
 	if (Number.isInteger(index) && index < logGroupIndex) resetLogGroup()
 
-	if (content.startsWith(">>")) {
+	if (content.startsWith(">>>")) {
+		element.className = "ii detail align"
+		content = content.slice(3).trimStart()
+	} else if (content.startsWith(">>")) {
 		element.className = "i detail align"
 		content = content.slice(2).trimStart()
 	} else if (content.startsWith(">")) {
@@ -2253,6 +2052,9 @@ function onLog(text, index = 0) {
 		resetLogGroup()
 		element.className = "h2"
 		content = content.slice(3).trimStart()
+		if (content === "AP" || content === "协约国") element.classList.add("ap")
+		else if (content === "CP" || content === "同盟国") element.classList.add("cp")
+		else if (content === "强制进攻阶段" || content === "行动阶段") element.classList.add("phase-strong")
 	} else if (content.startsWith(".h3ap")) {
 		resetLogGroup()
 		element.className = "h3 ap"
@@ -2273,13 +2075,86 @@ function onLog(text, index = 0) {
 	return element
 }
 
+function initializeDiceSprite() {
+	const image = new window.Image()
+	const ready = () => document.documentElement.classList.add("dice-sprite-ready")
+	const failed = () => document.documentElement.classList.remove("dice-sprite-ready")
+	image.addEventListener("load", ready, { once: true })
+	image.addEventListener("error", failed, { once: true })
+	image.src = "/images/die_black_pips.svg"
+	if (image.complete) {
+		if (image.naturalWidth > 0) ready()
+		else failed()
+	}
+}
+
+let boardPanelLayoutQueued = false
+
+function elementScale(element) {
+	const scale = Number(element?.dataset?.scale)
+	return Number.isFinite(scale) && scale > 0 ? scale : 1
+}
+
+function adaptiveCardScale(inner, mapwrap) {
+	const effectiveMapScale = elementScale(inner) * elementScale(mapwrap)
+	return Math.min(1.2, Math.max(0.72, effectiveMapScale))
+}
+
+function syncBoardPanelLayout() {
+	boardPanelLayoutQueued = false
+	const main = document.querySelector("body > main")
+	const outer = byId("pan_zoom_wrap")
+	const inner = byId("pan_zoom_main")
+	const mapwrap = byId("mapwrap")
+	const panels = byId("board-panels")
+	if (!main || !outer || !inner || !mapwrap || !panels) return
+	const scaledHeight = mapwrap.getBoundingClientRect().height
+	if (scaledHeight > 0) outer.style.height = `${Math.ceil(scaledHeight)}px`
+	panels.style.setProperty("--panel-viewport-width", `${main.clientWidth}px`)
+	const cardScale = adaptiveCardScale(inner, mapwrap)
+	panels.style.setProperty("--card-scale", cardScale.toFixed(4))
+	panels.style.setProperty("--card-width", `${250 * cardScale}px`)
+	panels.style.setProperty("--card-height", `${340 * cardScale}px`)
+	panels.style.setProperty("--card-row-gap", `${14 * cardScale}px`)
+	panels.style.setProperty("--card-row-padding", `${12 * cardScale}px`)
+	panels.dataset.cardScale = cardScale.toFixed(4)
+}
+
+function queueBoardPanelLayout() {
+	if (boardPanelLayoutQueued) return
+	boardPanelLayoutQueued = true
+	window.requestAnimationFrame(syncBoardPanelLayout)
+}
+
+function mountAdaptiveBoardPanels() {
+	const main = document.querySelector("body > main")
+	const inner = byId("pan_zoom_main")
+	const panels = byId("board-panels")
+	const mapwrap = byId("mapwrap")
+	if (!main || !inner || !panels || !mapwrap) return
+	if (panels.parentElement !== main) main.append(panels)
+	panels.dataset.scaleMode = "adaptive"
+	for (const type of ["pointerdown", "touchstart", "wheel"])
+		panels.addEventListener(type, (event) => event.stopPropagation(), { passive: true })
+	const mutation = new window.MutationObserver(queueBoardPanelLayout)
+	mutation.observe(inner, { attributes: true, attributeFilter: ["style", "data-scale"] })
+	mutation.observe(mapwrap, { attributes: true, attributeFilter: ["style", "data-scale"] })
+	if (typeof window.ResizeObserver === "function") {
+		const resize = new window.ResizeObserver(queueBoardPanelLayout)
+		resize.observe(main)
+		resize.observe(mapwrap)
+	}
+	byId("map-image")?.addEventListener("load", queueBoardPanelLayout)
+	window.visualViewport?.addEventListener("resize", queueBoardPanelLayout)
+	window.addEventListener("orientationchange", queueBoardPanelLayout)
+	queueBoardPanelLayout()
+}
+
 function onUpdate() {
 	if (!window.view) return
 	const activeFaction = factionCode(view.active)
 	document.body.classList.toggle("active-ap", activeFaction === "ap")
 	document.body.classList.toggle("active-cp", activeFaction === "cp")
-	resolveTrackSnapshotProbe()
-	if (!replayPosition()) trackLatestTurn = Math.max(trackLatestTurn, Number(view.turn) || 1)
 	hideActivationMenu()
 	hideCardMenu()
 	targetIndex = EogActionProtocol.indexTargets(view.actions || {})
@@ -2293,8 +2168,9 @@ function onUpdate() {
 	renderHand()
 	renderMoPanel()
 	renderCombatCards()
+	updateReinforcementBoardState()
 	renderToolbarState()
-	renderOpenInfoWindows()
+	renderOpenDialogs()
 }
 
 window.on_update = onUpdate
@@ -2302,20 +2178,22 @@ window.on_log = onLog
 window.on_reply = onReply
 
 document.addEventListener("DOMContentLoaded", () => {
+	initializeDiceSprite()
+	renderReinforcementBoard()
+	mountAdaptiveBoardPanels()
 	const fitKey = `${window.params?.title_id || "end-of-glory"}/map-fit`
 	if (window.innerWidth > 800 && !localStorage.getItem(fitKey)) toggle_zoom()
 	const toolbar = byId("toolbar")
 	const mainMenu = toolbar.querySelector(":scope > details:not([id])")
 	const ordered = [
 		mainMenu,
+		byId("stack-menu"),
 		byId("chat_button"),
 		byId("log_button"),
-		byId("zoom_button"),
-		byId("stack-menu"),
 		byId("info-menu"),
 		byId("supply-menu"),
-		byId("track-button"),
-		byId("piece-button")
+		byId("piece-button"),
+		byId("zoom_button")
 	]
 	for (const element of ordered) if (element) toolbar.append(element)
 	if (byId("chat_button")) {
@@ -2332,13 +2210,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	const preferenceKey = window.params?.title_id || "end-of-glory"
-	initializeInfoWindows()
 	setCounterStyle(localStorage.getItem(`${preferenceKey}/style`) || "bevel")
 	setMouseFocus(localStorage.getItem(`${preferenceKey}/mouse-focus`) === "1")
 	byId("show-score").addEventListener("click", () => showInfo("score"))
+	byId("show-reinforcements").addEventListener("click", showReinforcements)
 	byId("show-ap-cards").addEventListener("click", () => showInfo("ap_cards"))
 	byId("show-cp-cards").addEventListener("click", () => showInfo("cp_cards"))
-	byId("show-reinforcements").addEventListener("click", () => showInfo("reinforcements"))
+	byId("show-ap-discard").addEventListener("click", () => showInfo("ap_discard"))
+	byId("show-cp-discard").addEventListener("click", () => showInfo("cp_discard"))
+	byId("locate-ap-pools").addEventListener("click", () => locateUnitPools("ap"))
+	byId("locate-cp-pools").addEventListener("click", () => locateUnitPools("cp"))
 	byId("mouse-focus-item").addEventListener("click", () => setMouseFocus())
 	byId("style-bevel-item").addEventListener("click", () => setCounterStyle("bevel"))
 	byId("style-flat-item").addEventListener("click", () => setCounterStyle("flat"))
@@ -2349,8 +2230,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	byId("report-bug").addEventListener("click", () => byId("bug-report-dialog").showModal())
 	byId("show-ap-supply").addEventListener("click", () => requestSupplyOverlay("ap"))
 	byId("show-cp-supply").addEventListener("click", () => requestSupplyOverlay("cp"))
-	byId("track-button").addEventListener("click", () => showInfo("track"))
 	byId("piece-button").addEventListener("click", toggleCounters)
+	for (const close of document.querySelectorAll(".dialog_x"))
+		close.addEventListener("click", () => { close.closest(".dialog").hidden = true })
 	byId("rollback-form").addEventListener("submit", (event) => {
 		event.preventDefault()
 		const index = Number(byId("rollback-checkpoint").value)

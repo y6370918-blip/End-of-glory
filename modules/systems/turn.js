@@ -135,13 +135,8 @@ function createTurnSystem(api) {
       state.usage_limits[usageKey] = 1;
   }
 
-  function startActionRound(state) {
-      api.clearUndo(state);
-      api.clearCombatEvents(state, "action_round");
-      api.refreshBesieged(state);
-      state.phase = "行动阶段";
-      state.action_round += 1;
-      state.active = api.CP;
+  function enterFactionAction(state, faction) {
+      state.active = faction;
       state.state = "action_card";
       state.activations = {};
       state.ops = null;
@@ -149,11 +144,22 @@ function createTurnSystem(api) {
       state.action_state = {
           turn: state.turn,
           round: state.action_round,
-          actor: api.CP,
+          actor: faction,
           used_combat_cards: [],
       };
-      state.round_start_control = api.clone(state.control);
-      state.round_enemy_entries = { cp: [], ap: [] };
+      state.action_start_control = {
+          actor: faction,
+          spaces: api.clone(state.control),
+      };
+  }
+
+  function startActionRound(state) {
+      api.clearUndo(state);
+      api.clearCombatEvents(state, "action_round");
+      api.refreshBesieged(state);
+      state.phase = "行动阶段";
+      state.action_round += 1;
+      enterFactionAction(state, api.CP);
       for (const unit of state.units) {
           unit.moved = false;
           unit.attacked = false;
@@ -176,17 +182,7 @@ function createTurnSystem(api) {
               if (beginVoluntaryCleanup(state, api.CP, "ap_action"))
                   return;
           }
-          state.active = api.AP;
-          state.state = "action_card";
-          state.activations = {};
-          state.ops = null;
-          state.sr = null;
-          state.action_state = {
-              turn: state.turn,
-              round: state.action_round,
-              actor: api.AP,
-              used_combat_cards: [],
-          };
+          enterFactionAction(state, api.AP);
           api.log(state, "");
           api.log(state, `.h3ap 行动轮 ${state.action_round}`);
           return;
@@ -194,6 +190,8 @@ function createTurnSystem(api) {
       api.cleanupEmptyFortifications(state);
       if (state.action_round < (api.data.title.action_rounds || 6))
           startActionRound(state);
+      else if (checkVictory(state))
+          return;
       else if (!api.beginFrontMoCommitmentReview(state) &&
           !api.beginMoPenaltyResolution(state))
           beginAttrition(state);
@@ -245,7 +243,7 @@ function createTurnSystem(api) {
               stage: "discard",
               cards: state.hands.cp.slice(),
           };
-          state.state = "event";
+          api.enterEventFlow(state);
           state.active = api.CP;
           state.phase = "德军最高统帅部";
           return;
@@ -255,11 +253,16 @@ function createTurnSystem(api) {
 
   function resolveFactionAttrition(state, faction) {
       api.updateSupply(state);
-      const lost = state.units.filter((unit) => unit.faction === faction && !unit.supplied && !unit.fort_limited_supply);
+      const lost = state.units.filter((unit) => unit.faction === faction &&
+          !unit.supplied && !unit.limited_supply && !unit.fort_limited_supply);
       for (const unit of lost) {
-          const army = unit.type === "army" ? api.clone(unit) : null;
-          api.eliminateUnit(state, unit.id, "断补损耗");
-          if (army) api.permanentlyEliminateCombatArmy(state, army, "attrition_out_of_supply");
+          if (api.isCombatUnit(unit)) {
+              const removed = api.permanentlyRemoveOnMapUnit(state, unit.id, "attrition_out_of_supply");
+              if (removed)
+                  api.log(state, `断补损耗：${api.pieceById[removed.piece]?.name || removed.id}（永久移除）。`);
+          }
+          else
+              api.eliminateUnit(state, unit.id, "断补损耗");
       }
       api.log(state, `${api.factionRole(faction)} 损耗结算：${lost.length} 个单位被消灭。`);
       return lost.length;
@@ -312,12 +315,8 @@ function createTurnSystem(api) {
           throw new Error("No voluntary cleanup phase");
       state.voluntary_cleanup = null;
       if (pending.continuation === "ap_action") {
-          state.active = api.AP;
-          state.state = "action_card";
+          enterFactionAction(state, api.AP);
           state.phase = "行动阶段";
-          state.activations = {};
-          state.ops = null;
-          state.sr = null;
           api.log(state, `T${state.turn} 行动轮 ${state.action_round}：协约国行动。`);
           return;
       }
@@ -370,7 +369,7 @@ function createTurnSystem(api) {
               placements: [],
           };
           state.active = api.AP;
-          state.state = "event";
+          api.enterEventFlow(state);
           return true;
       }
       for (const unit of units) api.normalizeOffMapUnit(unit);
@@ -449,7 +448,7 @@ function createTurnSystem(api) {
           index: 0,
       };
       state.active = first.faction;
-      state.state = "event";
+      api.enterEventFlow(state);
       return true;
   }
 
@@ -498,7 +497,7 @@ function createTurnSystem(api) {
           usage_key: usageKey,
       };
       state.phase = "保加利亚战线响应";
-      state.state = "event";
+      api.enterEventFlow(state);
       state.active = api.CP;
       return true;
   }
@@ -581,7 +580,7 @@ function createTurnSystem(api) {
               mode: null,
           };
           state.phase = "保加利亚后续";
-          state.state = "event";
+          api.enterEventFlow(state);
           state.active = api.AP;
           return true;
       }
@@ -626,7 +625,7 @@ function createTurnSystem(api) {
           schedule_cards: entries.map((entry) => entry.source_card),
       };
       state.phase = "延迟增援";
-      state.state = "event";
+      api.enterEventFlow(state);
       state.active = faction;
       api.log(state, `${api.factionRole(faction)} 部署本回合返场单位。`);
       return true;
@@ -707,14 +706,41 @@ function createTurnSystem(api) {
           vp -= 1;
       if (controlledCount("ah", api.AP) >= 2)
           vp -= 1;
-      vp -= controlledCount("ge", api.AP);
+      if (controlledCount("ge", api.AP) >= 3)
+          vp -= 1;
       if (state.naval.track <= -2)
           vp -= 1;
       return vp;
   }
 
-  function checkVictory(state) {
-      if (state.turn < 15)
+  function cpArmyNearParis(state) {
+      const targets = new Set(state.units
+          .filter((unit) => unit.faction === api.CP && unit.type === "army")
+          .map((unit) => unit.location));
+      if (!targets.size) return false;
+      const seen = new Set(["paris"]);
+      let frontier = ["paris"];
+      for (let distance = 0; distance <= 2; distance++) {
+          if (frontier.some((space) => targets.has(space))) return true;
+          if (distance === 2) break;
+          const next = [];
+          for (const space of frontier)
+              for (const neighbor of api.landNeighbors(space))
+                  if (!seen.has(neighbor)) {
+                      seen.add(neighbor);
+                      next.push(neighbor);
+                  }
+          frontier = next;
+      }
+      return false;
+  }
+
+  function checkVictory(state, options = {}) {
+      const armisticeThreshold = 40 + Number(state.entry_tracks?.armistice || 0);
+      if ((state.war_status?.combined || 0) >= armisticeThreshold)
+          return gameOver(state, state.vp > 10 ? api.CP : api.AP,
+              `停战协议：VP ${state.vp}`);
+      if (options.armisticeOnly || state.turn < 15)
           return false;
       let endVp = Object.entries(state.events).reduce((sum, [event, status]) => sum + (status?.end_vp || api.data.events[event]?.end_vp || 0), 0);
       const burgfrieden = api.activeRule(state, "burgfrieden");
@@ -728,8 +754,10 @@ function createTurnSystem(api) {
           (state.markers.hindenburg || []).length *
               (hindenburg?.end_vp_per_marker || 0);
       endVp += finalTerritoryVp(state);
+      if (cpArmyNearParis(state)) endVp += 1;
+      if (state.campaign_flags?.paris_attacked) endVp += 1;
       const finalVp = state.vp + endVp;
-      const winner = finalVp >= 20 ? api.CP : api.AP;
+      const winner = finalVp > 10 ? api.CP : api.AP;
       return gameOver(state, winner, `第15回合终局：VP ${finalVp}`);
   }
 
