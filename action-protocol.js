@@ -26,6 +26,7 @@
 		decline_front_mo: { label: "不承诺" },
 		reset_defense_mo: { label: "重新选择防御MO" },
 		confirm_mo_penalty_loss: { label: "确认非致命减员" },
+		confirm_losses: { label: "确认损失" },
 		retain_combat_card: { target: "card", surface: "top", label: "保留战斗牌" },
 		discard_combat_card_for_draw: { target: "card", surface: "top", label: "弃置并抽一张牌" },
 		event_units_confirm: { label: "确认所选单位" },

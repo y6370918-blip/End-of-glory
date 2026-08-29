@@ -366,7 +366,27 @@ function createCombatStates(api) {
         const applied = api.reduceCombatUnit(state, id);
         combat.remaining_loss = Math.max(0, combat.remaining_loss - applied);
         if (state.pending_replacement) return;
-        if (combat.remaining_loss === 0) api.advanceCombatLosses(state);
+        if (combat.remaining_loss === 0) state.state = "combat_loss_confirm";
+      },
+    },
+
+    combat_loss_confirm: {
+      message(state) {
+        const combat = state.combat;
+        if (!combat) return "确认损失。";
+        const total =
+          combat.pending_side === combat.attacker
+            ? combat.attack_loss
+            : combat.defense_loss;
+        const applied = Math.max(0, total - (combat.remaining_loss || 0));
+        return `损失 ${applied}/${total}，确认后继续。`;
+      },
+      prompt(_state, builder) {
+        builder.enable("confirm_losses");
+      },
+      confirm_losses(state) {
+        state.state = "combat_losses";
+        api.advanceCombatLosses(state);
       },
     },
 
@@ -395,7 +415,8 @@ function createCombatStates(api) {
           return;
         }
         state.state = "combat_losses";
-        if (state.combat.remaining_loss === 0) api.advanceCombatLosses(state);
+        if (state.combat.remaining_loss === 0)
+          state.state = "combat_loss_confirm";
       },
     },
 

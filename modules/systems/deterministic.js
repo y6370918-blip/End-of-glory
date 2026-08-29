@@ -67,8 +67,12 @@ function createDeterministicSystem(api) {
 
       if (state.state === "combat_losses" &&
           !api.legalCombatLossUnitIds(state).length) {
-        api.advanceCombatLosses(state);
-        continue;
+        if ((state.combat?.remaining_loss || 0) <= 0) {
+          api.advanceCombatLosses(state);
+          continue;
+        }
+        state.state = "combat_loss_confirm";
+        return;
       }
 
       if (state.state === "combat_replacement") {
