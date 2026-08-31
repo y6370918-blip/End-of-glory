@@ -22,6 +22,7 @@ const stackElements = new Map()
 const activationElements = new Map()
 const controlElements = new Map()
 const markerElements = new Map()
+const frontStorageElements = new Map()
 const cardElements = new Map()
 const moElements = new Map()
 
@@ -419,6 +420,38 @@ function reconcileImageMarkers(layer, elements, frames) {
 		}
 }
 
+function reconcileFrontStorageLabels(layer) {
+	const definitions = [
+		{ key: "russian", track: "russian_front", visible: true },
+		{ key: "turkish", track: "turkish_front", visible: true }
+	]
+	const active = new Set()
+	for (const definition of definitions) {
+		if (!definition.visible) continue
+		const slots = eog_data.ui?.tracks?.[definition.track]?.slots
+		if (!slots?.length) continue
+		active.add(definition.key)
+		let label = frontStorageElements.get(definition.key)
+		if (!label) {
+			label = document.createElement("span")
+			label.className = "front-storage-label"
+			frontStorageElements.set(definition.key, label)
+		}
+		const value = Number(view.front_storage?.[definition.key] || 0)
+		const last = slots.at(-1)
+		label.textContent = `储存 ${value} RP`
+		label.title = `${definition.key === "russian" ? "俄国" : "土耳其"}战线储存：${value} RP`
+		label.style.left = `${sourceToDisplay(last[0] + 145)}px`
+		label.style.top = `${sourceToDisplay(slots[0][1])}px`
+		if (label.parentNode !== layer) layer.append(label)
+	}
+	for (const [key, label] of frontStorageElements)
+		if (!active.has(key)) {
+			label.remove()
+			frontStorageElements.delete(key)
+		}
+}
+
 function generalTrackFrames() {
 	const definitions = [
 		{ id: "vp", label: "VP", image: trackMarkerImages.vp, value: view.vp || 0 },
@@ -612,6 +645,7 @@ function renderMarkers() {
 			: null
 	)
 	reconcileImageMarkers(layer, markerElements, frames.filter(Boolean))
+	reconcileFrontStorageLabels(layer)
 }
 
 const reserveBoxLayouts = {
@@ -624,7 +658,7 @@ const reserveBoxLayouts = {
 	},
 	cp: {
 		label: "同盟国预备区",
-		groups: ["ge", "ge_wurttemberg", "ge_prussia", "ge_bavaria", "ge_saxony", "ah"],
+		groups: ["ge", "ah", "ge_prussia", "ge_bavaria", "ge_saxony", "ge_wurttemberg"],
 		x: [5050, 5230, 5410, 5590, 5770, 5950],
 		fullY: 1190,
 		reducedY: 1380

@@ -86,6 +86,8 @@ function createReinforcementEventSystem(api) {
           .filter(Boolean);
       if (units.length !== pending.queue.length)
           throw new Error("Select every delayed unit");
+      const existingOrphans = new Set(api.orphanHqs(state).map((hq) => hq.id));
+      const affectedSpaces = new Set(units.map((unit) => unit.location).filter(Boolean));
       for (const unit of units)
           state.units.splice(state.units.findIndex((candidate) => candidate.id === unit.id), 1);
       state.scheduled_events.push({
@@ -100,6 +102,9 @@ function createReinforcementEventSystem(api) {
               return copy;
           }),
       });
+      return api.orphanHqs(state)
+          .filter((hq) => affectedSpaces.has(hq.location) && !existingOrphans.has(hq.id))
+          .map((hq) => hq.id);
   }
 
   function beginReinforcementEvent(state, card, operation) {
@@ -402,13 +407,33 @@ function createReinforcementEventSystem(api) {
                       .find((candidate) => candidate.id === entry.id)?.piece,
           })),
       ];
-      return reinforcementMapSpaces(
+      const spaces = reinforcementMapSpaces(
           state,
           pending,
           api.pieceById[unit.piece],
           pending.operation.rebuild.placement || "normal_reinforcement",
           placements,
       );
+      if (unit.nation === "be") {
+          if (state.control.brussels !== api.AP)
+              return [];
+          // Brussels is the only Belgian rebuild source.  When that valid
+          // printed source is full it may still use the ordinary adjacent
+          // overflow rule; Antwerp is never treated as an independent source.
+          const allowed = new Set(["brussels"]);
+          const brussels = api.spaceById.brussels;
+          if (brussels && !reinforcementStackAllows(
+              state,
+              pending,
+              api.pieceById[unit.piece],
+              brussels,
+              placements,
+          ))
+              for (const adjacent of api.landNeighbors("brussels"))
+                  allowed.add(adjacent);
+          return spaces.filter((space) => allowed.has(space));
+      }
+      return spaces;
   }
 
   function navalPostFortificationSpaces(state, pending) {

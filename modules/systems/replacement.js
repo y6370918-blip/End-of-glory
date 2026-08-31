@@ -441,7 +441,7 @@ function createReplacementSystem(api) {
                   return null;
               rebuildUsageKey = usageKey;
           }
-          const cost = Math.max(1, api.unitRepairCost(candidate));
+          const cost = api.unitRepairCost(candidate);
           const keys = replacementKeys(candidate).filter((key) => (state.rp[faction][key] || 0) >= cost);
           const key = arg.key ? (keys.includes(arg.key) ? arg.key : null) : keys[0];
           if (!key)
@@ -455,9 +455,17 @@ function createReplacementSystem(api) {
           // French armies rebuild only at their three printed mainland supply
           // sources.  Other units use their own national supply sources; never
           // fall back to the first source belonging to the whole faction.
-          const sourceIds = candidate.nation === "fr" && candidate.type === "army"
+          let sourceIds = candidate.nation === "fr" && candidate.type === "army"
               ? ["paris", "orleans", "chaumont"]
-              : api.supplySources(state, faction, candidate.nation);
+              : candidate.nation === "be"
+                  ? (state.control.brussels === api.AP ? ["brussels"] : [])
+                  : api.supplySources(state, faction, candidate.nation);
+          if (state.turn <= 2 && faction === api.AP &&
+              api.nationalityGroup(candidate.nation) === "br")
+              sourceIds = sourceIds.filter((sourceId) => {
+                  const source = api.spaceById[sourceId];
+                  return !(source?.port && source.nation === "fr");
+              });
           const spaces = new Set();
           for (const sourceId of sourceIds) {
               if (state.control[sourceId] !== faction ||

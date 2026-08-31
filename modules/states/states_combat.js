@@ -403,11 +403,7 @@ function createCombatStates(api) {
         state.pending_replacement = null;
         if (pending.resume === "retreat_overstack") {
           state.state = "retreat_overstack";
-          const retreat = state.pending_retreat;
-          if (!retreat.overstack.final ||
-              !api.retreatSpaceOverstacked(state, retreat.overstack.space, retreat.faction)) {
-            api.finishRetreatOverstack(state);
-          }
+          api.finishRetreatOverstack(state);
           return;
         }
         if (pending.resume === "cancel_retreat") {
@@ -571,12 +567,35 @@ function createCombatStates(api) {
         pending.selected_unit = null;
         api.log(state, `[[unit:${id}]]撤退：[[space:${origin}]] → [[space:${destination}]]。`);
         const final = pending.remaining[id] === 0;
-        if (api.retreatSpaceOverstacked(state, destination, pending.faction)) {
-          pending.overstack = { space: destination, unit: id, group: [id], final };
+        const overstacked = api.retreatSpaceOverstacked(
+          state,
+          destination,
+          pending.faction,
+        );
+        const alreadyPaid = Boolean(pending.overstack_loss_paid?.[id]);
+        if (overstacked && alreadyPaid) {
+          // This unit already paid the one loss for its current forced
+          // overstack continuation.  It must keep retreating until it reaches
+          // a legal stack, but it does not pay again in every full space.
+          if (final) pending.remaining[id] = 1;
+          api.setActiveFaction(state, pending.faction);
+          state.state = "retreat";
+        } else if (overstacked) {
+          pending.overstack = {
+            space: destination,
+            unit: id,
+            group: [id],
+            final,
+            loss_paid: false,
+          };
           api.setActiveFaction(state, pending.faction);
           state.state = "retreat_overstack";
-        } else if (final) api.finishRetreatUnit(state, id);
-        else {
+        } else {
+          if (pending.overstack_loss_paid) delete pending.overstack_loss_paid[id];
+          if (final) {
+            api.finishRetreatUnit(state, id);
+            return;
+          }
           api.setActiveFaction(state, pending.faction);
           state.state = "retreat";
         }
@@ -595,6 +614,7 @@ function createCombatStates(api) {
         const previousState = state.state;
         const previousSide = state.combat.pending_side;
         api.snapshot(state, "撤退超堆叠损失");
+        pending.overstack.loss_paid = true;
         state.combat.pending_side = pending.faction;
         api.reduceCombatUnit(state, id);
         state.combat.pending_side = previousSide;
@@ -603,10 +623,7 @@ function createCombatStates(api) {
           return;
         }
         state.state = previousState;
-        if (!pending.overstack.final ||
-            !api.retreatSpaceOverstacked(state, pending.overstack.space, pending.faction)) {
-          api.finishRetreatOverstack(state);
-        }
+        api.finishRetreatOverstack(state);
       },
     },
 

@@ -554,6 +554,7 @@ body main {
 
 #map.hide-markers .control,
 #map.hide-markers .marker,
+#map.hide-markers .front-storage-label,
 #map.hide-markers .activation-counter {
 	visibility: hidden;
 }
@@ -655,6 +656,24 @@ body.flat .activation-counter {
 	height: 100%;
 	object-fit: contain;
 	pointer-events: none;
+}
+
+.front-storage-label {
+	position: absolute;
+	z-index: 255;
+	transform: translate(-50%, -50%);
+	box-sizing: border-box;
+	min-width: 112px;
+	padding: 4px 9px;
+	border: 2px solid #213f6c;
+	border-radius: 4px;
+	background: #f7edd2e8;
+	color: #172238;
+	font: 700 18px/1.15 sans-serif;
+	text-align: center;
+	white-space: nowrap;
+	pointer-events: none;
+	box-shadow: 1px 1px 3px #0008;
 }
 
 .piece-stack {

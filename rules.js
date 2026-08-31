@@ -1597,7 +1597,87 @@ function ensureState(state) {
       typeof state.action_start_control.spaces !== "object")
   )
     state.action_start_control = null;
-  state.version = 49;
+  if (
+    state.pending_event?.kind === "combat_repair" &&
+    Number(state.pending_event.card) === 714
+  ) {
+    // Card 714 uses normal RP costs and may rebuild an LCU by returning the
+    // SCU that replaced it.  Normalize live games already waiting here so the
+    // fix does not require restarting the combat.
+    state.pending_event.uses_rp_cost = true;
+    state.pending_event.replacement_corps = true;
+  }
+  if (previousVersion < 50) {
+    if (state.pending_event?.kind === "counterattack") {
+      const pending = state.pending_event;
+      pending.origins = (pending.origins || []).filter((origin) =>
+        state.units.some((unit) =>
+          unit.location === origin &&
+          unit.faction === CP &&
+          ["army", "corps"].includes(unit.type),
+        ) &&
+        state.units.some((unit) =>
+          unit.faction === AP &&
+          ["army", "corps"].includes(unit.type) &&
+          attacksTarget(state, unit, origin),
+        ),
+      );
+      if (pending.stage === "cards" && pending.index >= (pending.cards || []).length)
+        pending.stage = "cards_complete";
+      if (pending.stage === "origin") setActiveFaction(state, AP);
+      else if (pending.stage === "cards_complete") setActiveFaction(state, CP);
+    }
+    const retreat = state.pending_retreat;
+    if (retreat?.overstack) {
+      retreat.overstack.loss_paid = Boolean(retreat.overstack.loss_paid);
+      if (state.pending_replacement?.resume === "retreat_overstack")
+        retreat.overstack.loss_paid = true;
+      if (!retreat.overstack.loss_paid) {
+        const group = new Set(retreat.overstack.group || []);
+        const paidEvent = [...(state.combat?.resolution_events || [])]
+          .reverse()
+          .find((entry) =>
+            ["reduce", "eliminate", "replace"].includes(entry.kind) &&
+            (group.has(entry.unit) || group.has(entry.replacement)),
+          );
+        retreat.overstack.loss_paid = Boolean(paidEvent);
+      }
+      if (state.state === "retreat_overstack" && retreat.overstack.loss_paid &&
+          !state.pending_replacement) {
+        const overstack = retreat.overstack;
+        const group = (overstack.group || []).filter((id) =>
+          state.units.some((unit) => unit.id === id),
+        );
+        const stillOverstacked = state.units.filter((unit) =>
+          unit.location === overstack.space &&
+          unit.faction === retreat.faction &&
+          ["army", "corps"].includes(unit.type),
+        ).length > 3;
+        retreat.overstack = null;
+        retreat.selected_unit = null;
+        if (stillOverstacked && group.length) {
+          retreat.overstack_loss_paid ||= {};
+          for (const id of group) retreat.overstack_loss_paid[id] = true;
+          if (overstack.final)
+            for (const id of group)
+              retreat.remaining[id] = Math.max(
+                1,
+                Number(retreat.remaining[id]) || 0,
+              );
+        } else if (overstack.final) {
+          retreat.retreat_paths ||= [];
+          for (const id of group) {
+            const path = retreat.paths?.[id];
+            if (path?.length) retreat.retreat_paths.push(path.slice());
+          }
+          retreat.units = (retreat.units || []).filter((id) => !group.includes(id));
+        }
+        state.state = "retreat";
+        setActiveFaction(state, retreat.faction);
+      }
+    }
+  }
+  state.version = 50;
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -1979,7 +2059,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 49,
+    version: 50,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {

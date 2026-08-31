@@ -902,7 +902,10 @@ function createOperationsSystem(api) {
               unit.location &&
               !alreadyImported.has(unit.id))
           .flatMap((unit) => {
-              const legal = new Set(legalSrDestinations(state, unit, { allowOverstack: true }));
+              const legal = new Set(legalSrDestinations(state, unit, {
+                  allowOverstack: true,
+                  schlieffen: true,
+              }));
               return destinations
                   .filter((destination) => destination !== unit.location && legal.has(destination))
                   .map((destination) => ({ unit: unit.id, destination }));
@@ -1711,7 +1714,7 @@ function createOperationsSystem(api) {
       });
   }
 
-  function srDestinationKeepsHqsResolvable(state, unit, destination) {
+  function srDestinationKeepsHqsResolvable(state, unit, destination, options = {}) {
       if (!unit.location || unit.type === "hq")
           return true;
       const existing = new Set(orphanHqs(state).map((hq) => hq.id));
@@ -1723,7 +1726,9 @@ function createOperationsSystem(api) {
       const stranded = orphanHqs(state).filter((hq) => hq.faction === unit.faction && !existing.has(hq.id));
       let resolvable = true;
       if (stranded.length) {
-          if (state.sr.free ||
+          if (options.schlieffen)
+              resolvable = false;
+          else if (!state.sr || state.sr.free ||
               state.sr.remaining - (unit.type === "army" ? 3 : 1) < stranded.length)
               resolvable = false;
           else
@@ -1737,7 +1742,8 @@ function createOperationsSystem(api) {
       const destinations = unit.location
           ? srDestinations(state, unit, options)
           : reserveSrDestinations(state, unit, options);
-      return destinations.filter((space) => srDestinationKeepsHqsResolvable(state, unit, space));
+      return destinations.filter((space) =>
+          srDestinationKeepsHqsResolvable(state, unit, space, options));
   }
 
   function resolveEntrench(state, space) {

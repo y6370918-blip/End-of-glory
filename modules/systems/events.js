@@ -1128,7 +1128,7 @@ function createEventSystem(api) {
               throw new Error("Combat card cannot be removed");
           pending.index += 1;
           if (pending.index >= pending.cards.length)
-              pending.stage = "origin";
+              pending.stage = "cards_complete";
           return;
       }
       if (pending?.kind === "optional_deploy") {

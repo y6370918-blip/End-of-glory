@@ -7088,6 +7088,8 @@ const data = {
 				],
 				"restore_side": "cp",
 				"repair_rp": 2,
+				"repair_uses_rp_cost": true,
+				"repair_replacement_corps": true,
 				"disposition": {
 					"retain_on_win": false,
 					"after_combat": "discard",

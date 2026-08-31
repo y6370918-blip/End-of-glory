@@ -83,12 +83,17 @@ function createActivationStates(api) {
     schlieffen_overstack: {
       message: "施里芬计划：消除超堆叠。",
       prompt(state, builder) {
-        builder.addAll("return_schlieffen_unit", api.schlieffenOverstackCandidates(state));
+        const candidates = api.schlieffenOverstackCandidates(state);
+        builder.addAll("return_schlieffen_unit", candidates);
+        if (!candidates.length) builder.enable("finish");
       },
       return_schlieffen_unit(state, id) {
         api.returnSchlieffenUnit(state, id);
-        if (!api.schlieffenOverstackCandidates(state).length)
-          api.finishOps(state);
+      },
+      finish(state) {
+        if (api.schlieffenOverstackCandidates(state).length)
+          throw new Error("Every Schlieffen overstack must be resolved first");
+        api.finishOps(state);
       },
     },
 

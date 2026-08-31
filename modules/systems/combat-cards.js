@@ -724,9 +724,6 @@ function createCombatCardSystem(api) {
       if (combatCardUsedThisAction(state, card.id))
           return false;
       const effect = api.effectiveCombatEffect(state, card);
-      const participants = [...state.combat.attackers, ...state.combat.defenders]
-          .map((id) => api.eventToken(state, id))
-          .filter(Boolean);
       if (effect.after_defense)
           return (faction === api.AP &&
               state.combat.attacker === api.CP &&
@@ -739,7 +736,7 @@ function createCombatCardSystem(api) {
                       hq_piece: effect.first_use_hq,
                   }).length > 0));
       if (effect.choice?.includes("repair_after"))
-          return participants.some((token) => (token.entry.faction || token.piece.faction) === faction);
+          return api.combatRepairAvailable(state, card.id, effect.repair_rp);
       if (effect.post_combat_prohibit_advance) {
           const rules = state.combat.modifiers || {};
           const defenders = api.unitsAt(state, state.combat.target, api.other(state.combat.attacker))
@@ -826,9 +823,11 @@ function createCombatCardSystem(api) {
           api.enterEventFlow(state);
           return;
       }
-      if (effect.repair_rp &&
-          api.beginCombatRepair(state, card.id, effect.repair_rp, "post_window"))
+      if (effect.repair_rp) {
+          if (!api.beginCombatRepair(state, card.id, effect.repair_rp, "post_window"))
+              throw new Error("Post-combat repair no longer has a legal unit");
           return;
+      }
   }
 
   function passPostCombatCard(state) {

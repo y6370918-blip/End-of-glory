@@ -212,6 +212,10 @@ function createCombatSystem(api) {
           retreat.paths[replacement.id] = (retreat.paths[pending.army] || [pending.location]).slice();
           delete retreat.remaining[pending.army];
           delete retreat.paths[pending.army];
+          if (retreat.overstack_loss_paid?.[pending.army]) {
+              retreat.overstack_loss_paid[replacement.id] = true;
+              delete retreat.overstack_loss_paid[pending.army];
+          }
           if (retreat.selected_unit === pending.army)
               retreat.selected_unit = replacement.id;
           if (retreat.overstack) {
@@ -610,6 +614,7 @@ function createCombatSystem(api) {
           ignore_natural_terrain: false,
           attack_loss_adjust: 0,
           defense_loss_adjust: 0,
+          fort_fire_adjust: 0,
           first_fire: null,
           minimum_retreat: 0,
           retreat_choice: null,
@@ -783,8 +788,15 @@ function createCombatSystem(api) {
               result[friendlyDrm] += 1;
           if (effect.french_fort_fire_drm &&
               api.spaceById[target]?.nation === "fr" &&
-              api.spaceById[target]?.fort)
-              result[enemyDrm] += effect.french_fort_fire_drm;
+              api.spaceById[target]?.fort) {
+              result.fort_fire_adjust += effect.french_fort_fire_drm;
+              result.modifier_sources.push({
+                  side: "defender",
+                  kind: "fort",
+                  amount: effect.french_fort_fire_drm,
+                  label: `${card.title}：法国要塞火力`,
+              });
+          }
           if (effect.italian_fort_fire_drm &&
               api.theaterOf(target) === "italian" &&
               api.spaceById[target]?.fort)
@@ -967,8 +979,9 @@ function createCombatSystem(api) {
           ? combat.attackers
           : combat.defenders);
       const survivors = firingIds.filter((id) => state.units.some((unit) => unit.id === id));
-      const fortStrength = deferred.firing_side === api.other(combat.attacker)
-          ? intactFort(state, combat.target)
+      const fortStrength = deferred.firing_side === api.other(combat.attacker) &&
+          intactFort(state, combat.target)
+          ? Number(combat.fort?.strength) || 0
           : 0;
       const loss = survivors.length || fortStrength
           ? Math.max(0, fireResult(deferred.table ||
@@ -978,6 +991,7 @@ function createCombatSystem(api) {
           combat.attack_loss = loss;
       else
           combat.defense_loss = loss;
+      api.log(state, `>> ${deferred.firing_side === combat.attacker ? "进攻方" : "防守方"}还击：${survivors.map((id) => `[[unit:${id}]]`).join("、") || (fortStrength ? "要塞" : "无幸存开火单位")}，造成 ${loss} 损失。`);
       applyCombatOutcomeEffects(state, combat);
   }
 
@@ -998,6 +1012,13 @@ function createCombatSystem(api) {
           state.ops.pending_attack = null;
           state.ops.attack_selection = [];
       }
+      const origins = [...new Set(attackingUnits.map((unit) => unit.location))]
+          .filter((origin) =>
+              api.unitsAt(state, origin, api.CP).some(api.isCombatUnit) &&
+              state.units.some((unit) =>
+                  unit.faction === api.AP &&
+                  api.isCombatUnit(unit) &&
+                  attacksTarget(state, unit, origin)));
       state.pending_event = {
           kind: "counterattack",
           card: cardId,
@@ -1005,7 +1026,7 @@ function createCombatSystem(api) {
           stage: cpCards.length ? "cards" : "origin",
           cards: cpCards,
           index: 0,
-          origins: [...new Set(attackingUnits.map((unit) => unit.location))],
+          origins,
           original_target: declaration.target,
           resume: {
               active: state.active,
@@ -1018,7 +1039,7 @@ function createCombatSystem(api) {
       state.combat_window = null;
       state.combat = null;
       api.enterEventFlow(state);
-      api.setActiveFaction(state, cpCards.length ? api.CP : api.CP);
+      api.setActiveFaction(state, cpCards.length ? api.CP : api.AP);
   }
 
   function attacksTarget(state, unit, target) {
@@ -1258,6 +1279,12 @@ function createCombatSystem(api) {
   function resolveCombat(state, declaration) {
       if (state.combat_window && !state.combat_window.cards_revealed)
           api.revealCommittedCombatCards(state);
+      // The combat-card window temporarily hands control to each side.  At
+      // resolution time state.active can therefore be the last side that
+      // passed, rather than the faction that declared the attack.  Combat
+      // ownership (including card DRMs and first fire) must stay fixed to the
+      // declaration.
+      const attacker = state.combat_window?.attacker || state.active;
       const attackers = declaration.attackers || [];
       const target = declaration.target;
       const attackingUnits = attackers
@@ -1269,11 +1296,11 @@ function createCombatSystem(api) {
           ? attackingUnits.filter((unit) => api.isCombatUnit(unit) && unit.moved && unit.attack_eligible)
           : [];
       if (!attackingUnits.length ||
-          attackingUnits.some((unit) => unit.faction !== state.active))
+          attackingUnits.some((unit) => unit.faction !== attacker))
           throw new Error("Invalid attackers");
       if (!attackingUnits.every((unit) => attacksTarget(state, unit, target)))
           throw new Error("Attacker is not adjacent");
-      const defenders = api.unitsAt(state, target, api.other(state.active)).filter(api.isCombatUnit);
+      const defenders = api.unitsAt(state, target, api.other(attacker)).filter(api.isCombatUnit);
       if (!defenders.length && !intactFort(state, target))
           throw new Error("No defender");
       declaration.mo_marker_origins = api.computeMoMarkerOrigins(state, declaration);
@@ -1330,8 +1357,14 @@ function createCombatSystem(api) {
           intactFort(state, target));
       if (preCombatFortDestruction)
           destroyFort(state, target, "fort destroyed before combat", false);
-      const fortLossFactor = intactFort(state, target);
-      const fortStrength = fortCombatStrength(state, target);
+      const printedFortLossFactor = intactFort(state, target);
+      const defendingFortPresent = Boolean(printedFortLossFactor);
+      const fortLossFactor = printedFortLossFactor
+          ? Math.max(0, printedFortLossFactor + (Number(modifiers.fort_fire_adjust) || 0))
+          : 0;
+      const fortStrength = printedFortLossFactor
+          ? Math.max(0, fortCombatStrength(state, target) + (Number(modifiers.fort_fire_adjust) || 0))
+          : 0;
       if (state.ops?.forced_attacks?.length) {
           const participating = new Set(attackingUnits.map((unit) => unit.location));
           state.ops.forced_attacks = state.ops.forced_attacks.filter((space) => !participating.has(space));
@@ -1344,7 +1377,7 @@ function createCombatSystem(api) {
           modifiers.virtual_trench || 0);
       if (!modifiers.ignore_trench &&
           trenchLevel > 0 &&
-          (defenders.length || !fortLossFactor)) {
+          (defenders.length || !defendingFortPresent)) {
           modifiers.attack_column -= 1;
           modifiers.defense_column += trenchLevel;
           modifiers.modifier_sources.push({ side: "attacker", kind: "column", amount: -1, label: "战壕" }, {
@@ -1457,7 +1490,7 @@ function createCombatSystem(api) {
       const origins = [...new Set(attackingUnits.map((unit) => unit.location))];
       const crossesRiver = modifiers.crosses_river;
       if (declaration.flank &&
-          (defenders.length || !fortLossFactor) &&
+          (defenders.length || !defendingFortPresent) &&
           new Set(attackingUnits.map((unit) => unit.location)).size > 1) {
           const finalDrm = declaration.flank_final;
           let flankDrm = origins.length - finalDrm;
@@ -1488,7 +1521,7 @@ function createCombatSystem(api) {
       const attackRoll = Math.max(1, Math.min(6, attackRawRoll + attackDrm));
       const defenseRoll = Math.max(1, Math.min(6, defenseRawRoll + defenseDrm));
       const defenseTable = modifiers.defense_table ||
-          (fortLossFactor ? "army" : combatTable(state, defendingIds));
+          (defendingFortPresent ? "army" : combatTable(state, defendingIds));
       const attackTable = modifiers.attack_table || combatTable(state, attackers);
       const attackStrength = combatStrength(state, attackers);
       const defenseStrength = combatStrength(state, defendingIds) + fortStrength;
@@ -1496,7 +1529,9 @@ function createCombatSystem(api) {
       const defenseBaseColumn = fireColumn(defenseTable, defenseStrength);
       const attackFinalColumn = fireColumn(attackTable, attackStrength, modifiers.attack_column);
       const defenseFinalColumn = fireColumn(defenseTable, defenseStrength, modifiers.defense_column);
-      let attackLoss = fireResult(defenseTable, defenseStrength, defenseRoll, modifiers.defense_column);
+      let attackLoss = defenseStrength > 0
+          ? fireResult(defenseTable, defenseStrength, defenseRoll, modifiers.defense_column)
+          : 0;
       let defenseLoss = fireResult(attackTable, attackStrength, attackRoll, modifiers.attack_column);
       attackLoss = Math.max(0, attackLoss + modifiers.attack_loss_adjust);
       defenseLoss = Math.max(0, defenseLoss + modifiers.defense_loss_adjust);
@@ -1507,10 +1542,10 @@ function createCombatSystem(api) {
       const firstFire = modifiers.first_fire;
       let deferredFire = null;
       let lossOrder = null;
-      if (firstFire === state.active) {
+      if (firstFire === attacker) {
           deferredFire = {
-              firing_side: api.other(state.active),
-              target_side: state.active,
+              firing_side: api.other(attacker),
+              target_side: attacker,
               firing_ids: defendingIds.slice(),
               roll: defenseRoll,
               table: defenseTable,
@@ -1519,12 +1554,12 @@ function createCombatSystem(api) {
               resolved: false,
           };
           attackLoss = 0;
-          lossOrder = [api.other(state.active), state.active];
+          lossOrder = [api.other(attacker), attacker];
       }
-      else if (firstFire === api.other(state.active)) {
+      else if (firstFire === api.other(attacker)) {
           deferredFire = {
-              firing_side: state.active,
-              target_side: api.other(state.active),
+              firing_side: attacker,
+              target_side: api.other(attacker),
               firing_ids: attackers.slice(),
               roll: attackRoll,
               table: attackTable,
@@ -1534,10 +1569,10 @@ function createCombatSystem(api) {
               resolved: false,
           };
           defenseLoss = 0;
-          lossOrder = [state.active, api.other(state.active)];
+          lossOrder = [attacker, api.other(attacker)];
       }
       state.combat = {
-          attacker: state.active,
+          attacker,
           attackers,
           target,
           defenders: defendingIds,
@@ -1555,9 +1590,9 @@ function createCombatSystem(api) {
           defense_final_column: defenseFinalColumn.value,
           attack_loss: attackLoss,
           defense_loss: defenseLoss,
-          pending_side: lossOrder ? lossOrder[0] : state.active,
+          pending_side: lossOrder ? lossOrder[0] : attacker,
           remaining_loss: lossOrder
-              ? lossOrder[0] === state.active
+              ? lossOrder[0] === attacker
                   ? attackLoss
                   : defenseLoss
               : attackLoss,
@@ -1578,7 +1613,7 @@ function createCombatSystem(api) {
               canceled: Boolean(state.combat_window?.canceled_cards?.includes(id)),
           })),
           participant_units: api.clone([...attackingUnits, ...defenders]),
-          fort: fortLossFactor
+          fort: defendingFortPresent
               ? { space: target, strength: fortStrength, loss_factor: fortLossFactor }
               : null,
           same_space_fort: attackingUnits.every((unit) => unit.location === target),
@@ -1590,7 +1625,7 @@ function createCombatSystem(api) {
           attack_mode: attackMode,
           counterattack_resume: api.clone(state.combat_window?.counterattack_resume || null),
       };
-      if (state.active === api.CP && target === "paris") {
+      if (attacker === api.CP && target === "paris") {
           state.campaign_flags ||= {};
           state.campaign_flags.paris_attacked = true;
       }
@@ -1653,6 +1688,8 @@ function createCombatSystem(api) {
           api.log(state, `> ${line.label}${line.kind === "card" ? ` [[card:${line.card}]]` : ` ${line.amount >= 0 ? "+" : ""}${line.amount}`}`);
       api.log(state, `>> 进攻 [[die:${state.combat.attacker}:${attackRawRoll}]]${attackDrm ? `${attackDrm >= 0 ? "+" : ""}${attackDrm}` : ""}=${attackRoll}，${attackTable} ${attackFinalColumn.value}列，造成 ${defenseLoss} 损失。`);
       api.log(state, `>> 防守 [[die:${api.other(state.combat.attacker)}:${defenseRawRoll}]]${defenseDrm ? `${defenseDrm >= 0 ? "+" : ""}${defenseDrm}` : ""}=${defenseRoll}，${defenseTable} ${defenseFinalColumn.value}列，造成 ${attackLoss} 损失。`);
+      if (firstFire)
+          api.log(state, `> ${firstFire === attacker ? "进攻方" : "防守方"}优先开火；另一方将在先发损失结算后以幸存单位还击。`);
       if (state.combat.remaining_loss === 0)
           advanceCombatLosses(state);
   }
@@ -1853,6 +1890,8 @@ function createCombatSystem(api) {
               return false;
           if (pending.nation && token.piece?.nation !== pending.nation)
               return false;
+          if (combatRepairCost(pending, token.entry) > pending.remaining + 1e-9)
+              return false;
           if (token.zone === "map")
               return token.entry.reduced;
           if (!token.zone.endsWith("_eliminated"))
@@ -1869,6 +1908,12 @@ function createCombatSystem(api) {
       });
   }
 
+  function combatRepairCost(pending, unit) {
+      if (!pending?.uses_rp_cost)
+          return 1;
+      return api.unitRepairCost(unit);
+  }
+
   function combatRepairReplacement(state, armyId) {
       const event = [...(state.combat?.resolution_events || [])]
           .reverse()
@@ -1878,15 +1923,17 @@ function createCombatSystem(api) {
       return state.units.find((unit) => unit.id === event.replacement) || null;
   }
 
-  function beginCombatRepair(state, cardId, amount, resume = "combat") {
+  function combatRepairPending(state, cardId, amount, resume = "combat") {
       const combat = state.combat;
       const card = api.cardById[cardId];
       const effect = api.effectiveCombatEffect(state, cardId);
+      if (!combat || !card || !effect)
+          return null;
       const participants = effect.repair_attackers_only
           ? combat.attackers
           : [...combat.attackers, ...combat.defenders];
       const units = [...new Set(participants)];
-      const pending = {
+      return {
           kind: "combat_repair",
           card: cardId,
           owner: card.faction,
@@ -1895,12 +1942,22 @@ function createCombatSystem(api) {
           resume,
           attackers_only: Boolean(effect.repair_attackers_only),
           replacement_corps: Boolean(effect.repair_replacement_corps),
+          uses_rp_cost: Boolean(effect.repair_uses_rp_cost),
           replacement_choice: null,
       };
-      if (!combatRepairCandidates(state, pending).length)
+  }
+
+  function combatRepairAvailable(state, cardId, amount) {
+      const pending = combatRepairPending(state, cardId, amount);
+      return Boolean(pending && combatRepairCandidates(state, pending).length);
+  }
+
+  function beginCombatRepair(state, cardId, amount, resume = "combat") {
+      const pending = combatRepairPending(state, cardId, amount, resume);
+      if (!pending || !combatRepairCandidates(state, pending).length)
           return false;
       state.pending_event = pending;
-      api.setActiveFaction(state, card.faction);
+      api.setActiveFaction(state, pending.owner);
       api.enterEventFlow(state);
       return true;
   }
@@ -1911,7 +1968,8 @@ function createCombatSystem(api) {
           throw new Error("Illegal combat repair");
       if (token.zone === "map") {
           token.entry.reduced = false;
-          pending.remaining -= 1;
+          pending.remaining = Math.max(0,
+              pending.remaining - combatRepairCost(pending, token.entry));
           return;
       }
       const replacement = pending.replacement_corps
@@ -1947,7 +2005,8 @@ function createCombatSystem(api) {
       token.entry.moved = false;
       token.entry.attacked = false;
       state.units.push(token.entry);
-      pending.remaining -= 1;
+      pending.remaining = Math.max(0,
+          pending.remaining - combatRepairCost(pending, token.entry));
   }
 
   function returnCombatReplacementToReserve(state, id) {
@@ -2051,6 +2110,13 @@ function createCombatSystem(api) {
           return;
       }
       state.pending_event = null;
+      if (pending.resume === "finish_delayed_event") {
+          const card = api.cardById[pending.resume_card];
+          if (!card)
+              throw new Error("Delayed event HQ relocation lost its source card");
+          api.finishEvent(state, card);
+          return;
+      }
       state.combat.hq_relocation_complete = true;
       api.setActiveFaction(state, state.combat.attacker);
       if (pending.resume === "post_retreat_advance")
@@ -2429,12 +2495,59 @@ function createCombatSystem(api) {
               unit.location = space;
           const hqs = api.unitsAt(state, space, units[0]?.faction)
               .filter((unit) => unit.type === "hq");
-          return hqs.length <= 1 && hqs.every((hq) => api.hqEndLegal(state, hq, space));
+          return hqs.length <= 1 && hqs.every((hq) =>
+              api.hqEndLegal(state, hq, space) ||
+              pendingRetreatEscortCanReach(state, hq, space));
       }
       finally {
           units.forEach((unit, index) => {
               unit.location = locations[index];
           });
+      }
+  }
+
+  function pendingRetreatUnitDistances(pending, id) {
+      if (pending.remaining?.[id] != null)
+          return [Number(pending.remaining[id])];
+      return (pending.choices || [Number(pending.steps || 1)])
+          .map(Number)
+          .filter((distance) => Number.isInteger(distance) && distance > 0);
+  }
+
+  function pendingRetreatEscortCanReach(state, hq, space, excludedId = null) {
+      const pending = state.pending_retreat;
+      if (!pending)
+          return false;
+      return (pending.units || []).some((id) => {
+          if (id === hq.id || id === excludedId)
+              return false;
+          const escort = state.units.find((unit) => unit.id === id);
+          if (!escort || !api.isCombatUnit(escort) ||
+              api.nationalityGroup(escort.nation) !== api.nationalityGroup(hq.nation))
+              return false;
+          const path = (pending.paths?.[id] || [escort.location]).slice();
+          return pendingRetreatUnitDistances(pending, id).some((steps) =>
+              retreatUnitRoutes(state, id, steps, path, { ignoreWaitingHqs: true })
+                  .some((route) => route.at(-1) === space));
+      });
+  }
+
+  function waitingRetreatHqsResolvable(state, movingUnit, destination) {
+      const pending = state.pending_retreat;
+      const waiting = pending?.waiting_hqs || [];
+      if (!waiting.length || !api.isCombatUnit(movingUnit))
+          return true;
+      const origin = movingUnit.location;
+      try {
+          movingUnit.location = destination;
+          return waiting.every((id) => {
+              const hq = state.units.find((unit) => unit.id === id);
+              return !hq || api.hqEndLegal(state, hq, hq.location) ||
+                  pendingRetreatEscortCanReach(state, hq, hq.location, movingUnit.id);
+          });
+      }
+      finally {
+          movingUnit.location = origin;
       }
   }
 
@@ -2468,14 +2581,18 @@ function createCombatSystem(api) {
       return options;
   }
 
-  function retreatUnitRoutes(state, id, steps, path = null) {
+  function retreatUnitRoutes(state, id, steps, path = null, options = {}) {
       const unit = state.units.find((candidate) => candidate.id === id);
       if (!unit || steps <= 0)
           return [];
       const route = path || [unit.location];
       const search = (space, remaining, visited) => {
-          if (remaining === 0)
+          if (remaining === 0) {
+              if (!options.ignoreWaitingHqs &&
+                  !waitingRetreatHqsResolvable(state, unit, space))
+                  return [];
               return [route.slice()];
+          }
           const routes = [];
           for (const destination of retreatBaseDestinations(state, [unit], space, visited, remaining === 1)) {
               const nextVisited = new Set(visited);
@@ -2551,8 +2668,14 @@ function createCombatSystem(api) {
           return false;
       if (!unit.reduced)
           return true;
-      return unit.type === "army" && (unit.supplied || unit.limited_supply || unit.fort_limited_supply) &&
-          api.combatReplacementOptions(state, unit).length > 0;
+      if (unit.type === "army" &&
+          (unit.supplied || unit.limited_supply || unit.fort_limited_supply) &&
+          api.combatReplacementOptions(state, unit).length > 0)
+          return true;
+      const space = pending.from || state.combat?.target;
+      return api.unitsAt(state, space, pending.faction)
+          .filter((candidate) => api.isCombatUnit(candidate) && candidate.id !== id)
+          .length > 0;
   }
 
   function retreatCancellationTerrainAllowed(state, pending = state.pending_retreat) {
@@ -2580,11 +2703,7 @@ function createCombatSystem(api) {
       const candidates = api.unitsAt(state, space, pending.faction)
           .filter((unit) => api.isCombatUnit(unit) && group.has(unit.id))
           .map((unit) => unit.id);
-      if (candidates.length || !pending.overstack.final)
-          return candidates;
-      return api.unitsAt(state, space, pending.faction)
-          .filter(api.isCombatUnit)
-          .map((unit) => unit.id);
+      return candidates;
   }
 
   function advanceGroupStackLegal(state, space, ids, faction) {
@@ -2800,6 +2919,23 @@ function createCombatSystem(api) {
 
   function returnToRetreat(state) {
       const pending = state.pending_retreat;
+      if (pending.waiting_hqs?.length) {
+          const completed = [];
+          for (const id of pending.waiting_hqs) {
+              const hq = state.units.find((unit) => unit.id === id);
+              if (!hq || api.hqEndLegal(state, hq, hq.location))
+                  completed.push(id);
+          }
+          if (completed.length) {
+              pending.retreat_paths ||= [];
+              for (const id of completed) {
+                  const path = pending.paths?.[id];
+                  if (path?.length) pending.retreat_paths.push(path.slice());
+              }
+              pending.units = (pending.units || []).filter((id) => !completed.includes(id));
+              pending.waiting_hqs = pending.waiting_hqs.filter((id) => !completed.includes(id));
+          }
+      }
       pending.units = (pending.units || []).filter((id) => state.units.some((unit) => unit.id === id));
       pending.selected_unit = null;
       if (!pending.units.length) {
@@ -2812,6 +2948,13 @@ function createCombatSystem(api) {
 
   function finishRetreatUnit(state, id) {
       const pending = state.pending_retreat;
+      const unit = state.units.find((candidate) => candidate.id === id);
+      if (unit?.type === "hq" && !api.hqEndLegal(state, unit, unit.location)) {
+          pending.waiting_hqs ||= [];
+          if (!pending.waiting_hqs.includes(id)) pending.waiting_hqs.push(id);
+          returnToRetreat(state);
+          return;
+      }
       const path = pending.paths?.[id];
       pending.units = pending.units.filter((candidate) => candidate !== id && state.units.some((unit) => unit.id === candidate));
       pending.retreat_paths ||= [];
@@ -2825,6 +2968,25 @@ function createCombatSystem(api) {
       const group = (overstack?.group || []).filter((id) =>
           state.units.some((unit) => unit.id === id));
       pending.overstack = null;
+      const stillOverstacked = retreatSpaceOverstacked(
+          state,
+          overstack?.space,
+          pending.faction,
+      );
+      if (overstack?.loss_paid && stillOverstacked && group.length) {
+          pending.overstack_loss_paid ||= {};
+          for (const id of group)
+              pending.overstack_loss_paid[id] = true;
+          if (overstack.final)
+              for (const id of group)
+                  pending.remaining[id] = Math.max(1, Number(pending.remaining[id]) || 0);
+          pending.selected_unit = null;
+          api.setActiveFaction(state, pending.faction);
+          state.state = "retreat";
+          return;
+      }
+      if (pending.overstack_loss_paid)
+          for (const id of group) delete pending.overstack_loss_paid[id];
       if (overstack?.final) {
           pending.retreat_paths ||= [];
           for (const id of group) {
@@ -2888,6 +3050,7 @@ return Object.freeze({
     combatEffectEligible,
     combatLossChoices,
     combatModifiers,
+    combatRepairAvailable,
     combatRepairCandidates,
     combatRepairReplacement,
     combatStrength,

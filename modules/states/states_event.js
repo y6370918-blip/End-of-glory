@@ -634,6 +634,13 @@ function createEventStates(api) {
       const card = pending && cardById[pending.card];
       if (!pending) throw new Error("No pending event");
       api.snapshot(state, "确认事件");
+      if (pending.kind === "counterattack") {
+        if (pending.stage !== "cards_complete")
+          throw new Error("Finish every counterattack card disposition first");
+        pending.stage = "origin";
+        api.setActiveFaction(state, AP);
+        return;
+      }
       if (pending?.kind === "mo_penalty") {
         if (pending.stage !== "confirm")
           throw new Error("Select every forced attack first");
@@ -745,7 +752,21 @@ function createEventStates(api) {
       if (pending?.kind === "delay_units") {
         if (pending.index !== pending.queue.length)
           throw new Error("Select every delayed unit");
-        commitDelayedUnits(state, pending);
+        const orphanHqs = commitDelayedUnits(state, pending);
+        if (orphanHqs.length) {
+          const first = state.units.find((unit) => unit.id === orphanHqs[0]);
+          state.pending_event = {
+            kind: "hq_relocation",
+            owner: first.faction,
+            queue: orphanHqs,
+            index: 0,
+            resume: "finish_delayed_event",
+            resume_card: card.id,
+          };
+          api.setActiveFaction(state, first.faction);
+          api.enterEventFlow(state);
+          return;
+        }
         finishEvent(state, card);
         return;
       }
@@ -1060,7 +1081,9 @@ function createEventStates(api) {
               label: `移除 ${cardById[id].title}`,
             });
           addEventChoices(builder, options);
-        } else actions.event_space = pending.origins.slice();
+        } else if (pending.stage === "cards_complete")
+          actions.event_confirm = 1;
+        else actions.event_space = pending.origins.slice();
       } else if (pending.kind === "nivelle_attacks") {
         actions.event_space =
           pending.spaces.length < pending.required

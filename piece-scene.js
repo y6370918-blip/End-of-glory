@@ -18,7 +18,7 @@
 
 	const reserveGroups = Object.freeze({
 		ap: Object.freeze(["fr", "fr_foreign", "br", "it", "be", "us"]),
-		cp: Object.freeze(["ge", "ge_wurttemberg", "ge_prussia", "ge_bavaria", "ge_saxony", "ah"])
+		cp: Object.freeze(["ge", "ah", "ge_prussia", "ge_bavaria", "ge_saxony", "ge_wurttemberg"])
 	})
 
 	function mapStackKey(spaceId) {
