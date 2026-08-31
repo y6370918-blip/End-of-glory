@@ -1877,16 +1877,61 @@ function createCombatSystem(api) {
       return false;
   }
 
+  function combatRepairResolutionEvent(state, id, kinds = null) {
+      const allowed = kinds ? new Set(kinds) : null;
+      return [...(state.combat?.resolution_events || [])]
+          .reverse()
+          .find((entry) => entry.unit === id && (!allowed || allowed.has(entry.kind))) || null;
+  }
+
+  function combatRepairOrigin(state, id) {
+      const event = combatRepairResolutionEvent(state, id, ["eliminate", "replace", "reduce"]);
+      const participant = (state.combat?.participant_units || [])
+          .find((unit) => unit.id === id);
+      return event?.space || state.combat?.origins?.[id] ||
+          participant?.location || state.combat?.target || null;
+  }
+
+  function combatRepairToken(state, id, pending = null, allowAnyPermanent = false) {
+      const token = api.eventToken(state, id);
+      if (token)
+          return token;
+      const entry = (state.permanently_removed_units || [])
+          .find((unit) => unit.id === id);
+      if (!entry)
+          return null;
+      if (allowAnyPermanent)
+          return { zone: "permanent", entry, piece: api.pieceById[entry.piece] };
+      if (Number(pending?.card) !== 714)
+          return null;
+      const eliminatedHere = combatRepairResolutionEvent(state, id, ["eliminate"]);
+      if (!eliminatedHere || !api.permanentOnElimination(entry) ||
+          !api.acceptsReplacementPoints(entry))
+          return null;
+      return { zone: "permanent", entry, piece: api.pieceById[entry.piece] };
+  }
+
+  function combatRepairReplacementToken(state, armyId) {
+      const event = [...(state.combat?.resolution_events || [])]
+          .reverse()
+          .find((entry) => entry.kind === "replace" && entry.unit === armyId);
+      if (!event)
+          return null;
+      return combatRepairToken(state, event.replacement, null, true);
+  }
+
   function combatRepairCandidates(state, pending) {
       const combat = state.combat;
       if (!combat)
           return [];
       return pending.units.filter((id) => {
-          const token = api.eventToken(state, id);
+          const token = combatRepairToken(state, id, pending);
           if (!token)
               return false;
           if (!api.isCombatUnit(token.entry) ||
               (pending.owner && token.entry.faction !== pending.owner))
+              return false;
+          if (!api.acceptsReplacementPoints(token.entry))
               return false;
           if (pending.nation && token.piece?.nation !== pending.nation)
               return false;
@@ -1894,13 +1939,16 @@ function createCombatSystem(api) {
               return false;
           if (token.zone === "map")
               return token.entry.reduced;
-          if (!token.zone.endsWith("_eliminated"))
+          if (!token.zone.endsWith("_eliminated") && token.zone !== "permanent")
               return false;
-          const origin = combat.origins?.[id] || combat.target;
+          const origin = combatRepairOrigin(state, id);
+          if (!origin)
+              return false;
           if (api.stackLegal(state, origin, token.entry))
               return true;
-          const replacement = combatRepairReplacement(state, id);
-          if (!replacement || replacement.location !== origin)
+          const replacement = combatRepairReplacementToken(state, id);
+          if (!replacement || replacement.zone !== "map" ||
+              replacement.entry.location !== origin)
               return false;
           const field = api.unitsAt(state, origin, token.entry.faction)
               .filter(api.isCombatUnit).length;
@@ -1915,12 +1963,7 @@ function createCombatSystem(api) {
   }
 
   function combatRepairReplacement(state, armyId) {
-      const event = [...(state.combat?.resolution_events || [])]
-          .reverse()
-          .find((entry) => entry.kind === "replace" && entry.unit === armyId);
-      if (!event)
-          return null;
-      return state.units.find((unit) => unit.id === event.replacement) || null;
+      return combatRepairReplacementToken(state, armyId)?.entry || null;
   }
 
   function combatRepairPending(state, cardId, amount, resume = "combat") {
@@ -1963,7 +2006,7 @@ function createCombatSystem(api) {
   }
 
   function repairCombatUnit(state, pending, id) {
-      const token = api.eventToken(state, id);
+      const token = combatRepairToken(state, id, pending);
       if (!token || !combatRepairCandidates(state, pending).includes(id))
           throw new Error("Illegal combat repair");
       if (token.zone === "map") {
@@ -1973,47 +2016,74 @@ function createCombatSystem(api) {
           return;
       }
       const replacement = pending.replacement_corps
-          ? combatRepairReplacement(state, id)
+          ? combatRepairReplacementToken(state, id)
           : null;
-      const origin = state.combat.origins[id] || state.combat.target;
+      const origin = combatRepairOrigin(state, id);
       const canKeep = api.stackLegal(state, origin, token.entry);
-      if (replacement && canKeep) {
+      if (replacement?.zone === "map" && canKeep) {
           pending.replacement_choice = {
               army: id,
-              replacement: replacement.id,
+              replacement: replacement.entry.id,
               origin,
           };
           return;
       }
-      if (!canKeep && (!replacement || replacement.location !== origin))
+      if (!canKeep && (!replacement || replacement.zone !== "map" ||
+          replacement.entry.location !== origin))
           throw new Error("Rebuilt army would exceed stacking limits");
       if (replacement)
-          returnCombatReplacementToReserve(state, replacement.id);
+          returnCombatReplacementToReserve(state, replacement.entry.id);
       rebuildCombatUnit(state, pending, id);
   }
 
   function rebuildCombatUnit(state, pending, id) {
-      const token = api.eventToken(state, id);
-      if (!token || !token.zone.endsWith("_eliminated"))
+      const token = combatRepairToken(state, id, pending);
+      if (!token || (!token.zone.endsWith("_eliminated") && token.zone !== "permanent"))
           throw new Error("Combat unit is no longer eliminated");
-      const [faction] = token.zone.split("_");
-      const pool = state.eliminated[faction];
-      pool.splice(pool.findIndex((unit) => unit.id === id), 1);
+      const pool = token.zone === "permanent"
+          ? state.permanently_removed_units
+          : state.eliminated[token.entry.faction];
+      const index = pool.findIndex((unit) => unit.id === id);
+      if (index < 0)
+          throw new Error("Combat unit repair pool changed");
+      pool.splice(index, 1);
       api.hydrateUnit(token.entry);
-      token.entry.location = state.combat.origins[id] || state.combat.target;
+      token.entry.location = combatRepairOrigin(state, id);
       token.entry.reduced = true;
-      token.entry.moved = false;
-      token.entry.attacked = false;
+      const participant = (state.combat.participant_units || [])
+          .find((unit) => unit.id === id);
+      token.entry.moved = Boolean(participant?.moved);
+      token.entry.attacked = token.entry.faction === state.combat.attacker ||
+          Boolean(participant?.attacked);
       state.units.push(token.entry);
+      const side = token.entry.faction === state.combat.attacker
+          ? state.combat.attackers
+          : state.combat.defenders;
+      if (!side.includes(id))
+          side.push(id);
       pending.remaining = Math.max(0,
           pending.remaining - combatRepairCost(pending, token.entry));
+      api.log(state, `${api.pieceById[token.entry.piece]?.name || id}在${api.spaceById[token.entry.location]?.name || token.entry.location}重建。`);
   }
 
   function returnCombatReplacementToReserve(state, id) {
-      const index = state.units.findIndex((unit) => unit.id === id);
-      if (index < 0)
-          throw new Error("Replacement corps is no longer on the map");
-      const [unit] = state.units.splice(index, 1);
+      const token = combatRepairToken(state, id, null, true);
+      if (!token)
+          throw new Error("Replacement corps is no longer available");
+      const unit = token.entry;
+      if (token.zone === "map")
+          state.units.splice(state.units.findIndex((candidate) => candidate.id === id), 1);
+      else if (token.zone.endsWith("_eliminated")) {
+          const pool = state.eliminated[unit.faction];
+          pool.splice(pool.findIndex((candidate) => candidate.id === id), 1);
+      }
+      else if (token.zone === "permanent")
+          state.permanently_removed_units.splice(
+              state.permanently_removed_units.findIndex((candidate) => candidate.id === id), 1);
+      else if (token.zone.endsWith("_reserve"))
+          return;
+      else
+          throw new Error("Replacement corps is in an invalid zone");
       api.normalizeOffMapUnit(unit);
       if (!state.reserves[unit.faction].some((candidate) => candidate.id === id))
           state.reserves[unit.faction].push(unit);
@@ -2736,6 +2806,48 @@ function createCombatSystem(api) {
               api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation)));
   }
 
+  function advanceSelectionHqsCompletable(state, pending, ids) {
+      const units = (ids || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(Boolean);
+      const combatUnits = units.filter(api.isCombatUnit);
+      const remainingCount = pending.maximum == null
+          ? Infinity
+          : Number(pending.maximum) -
+              advanceCountedUnitCount(state, pending.advanced_ids) -
+              advanceCountedUnitCount(state, ids);
+      return units
+          .filter((unit) => unit.type === "hq")
+          .every((hq) => combatUnits.some((unit) =>
+              unit.location === hq.location &&
+              api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation)) ||
+              (remainingCount > 0 && (pending.units || []).some((candidateId) => {
+                  if (ids.includes(candidateId))
+                      return false;
+                  const candidate = state.units.find((unit) => unit.id === candidateId);
+                  return candidate && api.isCombatUnit(candidate) &&
+                      candidate.location === hq.location &&
+                      api.nationalityGroup(candidate.nation) === api.nationalityGroup(hq.nation);
+              })));
+  }
+
+  function advanceLeavesUnselectedHqsLegal(state, pending, ids) {
+      if (!pending || pending.advance_group?.length)
+          return true;
+      const selected = new Set(ids || []);
+      const selectedUnits = (ids || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(Boolean);
+      const origins = new Set(selectedUnits.map((unit) => unit.location));
+      for (const origin of origins) {
+          const unselectedHqs = api.unitsAt(state, origin, selectedUnits[0].faction)
+              .filter((unit) => unit.type === "hq" && !selected.has(unit.id));
+          if (unselectedHqs.some((hq) => !api.hqEndLegal(state, hq, origin, selected)))
+              return false;
+      }
+      return true;
+  }
+
   function advanceUnitInto(state, pending, unit, destination) {
       const origin = unit.location;
       const destroysKillingGround = unit.faction === api.CP &&
@@ -2801,6 +2913,7 @@ function createCombatSystem(api) {
       if (units.some((unit) => unit.faction !== faction ||
           !api.connectionAllows(unit.location, destination, "advance", faction)) ||
           !advanceHqsEscorted(state, ids) ||
+          !advanceLeavesUnselectedHqsLegal(state, state.pending_retreat, ids) ||
           !api.canOccupyByEarlyWarDepth(state, faction, destination) ||
           !api.spaceCanActivate(state, destination) ||
           api.unitsAt(state, destination, api.other(faction)).length)
@@ -2832,7 +2945,7 @@ function createCombatSystem(api) {
       const faction = units[0].faction;
       return (units.every((unit) => unit.faction === faction &&
           api.connectionAllows(unit.location, pending.target, "advance", faction)) &&
-          advanceHqsEscorted(state, ids) &&
+          advanceSelectionHqsCompletable(state, pending, ids) &&
           api.canOccupyByEarlyWarDepth(state, faction, pending.target) &&
           api.spaceCanActivate(state, pending.target) &&
           !api.unitsAt(state, pending.target, api.other(faction)).length &&

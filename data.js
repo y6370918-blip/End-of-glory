@@ -71,7 +71,7 @@ const data = {
 			"remove": false,
 			"event": "ap_抽调地区军_轮换兵役制",
 			"condition": "always",
-			"effect": "第一次事件：获得2点FR:RP并立刻使用。以后事件：本回合获得1点FR:RP；可减损地图或预备区内至多价值1 FR:RP的法国单位（不得因此消灭），并将所得FR:RP立刻使用。",
+			"effect": "第一次事件：获得2点FR:RP并立刻使用。以后事件：本回合获得1点FR:RP；可减损地图上至多价值1 FR:RP的法国单位（不得因此消灭），并将所得FR:RP立刻使用。",
 			"ocr_confidence": 86,
 			"ocr_text": "村RD\n抽调地区军/轮换兵役制\n若为第一次事件，获得2点\nFR:RP并立刻使用\n之后，本牌效果变为;\n本回合+1FR:RP，减损地图/预备役\n至多1FR:RP的法国单位(不可因此\n消灭) ，获得对应FR:RP立刻使用\nMB BR:2 FR:2 IT1A:I{",
 			"image": "cards/ap/601.webp",
@@ -3280,7 +3280,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "discard",
-			"source_text": "第一次事件：获得2点FR:RP并立刻使用。以后事件：本回合获得1点FR:RP；可减损地图或预备区内至多价值1 FR:RP的法国单位（不得因此消灭），并将所得FR:RP立刻使用。"
+			"source_text": "第一次事件：获得2点FR:RP并立刻使用。以后事件：本回合获得1点FR:RP；可减损地图上至多价值1 FR:RP的法国单位（不得因此消灭），并将所得FR:RP立刻使用。"
 		},
 		"602": {
 			"card_id": 602,
@@ -17013,7 +17013,6 @@ const data = {
 			"control": "ap",
 			"connections": [
 				"beauvais",
-				"chantilly",
 				"compiegne",
 				"roye"
 			],
@@ -17021,13 +17020,11 @@ const data = {
 				"move": {
 					"ap": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					],
 					"cp": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					]
@@ -17035,13 +17032,11 @@ const data = {
 				"attack": {
 					"ap": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					],
 					"cp": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					]
@@ -17049,13 +17044,11 @@ const data = {
 				"supply": {
 					"ap": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					],
 					"cp": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					]
@@ -17063,13 +17056,11 @@ const data = {
 				"sr": {
 					"ap": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					],
 					"cp": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					]
@@ -17077,13 +17068,11 @@ const data = {
 				"retreat": {
 					"ap": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					],
 					"cp": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					]
@@ -17091,13 +17080,11 @@ const data = {
 				"advance": {
 					"ap": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					],
 					"cp": [
 						"beauvais",
-						"chantilly",
 						"compiegne",
 						"roye"
 					]
@@ -17555,7 +17542,6 @@ const data = {
 			"connections": [
 				"argenteuil",
 				"compiegne",
-				"creil",
 				"paris"
 			],
 			"connections_by_mode": {
@@ -17563,13 +17549,11 @@ const data = {
 					"ap": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					],
 					"cp": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					]
 				},
@@ -17577,13 +17561,11 @@ const data = {
 					"ap": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					],
 					"cp": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					]
 				},
@@ -17591,13 +17573,11 @@ const data = {
 					"ap": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					],
 					"cp": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					]
 				},
@@ -17605,13 +17585,11 @@ const data = {
 					"ap": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					],
 					"cp": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					]
 				},
@@ -17619,13 +17597,11 @@ const data = {
 					"ap": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					],
 					"cp": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					]
 				},
@@ -17633,13 +17609,11 @@ const data = {
 					"ap": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					],
 					"cp": [
 						"argenteuil",
 						"compiegne",
-						"creil",
 						"paris"
 					]
 				}
@@ -30311,24 +30285,6 @@ const data = {
 				"ap",
 				"cp"
 			]
-		},
-		{
-			"a": "creil",
-			"b": "chantilly",
-			"type": "land",
-			"modes": [
-				"move",
-				"attack",
-				"supply",
-				"sr",
-				"retreat",
-				"advance"
-			],
-			"factions": [
-				"ap",
-				"cp"
-			],
-			"river_from": "creil"
 		},
 		{
 			"a": "chantilly",

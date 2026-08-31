@@ -269,7 +269,16 @@ function createEventSystem(api) {
           desertionImmediateCandidates(state, "lcu").length < rule.cadorna_immediate_losses &&
           desertionImmediateCandidates(state, "scu").length < rule.cadorna_immediate_losses)
           return false;
-      return !state.events[card.event] || !card.remove;
+      // A few printed cards intentionally share one event key (for example
+      // 604/605 Kitchener Volunteers).  state.events tracks the shared rules
+      // effect, not whether this particular physical card has already been
+      // played.  Removed events must therefore be limited by card id; using
+      // the shared event key here permanently locked the second copy after
+      // the first one was played.
+      const cardAlreadyEvented = state.event_history?.some(
+          (entry) => Number(entry.card) === card.id
+      );
+      return !card.remove || !cardAlreadyEvented;
   }
 
   function gorlitzMoChoices(state, pending = state.pending_event) {
@@ -866,7 +875,9 @@ function createEventSystem(api) {
               return;
           }
       }
-      if (rule?.key === "regional_rotation" && state.events[card.event]) {
+      if (rule?.key === "regional_rotation" &&
+          (state.events[card.event] ||
+              state.event_history.some((entry) => entry.event === card.event))) {
           beginRegionalRotationEvent(state, card, rule);
           return;
       }
@@ -1182,13 +1193,18 @@ function createEventSystem(api) {
           return;
       }
       if (pending?.kind === "regional_rotation") {
-          if (id === "skip") {
+          if ((pending.mode === "reduce" && id === "done") ||
+              (pending.mode !== "reduce" && id === "skip")) {
               finishEvent(state, card);
               return;
           }
-          if (id !== "reduce" || !regionalRotationCandidates(state).length)
+          if (pending.mode === "reduce" || id !== "reduce" ||
+              !regionalRotationCandidates(state, pending).length)
               throw new Error("Invalid rotation choice");
           pending.mode = "reduce";
+          pending.remaining_step_rp ??=
+              Number(pending.operation.maximum_step_rp) || 1;
+          pending.gained_step_rp ??= 0;
           return;
       }
       if (pending?.kind === "card_search") {
@@ -1792,14 +1808,22 @@ function createEventSystem(api) {
           if (pending.mode !== "reduce" ||
               !Array.isArray(ids) ||
               ids.length !== 1 ||
-              !regionalRotationCandidates(state).includes(ids[0]))
+              !regionalRotationCandidates(state, pending).includes(ids[0]))
               throw new Error("Illegal rotation unit");
-          eventToken(state, ids[0]).entry.reduced = true;
-          state.rp.ap.fr += pending.operation.maximum_step_rp;
+          const unit = eventToken(state, ids[0]).entry;
+          const value = api.unitRepairCost(unit);
+          unit.reduced = true;
+          pending.remaining_step_rp = Math.max(0,
+              (pending.remaining_step_rp ?? pending.operation.maximum_step_rp) - value);
+          pending.gained_step_rp = (pending.gained_step_rp || 0) + value;
+          state.rp.ap.fr = (state.rp.ap.fr || 0) + value;
           pending.immediate_rp_extra ||= {};
           pending.immediate_rp_extra.fr =
-              (pending.immediate_rp_extra.fr || 0) + pending.operation.maximum_step_rp;
-          finishEvent(state, card);
+              (pending.immediate_rp_extra.fr || 0) + value;
+          api.log(state, `轮换兵役制：[[unit:${unit.id}]]减损，获得 ${value} FR RP。`);
+          if (pending.remaining_step_rp <= 1e-9 ||
+              !regionalRotationCandidates(state, pending).length)
+              finishEvent(state, card);
           return;
       }
       if (pending?.kind === "white_feather_sr") {

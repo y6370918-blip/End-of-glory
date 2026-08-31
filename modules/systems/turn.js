@@ -282,6 +282,18 @@ function createTurnSystem(api) {
 
   function resolveFactionAttrition(state, faction) {
       api.updateSupply(state);
+      // Determine every affected space from the same pre-attrition supply
+      // position.  Flipping one isolated space must not make another space
+      // supplied (or out of supply) during this resolution.
+      const supplied = api.suppliedSpaces(state, faction, null);
+      const outOfSupplySpaces = api.data.spaces
+          .filter((space) => state.control[space.id] === faction)
+          .filter((space) => !supplied.has(space.id))
+          // An intact friendly printed fort retains control while isolated.
+          // Its units use the separate fort-limited-supply rules instead.
+          .filter((space) => !(api.intactFort(state, space.id) &&
+              space.faction === faction))
+          .map((space) => space.id);
       const lost = state.units.filter((unit) => unit.faction === faction &&
           !unit.supplied && !unit.limited_supply && !unit.fort_limited_supply);
       for (const unit of lost) {
@@ -293,7 +305,14 @@ function createTurnSystem(api) {
           else
               api.eliminateUnit(state, unit.id, "断补损耗");
       }
-      api.log(state, `${api.factionRole(faction)} 损耗结算：${lost.length} 个单位被消灭。`);
+      for (const space of outOfSupplySpaces) {
+          api.captureSpace(state, space, api.other(faction));
+          api.log(state, `断补损耗：[[space:${space}]]转为${api.factionRole(api.other(faction))}控制。`);
+      }
+      // Control changes can alter supply for the opposing side and for the
+      // following voluntary-cleanup step, so do not leave stale unit flags.
+      api.updateSupply(state);
+      api.log(state, `${api.factionRole(faction)} 损耗结算：${lost.length} 个单位被消灭，${outOfSupplySpaces.length} 个地区移交控制。`);
       return lost.length;
   }
 

@@ -191,6 +191,15 @@ function createEventStates(api) {
         return `${card?.title || "战前恢复"}：选择恢复单位（剩余${pending.remaining || 0}次）。`;
       if (pending?.kind === "combat_repair")
         return `${card?.title || "战斗后修复"}：选择修复单位（剩余${pending.remaining || 0} RP）。`;
+      if (pending?.kind === "regional_rotation") {
+        const gained = Number(pending.gained_step_rp) || 0;
+        const remaining = Number(
+          pending.remaining_step_rp ?? pending.operation?.maximum_step_rp ?? 1,
+        );
+        return pending.mode === "reduce"
+          ? `轮换兵役制：选择地图上的法国单位减损（已获得${gained} RP，还可获得${remaining} RP）。`
+          : "轮换兵役制：本回合获得1 FR RP，并可通过地图单位减损再获得至多1 RP。";
+      }
       return card?.title || "事件。";
     },
     event_choose(state, id) {
@@ -1162,16 +1171,22 @@ function createEventStates(api) {
           options.push({ id: "skip", label: "不使用最高统帅部" });
         addEventChoices(builder, options);
       } else if (pending.kind === "regional_rotation") {
-        if (pending.mode === "reduce")
+        if (pending.mode === "reduce") {
           addEventUnits(state, builder, regionalRotationCandidates(state));
-        else {
+          addEventChoices(builder, [{
+            id: "done",
+            label: pending.gained_step_rp
+              ? "完成减损并立即使用所得RP"
+              : "不减损，继续",
+          }]);
+        } else {
           const options = [
             { id: "skip", label: "仅获得本回合 1 FR:RP" },
           ];
           if (regionalRotationCandidates(state).length)
             options.unshift({
               id: "reduce",
-              label: "减损 1 个法国单位，额外获得 1 FR:RP",
+              label: "减损地图法国单位，额外获得至多 1 FR:RP",
             });
           addEventChoices(builder, options);
         }

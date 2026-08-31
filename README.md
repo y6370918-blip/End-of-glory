@@ -14,6 +14,18 @@
 
 本仓库只保存 RTT 服务器运行所需的规则、模块、客户端、`data.js` 和 `assets/` 运行时素材。测试、开发工具、地图编辑器、源数据、原始图包与规则书仅保留在本地，不提交到部署仓库。
 
+运行 `npm run package:server` 会按显式白名单生成 `dist/end-of-glory/`，并写入带文件大小和 SHA-256 的 `DEPLOYMENT.json`。部署包不会包含测试、开发工具、源图、规则书或恢复素材；服务器应复制该目录，而不是复制整个工作区。
+
+浏览器入口的脚本和样式使用模块版本查询参数，发布新客户端时应同步更新 `package.json` 版本及 `play.html`、`cards.html`、`charts.html`、`rules.html` 中的资源版本，避免移动端继续使用旧缓存。
+
+## RTT 平台契约
+
+- 根级 `active` 始终为 `Allied Powers`、`Central Powers` 或 `None`；内部规则阵营保存在 `active_faction`。
+- `finish(state, result, message)` 负责认输、超时及管理员结束，统一清理行动权和撤销栈。
+- `query()` 始终在状态副本上规范化和计算，不能改写在线存档或历史回放快照。
+- 战斗中的攻守方临时切换不建立 RTT 定位快照；每个动作仍保留在 replay 中，战斗结束后的稳定行动方切换正常建立快照。
+- `action()` 的服务器异常继续原子恢复动作前状态并抛出诊断错误；`view()` 的确定性恢复推进只允许跳过空状态，不能执行目的地、隐藏信息或随机选择。
+
 ## 人工初设
 
 `rules.js` 中的 `set_up_historical_scenario()` 是 Historical 初设的唯一权威来源。初设采用与 POG 相同的剧本式写法：`setup_piece("ge", "德国骑兵", "Essen")`；第四个参数为 `true` 时表示减损面。手工修改第三个参数中的印刷地名即可，不需要坐标，也不需要重新生成 `data.js`。

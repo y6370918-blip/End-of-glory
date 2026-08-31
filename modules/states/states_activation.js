@@ -101,9 +101,11 @@ function createActivationStates(api) {
       message: "修筑。",
       prompt(state, builder) {
         builder.addAll("entrench", api.legalConstructionSpaces(state));
+        builder.addAll("select_combine_lcu", api.legalCombinationArmies(state));
         builder.enable("finish");
       },
       entrench: api.resolveEntrench,
+      select_combine_lcu: api.beginCombinationSelection,
       finish(state) {
         if (state.turn <= 3) api.advanceEarlyStackResolution(state);
         else api.advanceSequentialOpsResolution(state);

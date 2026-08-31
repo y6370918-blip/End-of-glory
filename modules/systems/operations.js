@@ -232,9 +232,13 @@ function createOperationsSystem(api) {
       return candidates.filter((unit) => selected.has(unit.id));
   }
 
-  function hqHasNationalStack(state, hq, space = hq.location) {
+  function hqHasNationalStack(state, hq, space = hq.location, ignoredIds = null) {
       const nationality = api.nationalityGroup(hq.nation);
-      return api.unitsAt(state, space, hq.faction).some((unit) => api.isCombatUnit(unit) && api.nationalityGroup(unit.nation) === nationality);
+      const ignored = ignoredIds instanceof Set ? ignoredIds : new Set(ignoredIds || []);
+      return api.unitsAt(state, space, hq.faction).some((unit) =>
+          !ignored.has(unit.id) &&
+          api.isCombatUnit(unit) &&
+          api.nationalityGroup(unit.nation) === nationality);
   }
 
   function hqAtSupplySource(state, hq, space = hq.location) {
@@ -249,8 +253,8 @@ function createOperationsSystem(api) {
       return space === "brussels";
   }
 
-  function hqEndLegal(state, hq, space = hq.location) {
-      return (hqHasNationalStack(state, hq, space) || hqAtSupplySource(state, hq, space));
+  function hqEndLegal(state, hq, space = hq.location, ignoredIds = null) {
+      return (hqHasNationalStack(state, hq, space, ignoredIds) || hqAtSupplySource(state, hq, space));
   }
 
   function movementDestinationKeepsHqsResolvable(state, unit, destination) {
@@ -387,6 +391,19 @@ function createOperationsSystem(api) {
       return !selected || selected.includes(unit.id);
   }
 
+  function combinationNationalities(unit) {
+      const combined = api.pieceById[unit?.piece]?.combined_nations;
+      const nations = Array.isArray(combined) && combined.length
+          ? combined
+          : [unit?.nation];
+      return [...new Set(nations.filter(Boolean).map((nation) => api.nationalityGroup(nation)))];
+  }
+
+  function combinationUnitsCompatible(army, corps) {
+      const corpsNations = new Set(combinationNationalities(corps));
+      return combinationNationalities(army).some((nation) => corpsNations.has(nation));
+  }
+
   function legalActivationSpaces(state, kind = "move") {
       if (!state.ops)
           return [];
@@ -412,15 +429,10 @@ function createOperationsSystem(api) {
           const units = activationCandidates(state, space.id).filter(api.isCombatUnit);
           if (!units.length)
               return false;
-          const groups = new Map();
-          for (const unit of units) {
-              const key = api.nationalityGroup(unit.nation);
-              if (!groups.has(key))
-                  groups.set(key, []);
-              groups.get(key).push(unit);
-          }
-          const canCombine = [...groups.values()].some((group) => group.some((unit) => unit.type === "army" && unit.reduced) &&
-              group.some((unit) => unit.type === "corps"));
+          const armies = units.filter((unit) => unit.type === "army" && unit.reduced);
+          const corps = units.filter((unit) => unit.type === "corps");
+          const canCombine = armies.some((army) =>
+              corps.some((unit) => combinationUnitsCompatible(army, unit)));
           const terrain = space.terrain;
           const level = state.trenches[space.id] || 0;
           const maximum = constructionMaximumTrench(state, space.id);
@@ -510,10 +522,12 @@ function createOperationsSystem(api) {
       const earlyStackIds = state.turn <= 3 && state.ops?.execution_origin
           ? new Set(earlyStackUnitIds(state))
           : null;
+      const combinedUnits = new Set(state.ops?.combined_units || []);
       return state.units
           .filter((unit) => unit.faction === state.active &&
           (!earlyStackIds || earlyStackIds.has(unit.id)) &&
           unitIsActivated(state, unit, ["move"]) &&
+          !combinedUnits.has(unit.id) &&
           !unit.moved)
           .map((unit) => unit.id);
   }
@@ -527,27 +541,41 @@ function createOperationsSystem(api) {
           !state.ops.entrench_attempted?.includes(space));
   }
 
-  function legalCombinationGroups(state) {
+  function combinationEligibleUnits(state) {
+      if (!["move", "construct"].includes(state.ops?.execution_phase))
+          return [];
       const earlyStackIds = state.turn <= 3 && state.ops?.execution_origin
           ? new Set(earlyStackUnitIds(state))
           : null;
-      const combinableBySpace = {};
-      for (const unit of state.units.filter((unit) => unit.faction === state.active &&
+      return state.units.filter((unit) => unit.faction === state.active &&
           (!earlyStackIds || earlyStackIds.has(unit.id)) &&
           !unit.moved &&
           !unit.attacked &&
           (unit.type === "corps" || (unit.type === "army" && unit.reduced)) &&
-          unitIsActivated(state, unit, ["move", "construct"]))) {
-          const key = `${unit.location}:${api.nationalityGroup(unit.nation)}`;
-          if (!combinableBySpace[key])
-              combinableBySpace[key] = [];
-          combinableBySpace[key].push(unit);
-      }
-      return Object.values(combinableBySpace).flatMap((units) => {
-          const armies = units.filter((unit) => unit.type === "army" && unit.reduced);
-          const corps = units.filter((unit) => unit.type === "corps");
-          return armies.flatMap((army) => corps.map((unit) => [army.id, unit.id]));
-      });
+          unitIsActivated(state, unit, ["move", "construct"]));
+  }
+
+  function legalCombinationArmies(state) {
+      const eligible = combinationEligibleUnits(state);
+      const corps = eligible.filter((unit) => unit.type === "corps");
+      return eligible
+          .filter((unit) => unit.type === "army" && unit.reduced)
+          .filter((army) => corps.some((unit) =>
+              unit.location === army.location && combinationUnitsCompatible(army, unit)))
+          .map((unit) => unit.id);
+  }
+
+  function legalCombinationCorps(state, armyId) {
+      const eligible = combinationEligibleUnits(state);
+      const army = eligible.find((unit) => unit.id === armyId &&
+          unit.type === "army" && unit.reduced);
+      if (!army)
+          return [];
+      return eligible
+          .filter((unit) => unit.type === "corps" &&
+              unit.location === army.location &&
+              combinationUnitsCompatible(army, unit))
+          .map((unit) => unit.id);
   }
 
   function beginOps(state, card, oneOp = false) {
@@ -577,6 +605,7 @@ function createOperationsSystem(api) {
           pending_siege: null,
           pending_attack: null,
           attack_selection: [],
+          combined_units: [],
           activated_units: {},
           region_activations: { move: {}, attack: {}, construct: {} },
           attack_marker_spaces: [],
@@ -1798,31 +1827,44 @@ function createOperationsSystem(api) {
       api.log(state, `${api.spaceById[space]?.name} 修筑防御工事。`);
   }
 
-  function resolveCombination(state, ids) {
-      if (state.ops?.execution_phase !== "move")
-          throw new Error("Combination is not available outside the movement phase");
-      if (!Array.isArray(ids) || ids.length !== 2 || new Set(ids).size !== 2)
-          throw new Error("Choose one reduced army and one corps");
-      const selected = ids
-          .map((id) => state.units.find((unit) => unit.id === id))
-          .filter(Boolean);
-      if (selected.length !== ids.length ||
-          selected.some((unit) => unit.faction !== state.active))
-          throw new Error("Only friendly units may combine");
-      if (selected.some((unit) => unit.moved ||
-          unit.attacked ||
-          !unitIsActivated(state, unit, ["move", "construct"])))
-          throw new Error("Every combining unit must be move-activated and unmoved");
-      if (new Set(selected.map((unit) => unit.location)).size !== 1 ||
-          new Set(selected.map((unit) => api.nationalityGroup(unit.nation))).size !== 1)
-          throw new Error("Combined units must share a space and nationality");
-      const army = selected.find((unit) => unit.type === "army" && unit.reduced);
-      const corps = selected.find((unit) => unit.type === "corps");
+  function beginCombinationSelection(state, armyId) {
+      if (!legalCombinationArmies(state).includes(armyId))
+          throw new Error("LCU cannot be selected for combination");
+      state.ops.combine_selection = {
+          army_id: armyId,
+          return_state: state.state,
+      };
+      state.state = "combine_select_scu";
+  }
+
+  function cancelCombinationSelection(state) {
+      const returnState = state.ops?.combine_selection?.return_state;
+      if (!state.ops || !["ops_move", "ops_construct"].includes(returnState))
+          throw new Error("No combination selection to cancel");
+      state.ops.combine_selection = null;
+      state.state = returnState;
+  }
+
+  function resolveCombination(state, armyId, corpsId) {
+      const selection = state.ops?.combine_selection;
+      if (state.state !== "combine_select_scu" || selection?.army_id !== armyId)
+          throw new Error("The selected LCU is no longer current");
+      if (!legalCombinationCorps(state, armyId).includes(corpsId))
+          throw new Error("SCU cannot combine with the selected LCU");
+      const army = state.units.find((unit) => unit.id === armyId);
+      const corps = state.units.find((unit) => unit.id === corpsId);
       if (!army || !corps)
-          throw new Error("Combination requires a reduced army and a corps");
+          throw new Error("Combination units no longer exist");
+      const returnState = selection.return_state;
       api.snapshot(state, "组合单位");
       army.reduced = false;
-      api.eliminateUnit(state, corps.id, "Combination");
+      delete army.attack_eligible;
+      state.ops.combined_units ||= [];
+      if (!state.ops.combined_units.includes(army.id))
+          state.ops.combined_units.push(army.id);
+      api.eliminateUnit(state, corps.id, "组合");
+      state.ops.combine_selection = null;
+      state.state = returnState;
       api.log(state, `${api.spaceById[army.location]?.name}：减员 LCU 与 SCU 完成组合。`);
   }
 
@@ -2037,6 +2079,7 @@ return Object.freeze({
     activationSelectionSpec,
     advanceEarlyStackResolution,
     advanceSequentialOpsResolution,
+    beginCombinationSelection,
     beginEarlyStack,
     beginEarlyStackResolution,
     beginGroupMovement,
@@ -2051,6 +2094,8 @@ return Object.freeze({
     commitActivation,
     confirmRegionActivation,
     cancelRegionActivation,
+    cancelCombinationSelection,
+    combinationNationalities,
     constructionAvailable,
     constructionMaximumTrench,
     constructionUnits,
@@ -2081,7 +2126,8 @@ return Object.freeze({
     hqEndLegal,
     hqHasNationalStack,
     legalActivationSpaces,
-    legalCombinationGroups,
+    legalCombinationArmies,
+    legalCombinationCorps,
     legalConstructionSpaces,
     legalMoveUnitIds,
     legalSrDestinations,

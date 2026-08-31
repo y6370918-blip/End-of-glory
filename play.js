@@ -2064,6 +2064,41 @@ function appendLogText(element, text) {
 	element.append(document.createTextNode(text.slice(start)))
 }
 
+const pendingLogMarkup = []
+let pendingLogFrame = 0
+
+function flushLogMarkup() {
+	pendingLogFrame = 0
+	const started = window.performance?.now?.() || Date.now()
+	let rendered = 0
+	while (pendingLogMarkup.length && rendered < 48) {
+		const current = window.performance?.now?.() || Date.now()
+		if (rendered > 0 && current - started >= 7) break
+		const { element, content } = pendingLogMarkup.shift()
+		element.replaceChildren()
+		appendLogText(element, content)
+		rendered += 1
+	}
+	if (pendingLogMarkup.length) scheduleLogMarkup()
+}
+
+function scheduleLogMarkup() {
+	if (pendingLogFrame) return
+	if (typeof window.requestAnimationFrame === "function")
+		pendingLogFrame = window.requestAnimationFrame(flushLogMarkup)
+	else
+		pendingLogFrame = window.setTimeout(flushLogMarkup, 0)
+}
+
+function queueLogMarkup(element, content) {
+	// A readable plain-text line is available immediately. Rich references and
+	// dice are enhanced in short animation-frame batches so a long late-game
+	// replay cannot block the toolbar and map for one large synchronous task.
+	element.textContent = content
+	pendingLogMarkup.push({ element, content })
+	scheduleLogMarkup()
+}
+
 let logGroupFaction = null
 let logGroupIndex = 0
 
@@ -2132,7 +2167,7 @@ function onLog(text, index = 0) {
 
 	if (!content) resetLogGroup()
 	if (logGroupFaction) element.classList.add("group", logGroupFaction)
-	appendLogText(element, content)
+	queueLogMarkup(element, content)
 	return element
 }
 

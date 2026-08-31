@@ -688,16 +688,18 @@ function createCombatStates(api) {
           // an intact fort, corps may need to be accumulated until the group
           // reaches the printed siege strength; the last required click then
           // performs the advance automatically.
-          const supportStillAvailable = pending.units.some((candidateId) => {
+          const selectedHasHq = pending.selected_advance_units.some((unitId) =>
+            api.findUnit(state, unitId)?.type === "hq");
+          const supportFlowStillOpen = pending.units.some((candidateId) => {
             if (pending.selected_advance_units.includes(candidateId)) return false;
             const candidate = api.findUnit(state, candidateId);
-            return candidate?.type === "hq" &&
+            return (candidate?.type === "hq" || selectedHasHq) &&
               api.advanceSelectionCanAdd(state, pending, [
                 ...pending.selected_advance_units,
                 candidateId,
               ]);
           });
-          if (!supportStillAvailable && api.advanceDestinations(state, pending).includes(pending.target))
+          if (!supportFlowStillOpen && api.advanceDestinations(state, pending).includes(pending.target))
             advanceToDestination(state, pending.target);
         }
       },

@@ -84,12 +84,6 @@ function createViewSystem(api) {
               ? `${entry.label}（T${entry.turn} AR${entry.round || 0}）`
               : String(option);
       }
-      if (action === "combine")
-          return `组合 ${String(option)
-              .split("+")
-              .map((id) => api.pieceById[state.units.find((unit) => unit.id === id)?.piece]?.name ||
-              id)
-              .join(" + ")}`;
       if (action === "event_exchange") {
           const [route, amount] = String(option).split(":");
           const names = {
@@ -145,6 +139,14 @@ function createViewSystem(api) {
               required: [],
               minimum: 1,
               maximum: 3,
+          };
+      if (state.ops?.combine_selection?.army_id)
+          return {
+              kind: "units",
+              selected: [state.ops.combine_selection.army_id],
+              required: [],
+              minimum: 1,
+              maximum: 1,
           };
       if (state.pending_event?.kind === "august_reposition" &&
           state.pending_event.selected_units?.length)

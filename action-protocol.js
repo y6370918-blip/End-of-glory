@@ -94,6 +94,8 @@
 		spend_flip: { target: "piece", label: "减损单位" },
 		spend_upgrade: { target: "piece", label: "升级单位" },
 		spend_rebuild: { target: "piece", label: "重建单位" },
+		select_combine_lcu: { target: "piece", label: "选择组合LCU" },
+		select_combine_scu: { target: "piece", label: "选择组合SCU" },
 		replacement_to_reserve: { surface: "target", label: "放入预备区" },
 		replacement_to_eliminated: { surface: "target", label: "留在消灭区" },
 		event_front_step: { target: "piece", label: "减损单位" },
@@ -113,7 +115,6 @@
 		discard_combat_card: { target: "card", label: "弃置战斗牌" },
 
 		event_choose: { target: "option", label: "事件选择" },
-		combine: { target: "option", label: "组合" },
 		event_exchange: { target: "option", label: "交换补员" },
 		spend_option: { target: "piece", label: "支付" },
 		spend_front: { target: "option", label: "推进战线" },

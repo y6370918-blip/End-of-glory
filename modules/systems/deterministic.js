@@ -140,7 +140,7 @@ function createDeterministicSystem(api) {
           continue;
         }
         if (!(actions.select_move_unit || []).length &&
-            !(actions.combine || []).length &&
+            !(actions.select_combine_lcu || []).length &&
             actions.finish === 1) {
           api.stateEngine.dispatch(state, "finish");
           continue;

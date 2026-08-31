@@ -1607,6 +1607,13 @@ function ensureState(state) {
     state.pending_event.uses_rp_cost = true;
     state.pending_event.replacement_corps = true;
   }
+  if (state.pending_event?.kind === "regional_rotation") {
+    const pending = state.pending_event;
+    const maximum = Number(pending.operation?.maximum_step_rp) || 1;
+    pending.gained_step_rp ??= Number(pending.immediate_rp_extra?.fr) || 0;
+    pending.remaining_step_rp ??= Math.max(0, maximum - pending.gained_step_rp);
+    pending.immediate_rp_extra ||= {};
+  }
   if (previousVersion < 50) {
     if (state.pending_event?.kind === "counterattack") {
       const pending = state.pending_event;
@@ -1677,7 +1684,12 @@ function ensureState(state) {
       }
     }
   }
-  state.version = 50;
+  if (previousVersion < 51 && state.ops) {
+    state.ops.combined_units = [];
+    delete state.ops.combine_selection;
+  }
+  if (state.ops) state.ops.combined_units ||= [];
+  state.version = 51;
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -2059,7 +2071,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 50,
+    version: 51,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -2494,37 +2506,73 @@ exports.view = function (state, current) {
 };
 
 exports.query = function (state, current, query) {
-  try {
-    ensureState(state);
-    const faction = roleFaction(current);
-    if (query === "cards")
-      return faction ? state.hands[faction].map((id) => cardById[id]) : [];
-    if (query === "ap_cards")
-      return faction === AP ? state.hands.ap.map((id) => cardById[id]) : [];
-    if (query === "cp_cards")
-      return faction === CP ? state.hands.cp.map((id) => cardById[id]) : [];
-    if (query === "supply") {
-      updateSupply(state);
-      return {
-        ap: [...suppliedSpaces(state, AP)],
-        cp: [...suppliedSpaces(state, CP)],
-        units: Object.fromEntries(
-          state.units.map((unit) => [
+  // RTT may query historical replay states. Normalize and calculate on a
+  // private copy so a read-only request can never rewrite the live save or a
+  // replay snapshot (supply calculation intentionally updates unit flags).
+  const queried = clone(state);
+  ensureState(queried);
+  const faction = roleFaction(current);
+  if (query === "cards")
+    return faction ? queried.hands[faction].map((id) => cardById[id]) : [];
+  if (query === "ap_cards")
+    return faction === AP ? queried.hands.ap.map((id) => cardById[id]) : [];
+  if (query === "cp_cards")
+    return faction === CP ? queried.hands.cp.map((id) => cardById[id]) : [];
+  if (query === "supply") {
+    updateSupply(queried);
+    return {
+      ap: [...suppliedSpaces(queried, AP)],
+      cp: [...suppliedSpaces(queried, CP)],
+      units: Object.fromEntries(
+        queried.units.map((unit) => [
             unit.id,
             ViewExplanations.supplyStatus(unit),
-          ]),
-        ),
-      };
+        ]),
+      ),
+    };
+  }
+  if (query === "combat_preview") return clone(queried.combat);
+  if (query === "rollback")
+    return ViewExplanations.rollbackEntries(
+      queried,
+      current,
+      20,
+      (index) => rollbackSnapshot(queried, index),
+    );
+  return null;
+};
+
+// RTT creates seek snapshots when the active role changes. Combat deliberately
+// alternates temporary control between attacker and defender several times;
+// those hand-offs are one continuous public combat flow, not turn boundaries.
+// The replay still records every action, and the next stable post-combat role
+// change creates the useful seek point.
+exports.dont_snap = function (state) {
+  return Boolean(
+    state?.combat ||
+    state?.combat_window ||
+    state?.post_combat_window ||
+    state?.pending_combat_card_disposition
+  );
+};
+
+exports.finish = function (state, result, message) {
+  try {
+    ensureState(state);
+    if (state.state === "game_over") return state;
+    const winner = roleFaction(result);
+    if (winner) {
+      gameOver(state, winner, message);
+    } else {
+      state.state = "game_over";
+      state.phase = "游戏结束";
+      setActiveFaction(state, NONE);
+      state.result = result || NONE;
+      state.victory = message;
+      log(state, message);
     }
-    if (query === "combat_preview") return clone(state.combat);
-    if (query === "rollback")
-      return ViewExplanations.rollbackEntries(
-        state,
-        current,
-        20,
-        (index) => rollbackSnapshot(state, index),
-      );
-    return null;
+    clearUndo(state);
+    return state;
   } finally {
     exposeRttState(state);
   }

@@ -72,10 +72,23 @@ function createCardZoneSystem(api) {
     // An Event card is temporarily absent between cardUse() and finishEvent().
     // Count pending_event only when no concrete container owns that card;
     // post-event choices keep the already-disposed card in its public pool.
-    const pendingId = optionalCardId(state.pending_event?.card);
+    // An Event may temporarily hand control to the opposing player without
+    // disposing its source card.  Moltke (614), for example, can remove the
+    // combat unit escorting an HQ and must finish that HQ relocation before
+    // finishEvent() disposes the card.  The relocation context deliberately
+    // has no `card` field because its `owner` is the player moving the HQ;
+    // preserve the in-flight Event through its explicit resume card instead.
+    const delayedResumeId =
+      state.pending_event?.kind === "hq_relocation" &&
+      state.pending_event?.resume === "finish_delayed_event"
+        ? optionalCardId(state.pending_event.resume_card)
+        : null;
+    const pendingId = optionalCardId(state.pending_event?.card) ?? delayedResumeId;
     if (pendingId != null && !(inventory[pendingId] || []).length) {
-      const owner = state.pending_event.owner || state.pending_event.faction ||
-        state.card_owners?.[pendingId] || api.cardById[pendingId]?.faction;
+      const owner = delayedResumeId != null
+        ? state.card_owners?.[pendingId] || api.cardById[pendingId]?.faction
+        : state.pending_event.owner || state.pending_event.faction ||
+          state.card_owners?.[pendingId] || api.cardById[pendingId]?.faction;
       add(pendingId, `event_in_flight.${owner}`, owner, true);
     }
 

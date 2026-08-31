@@ -106,6 +106,9 @@ function createMovementEventSystem(api) {
           kind: "regional_rotation",
           operation: api.clone(operation),
           mode: null,
+          remaining_step_rp: Number(operation.maximum_step_rp) || 0,
+          gained_step_rp: 0,
+          immediate_rp_extra: {},
       };
       api.setActiveFaction(state, card.faction);
       api.enterEventFlow(state);
@@ -475,12 +478,17 @@ function createMovementEventSystem(api) {
       pending.selected_units = [];
   }
 
-  function regionalRotationCandidates(state) {
-      return api.eventUnitCandidates(state, {
-          faction: api.AP,
-          nations: ["fr"],
-          types: ["army", "corps"],
-      }).filter((id) => !api.eventToken(state, id).entry.reduced);
+  function regionalRotationCandidates(state, pending = state.pending_event) {
+      const maximum = Number(pending?.operation?.maximum_step_rp) || 1;
+      const remaining = pending?.mode === "reduce"
+          ? Number(pending.remaining_step_rp ?? maximum)
+          : maximum;
+      return state.units
+          .filter((unit) => unit.faction === api.AP && unit.nation === "fr" &&
+              api.isCombatUnit(unit) && !unit.reduced &&
+              api.acceptsReplacementPoints(unit) &&
+              api.unitRepairCost(unit) <= remaining + 1e-9)
+          .map((unit) => unit.id);
   }
 
   return Object.freeze({

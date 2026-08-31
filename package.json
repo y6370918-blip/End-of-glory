@@ -1,6 +1,6 @@
 {
 	"name": "end-of-glory",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"private": true,
 	"description": "End of Glory - Rally the Troops game module",
 	"main": "rules.js",
@@ -22,6 +22,7 @@
 		"test:campaign": "node tools/run_campaign_tests.mjs",
 		"test:e2e": "playwright test --grep-invert=@visual",
 		"test:visual": "playwright test --grep=@visual",
+		"package:server": "node package-server.mjs",
 		"migrate:rtt-active": "node migrate-rtt-active-v47.mjs",
 		"audit:rtt-active": "node audit-rtt-active.mjs",
 		"typecheck": "tsc -p tsconfig.json",

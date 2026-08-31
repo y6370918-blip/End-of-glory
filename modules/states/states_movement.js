@@ -7,22 +7,33 @@ function createMovementStates(api) {
       prompt(state, builder) {
         const units = api.legalMoveUnitIds(state);
         builder.addAll("select_move_unit", units);
-        builder.addAll(
-          "combine",
-          api.legalCombinationGroups(state).map((ids) => ids.join("+")),
-        );
+        builder.addAll("select_combine_lcu", api.legalCombinationArmies(state));
         builder.enable("finish");
       },
       select_move_unit: api.beginMovementSelection,
-      combine(state, token) {
-        api.resolveCombination(state, String(token).split("+"));
-      },
+      select_combine_lcu: api.beginCombinationSelection,
       finish(state) {
         if (state.ops?.pending_siege)
           throw new Error("The pending siege force must finish entering the fort");
         if (state.turn <= 3) api.advanceEarlyStackResolution(state);
         else api.advanceSequentialOpsResolution(state);
       },
+    },
+
+    combine_select_scu: {
+      message: "组合：选择同地合法SCU。",
+      prompt(state, builder) {
+        const selected = state.ops?.combine_selection?.army_id;
+        if (!selected) return;
+        builder.addAll("select_combine_scu", api.legalCombinationCorps(state, selected));
+        builder.enable("cancel");
+      },
+      select_combine_scu(state, id) {
+        const armyId = state.ops?.combine_selection?.army_id;
+        if (!armyId) throw new Error("No LCU selected for combination");
+        api.resolveCombination(state, armyId, id);
+      },
+      cancel: api.cancelCombinationSelection,
     },
 
     movement_units: {
