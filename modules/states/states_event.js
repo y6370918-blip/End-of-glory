@@ -406,13 +406,22 @@ function createEventStates(api) {
       if (!options.skip_undo) api.snapshot(state, "确认事件单位");
       if (pending.kind === "reinforcement_rebuild") {
         const legal = new Set(reinforcementRebuildCandidates(state, pending));
-        const selected = (pending.selected_units || []).slice();
+        const staged = (pending.selected_units || []).slice();
+        const selected = staged.filter((id) => legal.has(id));
         if (
-          selected.length > pending.maximum ||
+          staged.length > pending.maximum ||
           new Set(selected).size !== selected.length ||
-          selected.some((id) => !legal.has(id))
+          new Set(staged).size !== staged.length
         )
           throw new Error("Invalid reinforcement rebuild selection");
+        if (selected.length !== staged.length) {
+          // Repair an in-flight selection made before rebuild candidates were
+          // restricted to units with a real destination.  Stay in selection
+          // instead of throwing or entering an actionless placement state.
+          pending.selected_units = selected;
+          pending.maximum = Math.min(pending.maximum, legal.size);
+          return;
+        }
         pending.rebuild_stage = "place";
         pending.rebuild_index = 0;
         pending.rebuild_placements = [];

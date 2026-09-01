@@ -638,7 +638,7 @@ function createEventSystem(api) {
       return true;
   }
 
-  function finishEvent(state, card, selectedOperations = []) {
+  function finishEvent(state, card, selectedOperations = [], options = {}) {
       const owner = state.pending_event?.owner || card.faction;
       const eventPlacements = (state.pending_event?.placements || []).map((entry) => entry.space);
       const immediateExtra = api.clone(state.pending_event?.immediate_rp_extra || {});
@@ -703,6 +703,30 @@ function createEventSystem(api) {
       });
       state.pending_event = null;
       api.log(state, `事件：[[card:${card.id}]]。`);
+      const rule = spec?.operations?.find((operation) => operation.type === "rule_modifier");
+      if (!options.skip_italy_entry_restore &&
+          rule?.key === "italy_entry" &&
+          state.turn >= rule.restore_turn) {
+          const candidates = italyEntryRestorationCandidates(state, {
+              operation: rule,
+          });
+          const required = Math.min(rule.restore_count, candidates.length);
+          if (required) {
+              state.pending_event = {
+                  card: card.id,
+                  faction: card.faction,
+                  owner,
+                  chooser: card.faction,
+                  kind: "italy_entry_restore",
+                  operation: api.clone(rule),
+                  required,
+                  event_finished: true,
+              };
+              api.setActiveFaction(state, card.faction);
+              api.enterEventFlow(state);
+              return;
+          }
+      }
       if (beginImmediateRpUse(state, card, wasPlayed, selectedOperations, immediateExtra))
           return;
       if (beginDesertionImmediateLoss(state, card))
@@ -739,7 +763,6 @@ function createEventSystem(api) {
           state.state = "sr";
           return;
       }
-      const rule = spec?.operations?.find((operation) => operation.type === "rule_modifier");
       if (rule?.key === "trench_capability" ||
           card.color === "yellow" ||
           rule?.key === "august_guns" ||
@@ -866,26 +889,6 @@ function createEventSystem(api) {
           api.setActiveFaction(state, api.CP);
           api.enterEventFlow(state);
           return;
-      }
-      if (rule?.key === "italy_entry" && state.turn >= rule.restore_turn) {
-          const candidates = italyEntryRestorationCandidates(state, {
-              operation: rule,
-          });
-          const required = Math.min(rule.restore_count, candidates.length);
-          if (required) {
-              state.pending_event = {
-                  card: card.id,
-                  faction: card.faction,
-                  owner: card.faction,
-                  chooser: card.faction,
-                  kind: "italy_entry_restore",
-                  operation: api.clone(rule),
-                  required,
-              };
-              api.setActiveFaction(state, card.faction);
-              api.enterEventFlow(state);
-              return;
-          }
       }
       if (rule?.key === "regional_rotation" &&
           (state.events[card.event] ||
@@ -1675,7 +1678,16 @@ function createEventSystem(api) {
               const unit = [...state.units, ...(state.entry_reserve?.it || [])].find((candidate) => candidate.id === id);
               unit.reduced = false;
           }
-          finishEvent(state, card);
+          api.log(state, `意大利参战：恢复${ids.length}枚意大利LCU。`);
+          if (pending.event_finished) {
+              state.pending_event = null;
+              api.nextFactionAction(state);
+          }
+          else {
+              // Compatibility for saves created before Italian entry was resolved
+              // before its restoration selection.
+              finishEvent(state, card, [], { skip_italy_entry_restore: true });
+          }
           return;
       }
       if (pending?.kind === "reinforcement_rebuild")

@@ -645,20 +645,55 @@ function createMoSystem(api) {
           moAttackMatches(state, moDefinition(state, id), attackingUnits, nation, declaration));
   }
 
-  function attackMoChoices(state, declaration = state.ops?.pending_attack) {
+  function attackMoNationalityWaiverCandidates(state, declaration) {
       if (!declaration)
           return [];
       const attackingUnits = (declaration.attackers || [])
           .map((id) => state.units.find((unit) => unit.id === id))
           .filter(Boolean);
       return [...new Set(attackingUnits.map((unit) => unit.nation))]
-          .map((nation) => ({
-          nation,
-          required: nation === "ge" &&
-              state.active === api.CP &&
-              state.markers.killing_ground?.space === declaration.target,
-          candidates: attackMoCandidates(state, nation, attackingUnits, declaration),
-      }))
+          .flatMap((nation) => attackMoCandidates(state, nation, attackingUnits, declaration)
+          .filter((id) => moDefinition(state, id)?.ignore_multinational_attack)
+          .map((id) => ({ nation, id })));
+  }
+
+  function attackMoNationalityWaiverAvailable(state, declaration) {
+      if (!declaration)
+          return false;
+      const assignments = declaration.mo_assignments || {};
+      if (Object.values(assignments).some((id) =>
+          id && moDefinition(state, id)?.ignore_multinational_attack))
+          return true;
+      const decisions = declaration.mo_decisions || {};
+      return attackMoNationalityWaiverCandidates(state, declaration)
+          .some(({ nation }) => !Object.prototype.hasOwnProperty.call(decisions, nation));
+  }
+
+  function attackMoChoices(state, declaration = state.ops?.pending_attack) {
+      if (!declaration)
+          return [];
+      const attackingUnits = (declaration.attackers || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(Boolean);
+      const nationalityWaiverRequired = !api.multinationalAttackValid(attackingUnits, state) &&
+          !(declaration.event_effects || []).includes(641) &&
+          !api.sommeAttackIgnoresNationality(state, declaration) &&
+          !Object.values(declaration.mo_assignments || {}).some((id) =>
+              id && moDefinition(state, id)?.ignore_multinational_attack);
+      return [...new Set(attackingUnits.map((unit) => unit.nation))]
+          .map((nation) => {
+          const candidates = attackMoCandidates(state, nation, attackingUnits, declaration);
+          const waiverCandidates = candidates.filter((id) =>
+              moDefinition(state, id)?.ignore_multinational_attack);
+          const requiresWaiverChoice = nationalityWaiverRequired && waiverCandidates.length > 0;
+          return {
+              nation,
+              required: requiresWaiverChoice || (nation === "ge" &&
+                  state.active === api.CP &&
+                  state.markers.killing_ground?.space === declaration.target),
+              candidates: requiresWaiverChoice ? waiverCandidates : candidates,
+          };
+      })
           .filter((entry) => entry.candidates.length);
   }
 
@@ -861,6 +896,8 @@ return Object.freeze({
     attackMoCandidates,
     attackMoChoices,
     attackMoChoicesComplete,
+    attackMoNationalityWaiverAvailable,
+    attackMoNationalityWaiverCandidates,
     attackMoOptionId,
     attackQualifiesForMo,
     beginCurrentMoPenalty,

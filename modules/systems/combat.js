@@ -473,6 +473,14 @@ function createCombatSystem(api) {
           [...groups].every((group) => present.has(group)));
   }
 
+  function sommeAttackIgnoresNationality(state, declaration) {
+      const marker = state.markers?.somme;
+      if (!marker || state.active !== api.AP || marker.space !== declaration?.target)
+          return false;
+      return Boolean(api.cardSpecById[marker.source_card]?.combat
+          ?.ignore_nationality_at_marker);
+  }
+
   function optionalCombatEventChoices(state, declaration = state.ops?.pending_attack) {
       if (!declaration || state.active !== api.AP)
           return [];
@@ -1740,7 +1748,9 @@ function createCombatSystem(api) {
           api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation))))
           throw new Error("An attacking HQ requires a matching combat unit");
       if (!multinationalAttackValid(combatUnits, state) &&
-          !(declaration.event_effects || []).includes(641)) {
+          !(declaration.event_effects || []).includes(641) &&
+          !sommeAttackIgnoresNationality(state, declaration) &&
+          !api.attackMoNationalityWaiverAvailable(state, declaration)) {
           const mayUseDiaz = !declaration.optional_events_resolved &&
               state.active === api.AP &&
               state.events[api.cardById[641].event] &&
@@ -3203,6 +3213,7 @@ return Object.freeze({
     legalTargetsForAttackers,
     lossModelReplacementOptions,
     multinationalAttackValid,
+    sommeAttackIgnoresNationality,
     nivelleMarkerCandidates,
     pendingAttackOriginCount,
     optionalCombatEventChoices,

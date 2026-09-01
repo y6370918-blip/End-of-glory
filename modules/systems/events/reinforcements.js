@@ -564,6 +564,23 @@ function createReinforcementEventSystem(api) {
       return (state.eliminated[rebuild.faction] || [])
           .filter((unit) => !rebuild.nation || unit.nation === rebuild.nation)
           .filter((unit) => ["army", "corps"].includes(unit.type))
+          .filter((unit) => {
+              if (unit.type === "corps")
+                  return true;
+              // An event rebuild is optional.  Do not let the player select an
+              // LCU which cannot be placed after the already staged
+              // reinforcements have consumed the available source stacking.
+              // Otherwise confirmation enters a destination state with no
+              // legal board action and the signed action fails on the next
+              // view refresh.
+              const probe = {
+                  ...pending,
+                  selected_units: [unit.id],
+                  rebuild_index: 0,
+                  rebuild_placements: [],
+              };
+              return reinforcementRebuildSpaces(state, probe, 0).length > 0;
+          })
           .map((unit) => unit.id);
   }
 

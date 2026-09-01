@@ -9513,6 +9513,7 @@ const data = {
 					"mixed_with": "fr",
 					"mixed_type": "army"
 				},
+				"ignore_multinational_attack": true,
 				"attack_drm_uses": 1,
 				"attack_drm": -1,
 				"image_source": "算子单位图标/强制进攻标记/英国MO1.png",
