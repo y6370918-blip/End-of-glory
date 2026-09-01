@@ -54,7 +54,10 @@ function createReplacementEventSystem(api) {
       const units = [...state.units, ...(state.eliminated[state.active] || [])];
       const options = [];
       for (const unit of units)
-          for (const kind of ["flip", "upgrade", "rebuild"])
+          // Immediately granted RP can repair or rebuild units, but veteran
+          // replacement is reserved for the formal end-of-turn replacement
+          // phase.
+          for (const kind of ["flip", "rebuild"])
               for (const key of api.replacementKeys(unit)) {
                   const option = api.replacementOption(state, { kind, unit: unit.id, key });
                   if (option &&
@@ -106,12 +109,6 @@ function createReplacementEventSystem(api) {
       const parent = api.clone(pending);
       api.spendReplacement(state, { kind, unit, key });
       if (state.pending_event?.kind === "replacement_rebuild") {
-          state.pending_event.resume_immediate_rp = parent;
-          state.pending_event.immediate_rp_key = key;
-          state.pending_event.immediate_rp_cost = choice.cost;
-          return;
-      }
-      if (state.pending_event?.kind === "veteran_upgrade") {
           state.pending_event.resume_immediate_rp = parent;
           state.pending_event.immediate_rp_key = key;
           state.pending_event.immediate_rp_cost = choice.cost;

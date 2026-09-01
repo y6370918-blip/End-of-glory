@@ -158,13 +158,13 @@ function createEventStates(api) {
 
   function eventUnitSelectionAutoContinues(state, candidates) {
     const pending = state.pending_event;
-    if (!pending || [
-      "reinforcement_rebuild",
-      "precombat_restore",
-      "combat_repair",
-      "combat_fr_rp",
-      "regional_rotation",
-    ].includes(pending.kind)) return false;
+    // A click that chooses the only unit for one restoration/loss step is the
+    // complete player action.  Keeping these flows in a separate
+    // "selected, waiting for confirmation" state made the signed piece action
+    // stale after the view refreshed and was the common failure point for
+    // Artois, Spirit of 1914 and Regional Rotation.  Multi-unit staging for a
+    // reinforcement rebuild still needs an explicit atomic confirmation.
+    if (!pending || pending.kind === "reinforcement_rebuild") return false;
     const choice = cardSpecById[pending.card]?.choices?.find(
       (entry) => entry.id === pending.choice,
     );
@@ -491,7 +491,7 @@ function createEventStates(api) {
       }
       if (pending?.kind === "nivelle_attacks") {
         if (
-          !pending.candidates.includes(space) ||
+          !api.nivelleMarkerCandidates(state).includes(space) ||
           pending.spaces.includes(space) ||
           pending.spaces.length >= pending.required
         )
@@ -659,17 +659,23 @@ function createEventStates(api) {
       if (pending?.kind === "nivelle_attacks") {
         if (pending.spaces.length !== pending.required)
           throw new Error("Place every Nivelle attack marker");
-        state.ops ||= { remaining: 0, activated: [], forced_attacks: [] };
-        state.ops.source = "nivelle";
-        state.ops.source_id = pending.card;
-        state.ops.forced_attacks = [
-          ...new Set([...(state.ops.forced_attacks || []), ...pending.spaces]),
-        ];
-        state.ops.forced_loss_adjust = pending.loss_adjust;
-        for (const space of pending.spaces) state.activations[space] = "attack";
+        const spaces = pending.spaces.slice();
+        const nivelleEffect = cardSpecById[pending.card]?.combat || {};
         state.pending_event = null;
-        api.setActiveFaction(state, AP);
-        state.state = "ops_activate";
+        api.commitForcedAttackMarkers(state, {
+          spaces,
+          faction: AP,
+          card: pending.card,
+          source: "nivelle",
+          sourceId: pending.card,
+          lossAdjust: pending.loss_adjust || 0,
+          candidateOptions: {
+            nation: "fr",
+            requireSupply: true,
+            excludedHqPiece: nivelleEffect.excluded_hq_piece || null,
+          },
+          requiredOptions: { includeCompatibleHqs: true },
+        });
         return;
       }
       if (pending?.kind === "french_doctrine") {
@@ -900,7 +906,7 @@ function createEventStates(api) {
           ]);
         else {
           const options = immediateReplacementOptions(state);
-          for (const kind of ["flip", "upgrade", "rebuild"]) {
+          for (const kind of ["flip", "rebuild"]) {
             const grouped = new Map();
             for (const option of options.filter((entry) => entry.kind === kind)) {
               if (!grouped.has(option.unit)) grouped.set(option.unit, []);

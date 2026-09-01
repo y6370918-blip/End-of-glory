@@ -89,6 +89,7 @@ function createCombatSystem(api) {
       if (!intactFort(state, spaceId))
           return false;
       state.destroyed_forts.push(spaceId);
+      state.supply_dirty = true;
       state.besieged = state.besieged.filter((id) => id !== spaceId);
       const occupier = state.units.find((unit) => unit.location === spaceId &&
           api.isCombatUnit(unit) &&
@@ -1135,13 +1136,18 @@ function createCombatSystem(api) {
   }
 
   function forcedAttackRequiredIds(state, origin) {
+      if (state.ops?.source === "nivelle") {
+          const french = api.unitsAt(state, origin, api.AP)
+              .filter((unit) => unit.nation === "fr" && api.isCombatUnit(unit));
+          const hqs = api.unitsAt(state, origin, api.AP)
+              .filter((unit) => unit.type === "hq" && french.some((combatUnit) =>
+                  api.nationalityGroup(combatUnit.nation) ===
+                      api.nationalityGroup(unit.nation)));
+          return [...french, ...hqs].map((unit) => unit.id);
+      }
       const saved = state.ops?.required_attackers?.[origin];
       if (Array.isArray(saved) && saved.length)
           return saved.slice();
-      if (state.ops?.source === "nivelle")
-          return api.unitsAt(state, origin, api.AP)
-              .filter((unit) => unit.nation === "fr" && api.isCombatUnit(unit))
-              .map((unit) => unit.id);
       return api.unitsAt(state, origin, state.active)
           .filter(api.isCombatUnit)
           .map((unit) => unit.id);
@@ -1661,6 +1667,8 @@ function createCombatSystem(api) {
               if (nation === "ge" &&
                   state.combat.target === state.markers.killing_ground?.space)
                   api.completeMo(state, nation, id, "killing_ground");
+              else if (definition?.requirement === "attack_enemy_army")
+                  api.progressMoById(state, nation, id, 1, "attack_enemy_army");
               else if (!definition?.requirement)
                   api.markMoForAttack(state, nation, id, declaration);
               if ((definition?.attack_drm_uses || 0) > 0 ||
@@ -1711,6 +1719,15 @@ function createCombatSystem(api) {
           !combatUnits.length ||
           attackingUnits.some((unit) => unit.faction !== state.active || !api.isAttackParticipant(unit)))
           throw new Error("Invalid attackers");
+      const forcedOrigins = new Set((state.ops?.forced_attacks || []).filter(
+          (space) => combatUnits.some((unit) => unit.location === space),
+      ));
+      if (combatUnits.some((unit) =>
+          unit.supplied === false &&
+          !unit.limited_supply &&
+          !unit.fort_limited_supply &&
+          !forcedOrigins.has(unit.location)))
+          throw new Error("An out-of-supply unit cannot make a normal attack");
       if (attackingUnits.some((unit) => unit.attacked ||
           (!api.unitIsActivated(state, unit, ["attack"]) &&
               !unit.attack_eligible)))
@@ -1760,7 +1777,6 @@ function createCombatSystem(api) {
       else if (declaration.flank_final != null) {
           throw new Error("A regular attack cannot allocate flank origins");
       }
-      const forcedOrigins = new Set((state.ops?.forced_attacks || []).filter((space) => combatUnits.some((unit) => unit.location === space)));
       for (const origin of forcedOrigins) {
           const required = forcedAttackRequiredIds(state, origin);
           if (required.some((id) => !attackers.includes(id)))
@@ -2119,22 +2135,15 @@ function createCombatSystem(api) {
 
   function nivelleMarkerCandidates(state) {
       const nivelleEffect = api.cardSpecById[739]?.combat || {};
-      return api.data.spaces
-          .filter((space) => api.unitsAt(state, space.id, api.AP).some((unit) => unit.nation === "fr" && unit.type === "army"))
-          .filter((space) => {
-          const commandSpaces = new Set([space.id, ...api.landNeighbors(space.id)]);
-          return !state.units.some((unit) => unit.faction === api.AP &&
-              unit.type === "hq" &&
-              (!nivelleEffect.excluded_hq_piece ||
-                  unit.piece === nivelleEffect.excluded_hq_piece) &&
-              commandSpaces.has(unit.location));
-      })
-          .filter((space) => api.neighborsFor(space.id, "attack", api.AP).some((target) => api.unitsAt(state, target, api.CP).length || api.spaceById[target]?.fort))
-          .map((space) => space.id);
+      return api.forcedAttackCandidates(state, api.AP, [], {
+          nation: "fr",
+          requireSupply: true,
+          excludedHqPiece: nivelleEffect.excluded_hq_piece || null,
+      });
   }
 
   function hqRelocationSpaces(state, hq) {
-      return api.supplySources(state, hq.faction, hq.nation).filter((space) => api.spaceCanActivate(state, space) && api.stackLegal(state, space, hq));
+      return api.supplySources(state, hq.faction, hq).filter((space) => api.spaceCanActivate(state, space) && api.stackLegal(state, space, hq));
   }
 
   function beginCombatHqRelocation(state, combat, resume = null) {
@@ -2637,11 +2646,8 @@ function createCombatSystem(api) {
       if (friendly.length)
           options = friendly;
       // POG also prefers a supplied destination when the group has one available.
-      const suppliedByNation = new Map();
       const supplied = options.filter((destination) => units.every((unit) => {
-          if (!suppliedByNation.has(unit.nation))
-              suppliedByNation.set(unit.nation, api.suppliedSpaces(state, faction, unit.nation));
-          return suppliedByNation.get(unit.nation).has(destination);
+          return api.suppliedSpaces(state, faction, unit).has(destination);
       }));
       if (supplied.length)
           options = supplied;

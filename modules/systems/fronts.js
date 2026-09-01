@@ -52,8 +52,6 @@ function createFrontSystem(api) {
       state,
       `${track} front ${previous} -> ${next}${vp ? ` (${vp > 0 ? "+" : ""}${vp} VP)` : ""}: ${reason}.`,
     );
-    if (track === "turkish" && previous < 2 && next >= 2 && state.fronts.russian < 2)
-      moveFront(state, "russian", -1, "Turkish front reached position 2");
     return next;
   }
 

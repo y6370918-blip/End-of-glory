@@ -15,7 +15,7 @@ function createOperationsSystem(api) {
         return api.data.spaces.filter((space) => !space.ui?.hidden)
           .map((space) => space.id);
       return [...new Set([
-        ...api.suppliedSpaces(state, unit.faction, unit.nation),
+        ...api.suppliedSpaces(state, unit.faction, unit),
         ...api.landNeighbors(unit.location),
       ])];
     }
@@ -107,6 +107,8 @@ function createOperationsSystem(api) {
       const selection = state.ops?.move_selection;
       if (selection?.origin && unit.location !== selection.origin) return reason("rule_forbidden", "编队单位必须来自同一地区");
       if (unit.moved) return reason("already_moved");
+      if (unit.supplied === false && !unit.limited_supply && !unit.fort_limited_supply)
+        return reason("supply", "完全断补单位不能执行普通移动");
       if (!unitIsActivated(state, unit, ["move"])) return reason("rule_forbidden", "该单位没有移动激活");
       if (!movementRoutes(state, unit, selection?.selected || []).length)
         return reason(unit.type === "hq" ? "hq_escort" : "movement_points", "该单位没有合法移动路径");
@@ -145,7 +147,10 @@ function createOperationsSystem(api) {
 
   function activationCandidates(state, spaceId) {
       return api.unitsAt(state, spaceId, state.active).filter((unit) =>
-          !unit.moved && !unit.attacked && !regionUnitActivated(state, unit.id));
+          !unit.moved &&
+          !unit.attacked &&
+          (unit.supplied !== false || unit.limited_supply || unit.fort_limited_supply) &&
+          !regionUnitActivated(state, unit.id));
   }
 
   function ensureRegionActivations(state) {
@@ -467,8 +472,7 @@ function createOperationsSystem(api) {
 
   function constructionUnits(state, space) {
       return api.unitsAt(state, space, state.active).filter((unit) => api.isCombatUnit(unit) &&
-          !unit.limited_supply &&
-          !unit.fort_limited_supply &&
+          (unit.supplied !== false || unit.limited_supply || unit.fort_limited_supply) &&
           !unit.moved &&
           !unit.attacked &&
           unitIsActivated(state, unit, ["move", "construct"]));
@@ -527,6 +531,7 @@ function createOperationsSystem(api) {
           .filter((unit) => unit.faction === state.active &&
           (!earlyStackIds || earlyStackIds.has(unit.id)) &&
           unitIsActivated(state, unit, ["move"]) &&
+          (unit.supplied !== false || unit.limited_supply || unit.fort_limited_supply) &&
           !combinedUnits.has(unit.id) &&
           !unit.moved)
           .map((unit) => unit.id);
@@ -549,6 +554,7 @@ function createOperationsSystem(api) {
           : null;
       return state.units.filter((unit) => unit.faction === state.active &&
           (!earlyStackIds || earlyStackIds.has(unit.id)) &&
+          (unit.supplied !== false || unit.limited_supply || unit.fort_limited_supply) &&
           !unit.moved &&
           !unit.attacked &&
           (unit.type === "corps" || (unit.type === "army" && unit.reduced)) &&
@@ -672,6 +678,16 @@ function createOperationsSystem(api) {
       return api.data.spaces
           .filter((space) => !selected.has(space.id))
           .filter((space) => {
+              if (!options.excludedHqPiece)
+                  return true;
+              const commandSpaces = new Set([space.id, ...api.landNeighbors(space.id)]);
+              return !state.units.some((unit) =>
+                  unit.faction === faction &&
+                  unit.type === "hq" &&
+                  unit.piece === options.excludedHqPiece &&
+                  commandSpaces.has(unit.location));
+          })
+          .filter((space) => {
               const combatUnits = api.unitsAt(state, space.id, faction).filter(api.isCombatUnit);
               if (!combatUnits.length ||
                   (options.nation && !combatUnits.some((unit) => unit.nation === options.nation)) ||
@@ -728,6 +744,7 @@ function createOperationsSystem(api) {
           forced_attacks: spaces.slice(),
           required_attackers: requiredAttackers,
           return_after_forced: options.returnAfterForced,
+          forced_loss_adjust: options.lossAdjust || 0,
           italian_bonus: 0,
           preactivation_sr_used: [],
           preactivation_sr_units: [],
@@ -1096,7 +1113,7 @@ function createOperationsSystem(api) {
       const piece = api.pieceById[unit.piece];
       const max = piece?.movement || 0;
       const supplied = unit.fort_limited_supply
-          ? api.suppliedSpaces(state, unit.faction, unit.nation)
+          ? api.suppliedSpaces(state, unit.faction, unit)
           : null;
       if (!api.spaceCanActivate(state, unit.location))
           return {};
@@ -1163,7 +1180,7 @@ function createOperationsSystem(api) {
       const piece = api.pieceById[unit.piece];
       const max = piece?.movement || 0;
       const supplied = unit.fort_limited_supply
-          ? api.suppliedSpaces(state, unit.faction, unit.nation)
+          ? api.suppliedSpaces(state, unit.faction, unit)
           : null;
       if (!api.spaceCanActivate(state, unit.location))
           return [];
@@ -1231,7 +1248,7 @@ function createOperationsSystem(api) {
       const piece = api.pieceById[unit.piece];
       const maximum = piece?.movement || 0;
       const supplied = unit.fort_limited_supply
-          ? api.suppliedSpaces(state, unit.faction, unit.nation)
+          ? api.suppliedSpaces(state, unit.faction, unit)
           : null;
       const occupationDepthBySpace = occupationDepths(state, unit.faction);
       if (!canLeaveBesiegedFort(state, unit))
@@ -1674,7 +1691,7 @@ function createOperationsSystem(api) {
           return false;
       const nationality = api.nationalityGroup(unit.nation);
       const space = api.spaceById[destination];
-      const matchingSupplySource = api.nationalSupplySource(state, unit.faction, unit.nation, space);
+      const matchingSupplySource = api.nationalSupplySource(state, unit.faction, unit, space);
       const nationalStack = api.unitsAt(state, destination, unit.faction).some((candidate) => api.isCombatUnit(candidate) &&
           api.nationalityGroup(candidate.nation) === nationality);
       return matchingSupplySource || nationalStack;
@@ -1702,7 +1719,7 @@ function createOperationsSystem(api) {
           return [];
       if (!api.spaceCanActivate(state, unit.location))
           return [];
-      const supplied = api.suppliedSpaces(state, unit.faction, unit.nation);
+      const supplied = api.suppliedSpaces(state, unit.faction, unit);
       const overland = overlandSrSpaces(state, unit);
       const blockade = api.activeRule(state, "channel_blockade");
       const destinations = [...supplied].filter((space) => space !== unit.location &&
@@ -1724,7 +1741,7 @@ function createOperationsSystem(api) {
   function reserveSrDestinations(state, unit, options = {}) {
       if (unit.type !== "corps")
           return [];
-      const supplied = api.suppliedSpaces(state, unit.faction, unit.nation);
+      const supplied = api.suppliedSpaces(state, unit.faction, unit);
       return [...supplied].filter((space) => {
           if (!api.spaceCanActivate(state, space) ||
               !earlySrDestinationAllowed(state, unit, space) ||
@@ -1732,7 +1749,7 @@ function createOperationsSystem(api) {
               (!options.allowOverstack && !api.stackLegal(state, space, unit)))
               return false;
           const nationality = api.nationalityGroup(unit.nation);
-          const nationalSource = api.nationalSupplySource(state, unit.faction, unit.nation, api.spaceById[space]);
+          const nationalSource = api.nationalSupplySource(state, unit.faction, unit, api.spaceById[space]);
           const suppliedNationalUnit = api.unitsAt(state, space, unit.faction).some((candidate) => api.isCombatUnit(candidate) &&
               candidate.supplied &&
               api.nationalityGroup(candidate.nation) === nationality);
@@ -1973,7 +1990,10 @@ function createOperationsSystem(api) {
           selected.some((id) => !pending.candidates.includes(id)) ||
           selected.some((id) => regionUnitActivated(state, id))) return false;
       const units = selected.map((id) => state.units.find((unit) => unit.id === id)).filter(Boolean);
-      if (units.length !== selected.length || units.some((unit) => unit.location !== pending.space)) return false;
+      if (units.length !== selected.length ||
+          units.some((unit) => unit.location !== pending.space) ||
+          units.some((unit) => unit.supplied === false && !unit.limited_supply && !unit.fort_limited_supply))
+          return false;
       if (pending.kind === "attack") {
           const combatUnits = units.filter(api.isCombatUnit);
           if (!combatUnits.length || units.some((unit) => unit.type === "hq" &&

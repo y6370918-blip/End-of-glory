@@ -57,19 +57,19 @@ function supplyEffects(unit) {
       return [
         { code: "attack_column", label: "作为进攻单位时火力列左移 1 列" },
         { code: "movement_attack", label: "不能移动后进攻" },
-        { code: "construction", label: "不能修筑战壕或防御工事" },
+        { code: "construction", label: "可以正常掘壕和组合" },
         { code: "replacement_points", label: "不能使用补员点" },
       ];
     case "fort_limited":
       return [
         { code: "attack_column", label: "作为进攻单位时火力列左移 1 列" },
         { code: "movement_attack", label: "不能移动后进攻" },
-        { code: "construction", label: "不能修筑战壕或防御工事" },
+        { code: "construction", label: "可以正常掘壕和组合；离开要塞后必须停止或恢复补给" },
         { code: "replacement_points", label: "不能使用补员点" },
       ];
     case "none":
       return [
-        { code: "activation", label: "不能以战略调动方式移动" },
+        { code: "activation", label: "不能普通移动、进攻、修筑、组合或战略调动" },
         { code: "replacement", label: "LCU 被消灭时永久移除且不放置 SCU 替换" },
         { code: "replacement_points", label: "不能使用补员点修复或重建" },
       ];

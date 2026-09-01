@@ -579,7 +579,7 @@ const data = {
 				"us": 2
 			},
 			"color": "yellow",
-			"combat_card": true,
+			"combat_card": false,
 			"naval_card": false,
 			"remove": true,
 			"event": "ap_第二次香槟攻势",
@@ -854,7 +854,7 @@ const data = {
 			"remove": true,
 			"event": "ap_国内政客掣肘",
 			"condition": "always",
-			"effect": "卡多尔纳已经事件后不能打出。增援1枚受损意大利新兵LCU、1枚受损意大利新兵SCU和唯一的卡多尔纳HQ。向意大利MO池加入1枚“进攻中损失意大利LCU”，以后每回合意大利最多抽1枚MO。本牌事件后移除。",
+			"effect": "卡多尔纳已经事件后不能打出。本牌不提供增援；以后每回合意大利最多抽1枚MO。若卡多尔纳尚未事件，则将其效果修改为：增援1枚受损意大利新兵LCU、1枚受损意大利新兵SCU和唯一的卡多尔纳HQ，并仅向意大利MO池加入1枚“进攻中损失意大利LCU”。本牌事件后移除。",
 			"ocr_confidence": 80,
 			"ocr_text": "RPR 对全全\n国内政客全肘\n被卡多尔纳禁止\n每回合仅有1个意大利MO\n若卡多尔纳未事件，其效果改为:\n增援: 1个受损意大利新兵LCU，1个\n受损意大利新兵scu，卡尔多纳HQ，\n仅添加1个“必须消灭一个意大利\nLCU” MO0。\nIW BR:3 FR:3 IT2 :1",
 			"image": "cards/ap/630.webp",
@@ -881,7 +881,7 @@ const data = {
 			"remove": false,
 			"event": "ap_他们无法通过",
 			"condition": "always",
-			"effect": "法国单位参与防御的战斗结果公布后打出。取消本次AP撤退和CP挺进。首次事件部署唯一的贝当HQ。可从地图法国战斗单位中减损或消灭至多2 RP价值，获得等值临时FR RP并立即用于修复、重建或升级；未用部分丢失。AP平局或获胜时弃置并抽1张，否则只弃置。",
+			"effect": "法国单位参与防御的战斗结果公布后打出。取消本次AP撤退和CP挺进。首次事件部署唯一的贝当HQ。可从地图法国战斗单位中减损或消灭至多2 RP价值，获得等值临时FR RP并立即用于修复或重建；未用部分丢失。AP平局或获胜时弃置并抽1张，否则只弃置。",
 			"ocr_confidence": 87,
 			"ocr_text": "站天法\n一次法国防御后打出。取消德国挺\n进和AP撤退，且可以至多减损(可\n以消灭) 2RP的法国单位，获得等量\n法国RP立刻使用。若AP平局或胜\n利，同样弃置本牌，但抽一张牌\nIW BR:2 FR:2 IT",
 			"image": "cards/ap/631.webp",
@@ -2506,7 +2506,7 @@ const data = {
 			"faction": "cp",
 			"title": "格奈森瑙行动",
 			"printed_marker": null,
-			"commitment": "limited",
+			"commitment": "total",
 			"ops": 3,
 			"sr": 4,
 			"rp": {
@@ -2532,7 +2532,7 @@ const data = {
 			"faction": "cp",
 			"title": "德国增援-冯贝洛",
 			"printed_marker": null,
-			"commitment": "limited",
+			"commitment": "total",
 			"ops": 3,
 			"sr": 4,
 			"rp": {
@@ -2558,7 +2558,7 @@ const data = {
 			"faction": "cp",
 			"title": "兴登堡防线",
 			"printed_marker": "1",
-			"commitment": "limited",
+			"commitment": "total",
 			"ops": 4,
 			"sr": 4,
 			"rp": {
@@ -2584,7 +2584,7 @@ const data = {
 			"faction": "cp",
 			"title": "兴登堡-鲁登道夫",
 			"printed_marker": "1",
-			"commitment": "limited",
+			"commitment": "total",
 			"ops": 5,
 			"sr": 5,
 			"rp": {
@@ -2610,7 +2610,7 @@ const data = {
 			"faction": "cp",
 			"title": "重回马恩/兰斯战役",
 			"printed_marker": null,
-			"commitment": "limited",
+			"commitment": "total",
 			"ops": 4,
 			"sr": 4,
 			"rp": {
@@ -2636,7 +2636,7 @@ const data = {
 			"faction": "cp",
 			"title": "尼维尔",
 			"printed_marker": null,
-			"commitment": "limited",
+			"commitment": "total",
 			"ops": 2,
 			"sr": 2,
 			"rp": {
@@ -4440,7 +4440,7 @@ const data = {
 			"card_id": 620,
 			"event": "ap_第二次香槟攻势",
 			"timing": [
-				"combat"
+				"action"
 			],
 			"commitment": "limited",
 			"prerequisites": {
@@ -4468,13 +4468,7 @@ const data = {
 				"western_front_only": true,
 				"repair_after": 2,
 				"repair_attackers_only": true,
-				"repair_replacement_corps": true,
-				"disposition": {
-					"retain_on_win": false,
-					"after_combat": "remove",
-					"win_draw": null,
-					"retained_after_use": "remove"
-				}
+				"repair_replacement_corps": true
 			},
 			"ops": null,
 			"duration": "action_round",
@@ -4813,8 +4807,33 @@ const data = {
 			"operations": [
 				{
 					"type": "reinforcement",
-					"placement": "italian_front",
+					"placement": "normal_reinforcement",
 					"reduced_armies_unless_event": "ap_意大利参战",
+					"modified_by_event": {
+						"event": "ap_国内政客掣肘",
+						"override": {
+							"units": [
+								{
+									"piece": "component-016",
+									"count": 1,
+									"to": "map",
+									"reduced": true
+								},
+								{
+									"piece": "component-015",
+									"count": 1,
+									"to": "map",
+									"reduced": true
+								},
+								{
+									"piece": "component-009",
+									"count": 1,
+									"to": "map",
+									"unique": true
+								}
+							]
+						}
+					},
 					"units": [
 						{
 							"piece": "component-016",
@@ -4849,7 +4868,26 @@ const data = {
 							"requirement": "lose_friendly_army"
 						}
 					],
-					"draw_bonus": 1
+					"draw_bonus": 1,
+					"modified_by_event": {
+						"event": "ap_国内政客掣肘",
+						"override": {
+							"add": [
+								{
+									"key": "politicians_lose_lcu",
+									"template_id": "it-3",
+									"name": "政治危机：一次进攻中损失意大利LCU",
+									"kind": "task",
+									"duration": "game",
+									"count": 1,
+									"attacks": 0,
+									"requirement": "lose_friendly_army"
+								}
+							],
+							"draw_bonus": 0,
+							"draw_limit": 1
+						}
+					}
 				}
 			],
 			"combat": null,
@@ -4965,44 +5003,9 @@ const data = {
 			"choices": [],
 			"operations": [
 				{
-					"type": "reinforcement",
-					"placement": "italian_front",
-					"units": [
-						{
-							"piece": "component-016",
-							"count": 1,
-							"to": "map",
-							"reduced": true
-						},
-						{
-							"piece": "component-015",
-							"count": 1,
-							"to": "map",
-							"reduced": true
-						},
-						{
-							"piece": "component-009",
-							"count": 1,
-							"to": "map",
-							"unique": true
-						}
-					]
-				},
-				{
 					"type": "mo_modify",
 					"nation": "it",
-					"add": [
-						{
-							"key": "politicians_lose_lcu",
-							"template_id": "it-3",
-							"name": "政治危机：一次进攻中损失意大利LCU",
-							"kind": "task",
-							"duration": "game",
-							"count": 1,
-							"attacks": 0,
-							"requirement": "lose_friendly_army"
-						}
-					],
+					"add": [],
 					"draw_limit": 1
 				}
 			],
@@ -5011,7 +5014,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "被卡多尔纳禁止\n每回合仅有1个意大利MO\n若卡多尔纳未事件，其效果改为:\n增援: 1个受损意大利新兵LCU，1个\n受损意大利新兵scu，卡尔多纳HQ，\n仅添加1个“必须消灭一个意大利\nLCU” MO0。"
+			"source_text": "卡多尔纳已经事件后不能打出。本牌不提供增援；以后每回合意大利最多抽1枚MO。若卡多尔纳尚未事件，则将其效果修改为：增援1枚受损意大利新兵LCU、1枚受损意大利新兵SCU和唯一的卡多尔纳HQ，并仅向意大利MO池加入1枚“进攻中损失意大利LCU”。本牌事件后移除。"
 		},
 		"631": {
 			"card_id": 631,
@@ -8196,7 +8199,7 @@ const data = {
 			"timing": [
 				"action"
 			],
-			"commitment": "limited",
+			"commitment": "total",
 			"prerequisites": {
 				"min_turn": null,
 				"max_turn": null,
@@ -8234,7 +8237,7 @@ const data = {
 			"timing": [
 				"action"
 			],
-			"commitment": "limited",
+			"commitment": "total",
 			"prerequisites": {
 				"min_turn": null,
 				"max_turn": null,
@@ -8251,7 +8254,8 @@ const data = {
 			"operations": [
 				{
 					"type": "reinforcement",
-					"placement": "italian_front",
+					"placement": "normal_reinforcement",
+					"map_theater": "italian",
 					"rebuild_theater": "italian",
 					"restriction_scope": "generated_army_hq",
 					"units": [
@@ -8297,7 +8301,7 @@ const data = {
 				"action",
 				"naval"
 			],
-			"commitment": "limited",
+			"commitment": "total",
 			"prerequisites": {
 				"min_turn": null,
 				"max_turn": null,
@@ -8347,7 +8351,7 @@ const data = {
 			"timing": [
 				"action"
 			],
-			"commitment": "limited",
+			"commitment": "total",
 			"prerequisites": {
 				"min_turn": null,
 				"max_turn": null,
@@ -8405,7 +8409,7 @@ const data = {
 			"timing": [
 				"action"
 			],
-			"commitment": "limited",
+			"commitment": "total",
 			"prerequisites": {
 				"min_turn": null,
 				"max_turn": null,
@@ -8445,7 +8449,7 @@ const data = {
 			"timing": [
 				"combat"
 			],
-			"commitment": "limited",
+			"commitment": "total",
 			"prerequisites": {
 				"min_turn": null,
 				"max_turn": null,
@@ -9539,9 +9543,9 @@ const data = {
 				"kind": "task",
 				"nation": "br",
 				"code": "3",
-				"name": "一次进攻中有德国 LCU 被消灭",
+				"name": "进攻德国 LCU",
 				"attacks": 1,
-				"requirement": "destroy_enemy_army",
+				"requirement": "attack_enemy_army",
 				"target": "ge",
 				"image_source": "算子单位图标/强制进攻标记/英国MO3.png",
 				"image": "pieces/f0d5f6a6a5e7f89f.webp"
@@ -18952,8 +18956,7 @@ const data = {
 				"dourdan",
 				"meaux",
 				"paris",
-				"provins",
-				"sens"
+				"provins"
 			],
 			"connections_by_mode": {
 				"move": {
@@ -18961,15 +18964,13 @@ const data = {
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					],
 					"cp": [
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					]
 				},
 				"attack": {
@@ -18977,15 +18978,13 @@ const data = {
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					],
 					"cp": [
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					]
 				},
 				"supply": {
@@ -18993,15 +18992,13 @@ const data = {
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					],
 					"cp": [
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					]
 				},
 				"sr": {
@@ -19009,15 +19006,13 @@ const data = {
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					],
 					"cp": [
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					]
 				},
 				"retreat": {
@@ -19025,15 +19020,13 @@ const data = {
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					],
 					"cp": [
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					]
 				},
 				"advance": {
@@ -19041,15 +19034,13 @@ const data = {
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					],
 					"cp": [
 						"dourdan",
 						"meaux",
 						"paris",
-						"provins",
-						"sens"
+						"provins"
 					]
 				}
 			}
@@ -19830,7 +19821,6 @@ const data = {
 			"connections": [
 				"auxerre",
 				"dordives",
-				"melun",
 				"nogent"
 			],
 			"connections_by_mode": {
@@ -19838,13 +19828,11 @@ const data = {
 					"ap": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					],
 					"cp": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					]
 				},
@@ -19852,13 +19840,11 @@ const data = {
 					"ap": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					],
 					"cp": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					]
 				},
@@ -19866,13 +19852,11 @@ const data = {
 					"ap": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					],
 					"cp": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					]
 				},
@@ -19880,13 +19864,11 @@ const data = {
 					"ap": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					],
 					"cp": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					]
 				},
@@ -19894,13 +19876,11 @@ const data = {
 					"ap": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					],
 					"cp": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					]
 				},
@@ -19908,13 +19888,11 @@ const data = {
 					"ap": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					],
 					"cp": [
 						"auxerre",
 						"dordives",
-						"melun",
 						"nogent"
 					]
 				}
@@ -28234,23 +28212,6 @@ const data = {
 			"river_from": "provins"
 		},
 		{
-			"a": "melun",
-			"b": "sens",
-			"type": "land",
-			"modes": [
-				"move",
-				"attack",
-				"supply",
-				"sr",
-				"retreat",
-				"advance"
-			],
-			"factions": [
-				"ap",
-				"cp"
-			]
-		},
-		{
 			"a": "provins",
 			"b": "nogent",
 			"type": "land",
@@ -31640,7 +31601,7 @@ const data = {
 		{
 			"id": "component-010",
 			"name": "G罗森贝格",
-			"nation": "ah",
+			"nation": "ge",
 			"faction": "cp",
 			"type": "hq",
 			"veteran": false,

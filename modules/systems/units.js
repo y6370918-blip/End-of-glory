@@ -47,10 +47,12 @@ function createUnitSystem(context) {
         removed_by: reason,
         removed_turn: state.turn,
       });
+      state.supply_dirty = true;
       return "permanent";
     }
     state.eliminated ||= { ap: [], cp: [] };
     state.eliminated[unit.faction].push(unit);
+    state.supply_dirty = true;
     return "eliminated";
   }
 
@@ -65,6 +67,7 @@ function createUnitSystem(context) {
       removed_by: reason,
       removed_turn: state.turn,
     });
+    state.supply_dirty = true;
     return unit;
   }
 
@@ -92,6 +95,7 @@ function createUnitSystem(context) {
       delete state.trenches[space];
     }
     state.control[space] = faction;
+    state.supply_dirty = true;
     if (faction === AP && state.markers?.hindenburg?.includes(space))
       state.markers.hindenburg = state.markers.hindenburg.filter(
         (candidate) => candidate !== space,

@@ -47,6 +47,7 @@ const {
 } = require("./modules/core/active-role.js");
 const {
   captureLegacyMiracleResume,
+  reconcileReclassifiedCards,
 } = require("./modules/core/save-migrations.js");
 const { createCombatSystem } = require("./modules/systems/combat.js");
 const { createCombatCardSystem } = require("./modules/systems/combat-cards.js");
@@ -163,6 +164,7 @@ function ensureState(state) {
   );
   if (!state.voluntary_cleanup) state.voluntary_cleanup = null;
   if (!state.event_history) state.event_history = [];
+  reconcileReclassifiedCards(state, cardById);
   if (!state.permanently_removed_units) state.permanently_removed_units = [];
   if (!state.eliminated) state.eliminated = { ap: [], cp: [] };
   if (!state.mo.pool) state.mo.pool = {};
@@ -1560,6 +1562,9 @@ function ensureState(state) {
         unit.piece,
         unit.reinforcement_card,
       );
+      // Rosenberg's counter is printed GE.  Older generated data marked the
+      // HQ as AH, which left event 717 unable to proceed after its first LCU.
+      if (unit.piece === "component-010") unit.nation = "ge";
     };
     const pools = [
       state.units,
@@ -1689,7 +1694,32 @@ function ensureState(state) {
     delete state.ops.combine_selection;
   }
   if (state.ops) state.ops.combined_units ||= [];
-  state.version = 51;
+  if (previousVersion < 52) {
+    const migrateSupplyState = (snapshot) => {
+      if (!snapshot || typeof snapshot !== "object") return;
+      for (const pool of [
+        ...Object.values(snapshot.reserves || {}),
+        ...Object.values(snapshot.upgrade_pool || {}),
+        ...Object.values(snapshot.eliminated || {}),
+        ...Object.values(snapshot.hq_turn_track || {}),
+        ...Object.values(snapshot.entry_reserve || {}),
+      ])
+        for (const unit of pool || []) Engine.normalizeOffMapUnit(unit);
+      snapshot.version = 52;
+      snapshot.supply_dirty = true;
+      delete snapshot.supply_signature;
+    };
+    migrateSupplyState(state);
+    for (const entry of state.undo || []) migrateSupplyState(entry?.state);
+    const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
+    if (rollbackSnapshots.length) {
+      for (const snapshotState of rollbackSnapshots)
+        migrateSupplyState(snapshotState);
+      setRollbackSnapshots(state, rollbackSnapshots);
+    }
+  }
+  state.version = 52;
+  Engine.ensureSupply(state);
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -2071,7 +2101,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 51,
+    version: 52,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -2093,6 +2123,8 @@ function createState(seed, options = {}) {
     supply_warnings: null,
     supply_warning_editor: null,
     pending_supply_warning_review: null,
+    supply_dirty: true,
+    supply_signature: null,
     rollback_proposal: null,
     rollback_confirmation: null,
     action_history: [],
@@ -2347,6 +2379,7 @@ const {
   drawCards,
   drawMo,
   drawMoForNation,
+  ensureSupply,
   eliminateUnit,
   eventLegal,
   entryGapVpCost,
@@ -2392,6 +2425,7 @@ const {
   earlyWarOccupationLimit,
   occupationDepth,
   occupationDepths,
+  placementSources,
   schlieffenOverstackCandidates,
   neighborsFor,
   nextFactionAction,
@@ -2417,6 +2451,9 @@ const {
   srDestinations,
   stackLegal,
   suppliedSpaces,
+  supplyProfile,
+  supplySources,
+  supplyStatus,
   theaterOf,
   turkishFrontActive,
   unfulfilledMoObligations,
@@ -2430,7 +2467,9 @@ const {
 exports.action = function (state, current, action, arg) {
   try {
     ensureState(state);
+    ensureSupply(state);
     advanceRestoringState(state);
+    ensureSupply(state);
     if (!state || state.state === "game_over") return state;
     if (!actionAllowed(state, current)) return state;
     const offered = buildActionView(clone(state), current);
@@ -2469,6 +2508,7 @@ exports.action = function (state, current, action, arg) {
       undoActionContext.deterministic = true;
       Engine.advanceDeterministicStates(state);
       undoActionContext.deterministic = false;
+      ensureSupply(state);
       if (state.state !== "game_over")
         checkVictory(state, { armisticeOnly: true });
       if (!Engine.hasState(state.state))
@@ -2498,7 +2538,9 @@ exports.action = function (state, current, action, arg) {
 exports.view = function (state, current) {
   try {
     ensureState(state);
+    ensureSupply(state);
     advanceRestoringState(state);
+    ensureSupply(state);
     return Engine.view(state, current);
   } finally {
     exposeRttState(state);
@@ -2511,6 +2553,7 @@ exports.query = function (state, current, query) {
   // replay snapshot (supply calculation intentionally updates unit flags).
   const queried = clone(state);
   ensureState(queried);
+  ensureSupply(queried);
   const faction = roleFaction(current);
   if (query === "cards")
     return faction ? queried.hands[faction].map((id) => cardById[id]) : [];
@@ -2519,10 +2562,21 @@ exports.query = function (state, current, query) {
   if (query === "cp_cards")
     return faction === CP ? queried.hands.cp.map((id) => cardById[id]) : [];
   if (query === "supply") {
-    updateSupply(queried);
+    ensureSupply(queried);
+    const networks = {
+      ap: Object.fromEntries(["be", "br", "fr", "it", "us"].map((nation) => [
+        nation,
+        [...suppliedSpaces(queried, AP, nation)],
+      ])),
+      cp: Object.fromEntries(["ah", "ge"].map((nation) => [
+        nation,
+        [...suppliedSpaces(queried, CP, nation)],
+      ])),
+    };
     return {
       ap: [...suppliedSpaces(queried, AP)],
       cp: [...suppliedSpaces(queried, CP)],
+      networks,
       units: Object.fromEntries(
         queried.units.map((unit) => [
             unit.id,
@@ -2653,7 +2707,12 @@ exports._test = {
   moBagDefinitions,
   turkishFrontActive,
   fireResult,
+  ensureSupply,
+  placementSources,
   suppliedSpaces,
+  supplyProfile,
+  supplySources,
+  supplyStatus,
   updateSupply,
   resolveAttrition,
   resolveFactionAttrition,

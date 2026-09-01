@@ -280,7 +280,7 @@ function createReplacementSystem(api) {
       const source = option.unit.location;
       const theater = veteranUpgradeRestrictionTheater(option);
       const candidate = { ...option.unit, piece: option.token.piece };
-      const sources = api.supplySources(state, pending.faction, option.unit.nation);
+      const sources = api.placementSources(state, option.unit, "rebuild");
       const spaces = new Set(source ? [source] : []);
       for (const space of sources)
           if (state.control[space] === pending.faction &&
@@ -452,20 +452,13 @@ function createReplacementSystem(api) {
           const rebuildTheater = ["army", "hq"].includes(candidate.type)
               ? restrictedRebuild?.rebuild_theater
               : null;
-          // French armies rebuild only at their three printed mainland supply
-          // sources.  Other units use their own national supply sources; never
-          // fall back to the first source belonging to the whole faction.
-          let sourceIds = candidate.nation === "fr" && candidate.type === "army"
-              ? ["paris", "orleans", "chaumont"]
-              : candidate.nation === "be"
-                  ? (state.control.brussels === api.AP ? ["brussels"] : [])
-                  : api.supplySources(state, faction, candidate.nation);
-          if (state.turn <= 2 && faction === api.AP &&
-              api.nationalityGroup(candidate.nation) === "br")
-              sourceIds = sourceIds.filter((sourceId) => {
-                  const source = api.spaceById[sourceId];
-                  return !(source?.port && source.nation === "fr");
-              });
+          // Placement sources are nation-specific and shared with event
+          // reinforcements.  French armies retain their explicit three-source
+          // rebuild restriction.
+          let sourceIds = api.placementSources(state, candidate, "rebuild");
+          if (candidate.nation === "fr" && candidate.type === "army")
+              sourceIds = sourceIds.filter((id) =>
+                  ["paris", "orleans", "chaumont"].includes(id));
           const spaces = new Set();
           for (const sourceId of sourceIds) {
               if (state.control[sourceId] !== faction ||

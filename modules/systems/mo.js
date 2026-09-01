@@ -545,6 +545,7 @@ function createMoSystem(api) {
   function moAttackMatches(state, mo, attackingUnits, nation, declaration) {
       const assignedRequirement = new Set([
           "destroy_enemy_army",
+          "attack_enemy_army",
           "lose_friendly_army",
           "attack_win",
           "combat_win",
@@ -564,6 +565,14 @@ function createMoSystem(api) {
           attackingUnits,
       ).includes(unit.location));
       const condition = mo.attack_condition;
+      if (mo.requirement === "attack_enemy_army") {
+          const targetGroup = api.nationalityGroup(mo.target);
+          const hasTargetArmy = api.unitsAt(state, declaration.target, api.other(state.active))
+              .some((unit) => unit.type === "army" &&
+                  (!targetGroup || api.nationalityGroup(unit.nation) === targetGroup));
+          if (!hasTargetArmy)
+              return false;
+      }
       if (!condition)
           return true;
       const target = declaration.target;
@@ -625,6 +634,7 @@ function createMoSystem(api) {
                   ((mo?.attacks || 0) > 0 ||
                       [
                           "destroy_enemy_army",
+                          "attack_enemy_army",
                           "lose_friendly_army",
                           "attack_win",
                           "combat_win",

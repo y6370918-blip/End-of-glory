@@ -91,7 +91,7 @@
 		front_unit_payment: { target: "piece", label: "减损单位" },
 		front_maintenance_loss: { target: "piece", label: "战线维持损耗" },
 		voluntary_destroy_unit: { target: "piece", label: "自愿摧毁" },
-		spend_flip: { target: "piece", label: "减损单位" },
+		spend_flip: { target: "piece", label: "修复单位" },
 		spend_upgrade: { target: "piece", label: "升级单位" },
 		spend_rebuild: { target: "piece", label: "重建单位" },
 		select_combine_lcu: { target: "piece", label: "选择组合LCU" },

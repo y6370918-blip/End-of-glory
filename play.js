@@ -8,6 +8,7 @@ const ui = {
 	mouseFocus: false,
 	counterVisibility: 0,
 	supplyOverlayFaction: null,
+	supplyOverlayKey: null,
 	supplyOverlaySpaces: new Set(),
 	actionPending: false,
 	autoFocusSignature: null
@@ -815,9 +816,9 @@ function updatePieceElement(id, frame, contextLabel) {
 			: `${frame.reduced ? template?.reduced_combat : template?.combat}-${frame.reduced ? template?.reduced_loss : template?.loss}-${frame.reduced ? template?.reduced_movement : template?.movement}`
 	const supplyLabels = {
 		full: "补给充足",
-		limited: "有限补给：激活费用及战斗能力受限",
+		limited: "有限补给：可正常激活、掘壕和组合",
 		fort_limited: "孤立要塞有限补给：离开后必须停止或恢复补给",
-		none: "完全断补：不能补员，移动、进攻和战略调动受限"
+		none: "完全断补：不能普通移动、进攻、修筑、组合、战略调动或补员"
 	}
 	const supplyEffects = (frame.supplyEffects || []).map((entry) => `补给影响：${entry.label}`)
 	const supplyText = frame.zone === "map" ? ` · ${supplyLabels[frame.supplyStatus] || supplyLabels.full}` : ""
@@ -1810,23 +1811,29 @@ function toggleCounters() {
 	byId("piece-button").title = `${labels[ui.counterVisibility]}（点击切换）`
 }
 
-function requestSupplyOverlay(faction) {
-	if (ui.supplyOverlayFaction === faction) {
+function requestSupplyOverlay(faction, nation = null) {
+	const key = nation ? `${faction}:${nation}` : faction
+	if (ui.supplyOverlayKey === key) {
 		ui.supplyOverlayFaction = null
+		ui.supplyOverlayKey = null
 		ui.supplyOverlaySpaces = new Set()
 		renderSpaces()
 		return
 	}
-	ui.pendingSupplyFaction = faction
+	ui.pendingSupply = { faction, nation, key }
 	send_query("supply")
 }
 
 function onReply(query, payload) {
 	if (query !== "supply" || !payload) return
-	const faction = ui.pendingSupplyFaction || "ap"
+	const pending = ui.pendingSupply || { faction: "ap", nation: null, key: "ap" }
+	const { faction, nation, key } = pending
 	ui.supplyOverlayFaction = faction
-	ui.supplyOverlaySpaces = new Set(payload[faction] || [])
-	ui.pendingSupplyFaction = null
+	ui.supplyOverlayKey = key
+	ui.supplyOverlaySpaces = new Set(nation
+		? payload.networks?.[faction]?.[nation] || []
+		: payload[faction] || [])
+	ui.pendingSupply = null
 	renderSpaces()
 }
 
@@ -2328,6 +2335,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	byId("report-bug").addEventListener("click", () => byId("bug-report-dialog").showModal())
 	byId("show-ap-supply").addEventListener("click", () => requestSupplyOverlay("ap"))
 	byId("show-cp-supply").addEventListener("click", () => requestSupplyOverlay("cp"))
+	for (const [id, faction, nation] of [
+		["show-ap-br-supply", "ap", "br"],
+		["show-ap-be-supply", "ap", "be"],
+		["show-ap-fr-supply", "ap", "fr"],
+		["show-ap-us-supply", "ap", "us"],
+		["show-ap-it-supply", "ap", "it"],
+		["show-cp-ge-supply", "cp", "ge"],
+		["show-cp-ah-supply", "cp", "ah"],
+	]) byId(id).addEventListener("click", () => requestSupplyOverlay(faction, nation))
 	byId("piece-button").addEventListener("click", toggleCounters)
 	for (const close of document.querySelectorAll(".dialog_x"))
 		close.addEventListener("click", () => { close.closest(".dialog").hidden = true })

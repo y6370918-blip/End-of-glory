@@ -43,6 +43,12 @@ function createCombatCardSystem(api) {
   function combatCardDisposition(state, card) {
       const disposition = api.effectiveCombatEffect(state, card)?.disposition || null;
       const effect = api.effectiveCombatEffect(state, card);
+      // Card 620 changed from a combat card to an action Event.  An older save
+      // can still contain a legitimately committed, unrevealed copy; finish
+      // that already-crossed hidden-information boundary under its old starred
+      // disposition instead of discarding it or returning it to the hand.
+      if (card?.id === 620 && state.combat_window?.cards?.includes(620))
+          return { after_combat: "remove", retain_on_win: false, win_draw: null };
       if (effect?.force_discard)
           return { ...(disposition || {}), after_combat: "discard", retain_on_win: false, win_draw: null };
     if (effect?.transfer_after_use)

@@ -307,6 +307,15 @@ function createEventSystem(api) {
           : Math.floor(gap / divisor);
   }
 
+  function effectiveEventOperation(state, operation) {
+      const effective = api.clone(operation);
+      const modifier = effective.modified_by_event;
+      if (modifier?.event && state.events[modifier.event])
+          Object.assign(effective, api.clone(modifier.override || {}));
+      delete effective.modified_by_event;
+      return effective;
+  }
+
   function applyEffectOperation(state, card, operation) {
       if (operation.type === "noop")
           return;
@@ -599,8 +608,10 @@ function createEventSystem(api) {
       }
   }
 
-  function reinforcementOperation(card) {
-      return (api.cardSpecById[card.id]?.operations?.find((operation) => operation.type === "reinforcement") || null);
+  function reinforcementOperation(card, state = null) {
+      const operation = api.cardSpecById[card.id]?.operations
+          ?.find((candidate) => candidate.type === "reinforcement") || null;
+      return operation && state ? effectiveEventOperation(state, operation) : operation;
   }
 
   function beginCardSearchEvent(state, card, operation) {
@@ -608,7 +619,7 @@ function createEventSystem(api) {
           ...state.decks[card.faction],
           ...state.discard[card.faction],
       ].filter((id) => {
-          const reinforcement = reinforcementOperation(api.cardById[id]);
+          const reinforcement = reinforcementOperation(api.cardById[id], state);
           return reinforcement?.units?.some((unit) => api.pieceById[unit.piece]?.type === "army");
       });
       if (!candidates.length)
@@ -656,7 +667,8 @@ function createEventSystem(api) {
           api.adjustVp(state, entryCost);
           api.log(state, `${card.title}：美国参战差额 +${entryCost} VP。`);
       }
-      for (const operation of [...(spec?.operations || []), ...selectedOperations]) {
+      for (const printedOperation of [...(spec?.operations || []), ...selectedOperations]) {
+          const operation = effectiveEventOperation(state, printedOperation);
           if (state.pending_event?.early_vp && operation.type === "vp")
               continue;
           applyEffectOperation(state, card, operation);
@@ -699,7 +711,7 @@ function createEventSystem(api) {
           api.continueNavalEvents(state);
           return;
       }
-      const reinforcement = reinforcementOperation(card);
+      const reinforcement = reinforcementOperation(card, state);
       if (reinforcement?.free_sr) {
           const freeSrCount = state.turn === 1 && reinforcement.free_sr.turn_one_count != null
               ? reinforcement.free_sr.turn_one_count
@@ -928,7 +940,7 @@ function createEventSystem(api) {
           beginDelayedUnitEvent(state, card, delayed);
           return;
       }
-      const reinforcement = reinforcementOperation(card);
+      const reinforcement = reinforcementOperation(card, state);
       if (reinforcement) {
           beginReinforcementEvent(state, card, reinforcement);
           return;
@@ -1450,7 +1462,7 @@ function createEventSystem(api) {
       const options = [];
       for (const unit of units)
           if (unit.nation === "fr")
-              for (const kind of ["flip", "upgrade", "rebuild"]) {
+              for (const kind of ["flip", "rebuild"]) {
                   const option = api.replacementOption(state, { kind, unit: unit.id, key: "fr" });
                   if (option && option.cost <= pending.remaining)
                       options.push({ kind, unit: unit.id, key: "fr", cost: option.cost });
@@ -1468,12 +1480,6 @@ function createEventSystem(api) {
       const parent = api.clone(pending);
       api.spendReplacement(state, { kind, unit, key });
       if (state.pending_event?.kind === "replacement_rebuild") {
-          state.pending_event.resume_combat_fr_rp = parent;
-          state.pending_event.immediate_rp_key = key;
-          state.pending_event.immediate_rp_cost = option.cost;
-          return;
-      }
-      if (state.pending_event?.kind === "veteran_upgrade") {
           state.pending_event.resume_combat_fr_rp = parent;
           state.pending_event.immediate_rp_key = key;
           state.pending_event.immediate_rp_cost = option.cost;

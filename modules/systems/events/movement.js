@@ -5,7 +5,7 @@ function createMovementEventSystem(api) {
       const candidates = [...state.decks.cp, ...state.discard.cp].filter((id) => {
           if (operation.cp_search.includes("war_industry") && id === 724)
               return true;
-          const reinforcement = api.reinforcementOperation(api.cardById[id]);
+          const reinforcement = api.reinforcementOperation(api.cardById[id], state);
           return (operation.cp_search.includes("ge_reinforcement") &&
               reinforcement?.units?.some((unit) => api.pieceById[unit.piece]?.nation === "ge"));
       });
@@ -59,7 +59,7 @@ function createMovementEventSystem(api) {
           nation: piece.nation,
           type: piece.type,
       };
-      const supplied = api.suppliedSpaces(state, api.AP, movingUnit.nation);
+      const supplied = api.suppliedSpaces(state, api.AP, movingUnit);
       return api.data.spaces
           .filter((space) => supplied.has(space.id) &&
           state.control[space.id] === api.AP &&

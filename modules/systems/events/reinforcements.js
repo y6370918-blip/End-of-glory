@@ -303,14 +303,11 @@ function createReinforcementEventSystem(api) {
   }
 
   function normalReinforcementMapSpace(state, faction, piece, space) {
-      if (api.nationalSupplySource(state, faction, piece.nation, space))
-          return true;
-      if (faction !== api.AP || !space.port)
-          return false;
-      if (api.nationalityGroup(piece.nation) === "br" &&
-          ["br", "fr"].includes(space.nation))
-          return !(state.turn <= 2 && space.nation === "fr" && piece.nation !== "fr");
-      return piece.nation === "us" && space.nation === "fr";
+      return api.placementSources(
+          state,
+          { ...piece, faction },
+          "reinforcement",
+      ).includes(space.id);
   }
 
   function reinforcementStackAllows(state, pending, piece, space, placements) {
@@ -336,8 +333,10 @@ function createReinforcementEventSystem(api) {
 
   function reinforcementMapSpaces(state, pending, piece, placement, placements) {
       const faction = piece.faction || pending.owner;
+      const mapTheater = pending.operation.map_theater || null;
       const direct = api.data.spaces
           .filter((space) => !space.ui?.hidden)
+          .filter((space) => !mapTheater || api.theaterOf(space.id) === mapTheater)
           .filter((space) => api.unitsAt(state, space.id, api.other(faction)).length === 0)
           .filter((space) => {
           if (placement === "friendly_occupied")
@@ -349,7 +348,7 @@ function createReinforcementEventSystem(api) {
                   normalReinforcementMapSpace(state, faction, piece, space);
           if (placement === "national_supply")
               return state.control[space.id] === faction &&
-                  api.nationalSupplySource(state, faction, piece.nation, space);
+                  normalReinforcementMapSpace(state, faction, piece, space);
           if (placement === "within_sources")
               return (state.control[space.id] === faction &&
                   distanceFromAny(pending.operation.sources || [], space.id, pending.operation.max_distance || 0) <= (pending.operation.max_distance || 0));
@@ -365,6 +364,7 @@ function createReinforcementEventSystem(api) {
               for (const adjacent of api.landNeighbors(source.id)) {
                   const space = api.spaceById[adjacent];
                   if (space && !space.ui?.hidden &&
+                      (!mapTheater || api.theaterOf(adjacent) === mapTheater) &&
                       state.control[adjacent] === faction &&
                       !api.unitsAt(state, adjacent, api.other(faction)).length &&
                       reinforcementStackAllows(state, pending, piece, space, placements))
@@ -414,25 +414,6 @@ function createReinforcementEventSystem(api) {
           pending.operation.rebuild.placement || "normal_reinforcement",
           placements,
       );
-      if (unit.nation === "be") {
-          if (state.control.brussels !== api.AP)
-              return [];
-          // Brussels is the only Belgian rebuild source.  When that valid
-          // printed source is full it may still use the ordinary adjacent
-          // overflow rule; Antwerp is never treated as an independent source.
-          const allowed = new Set(["brussels"]);
-          const brussels = api.spaceById.brussels;
-          if (brussels && !reinforcementStackAllows(
-              state,
-              pending,
-              api.pieceById[unit.piece],
-              brussels,
-              placements,
-          ))
-              for (const adjacent of api.landNeighbors("brussels"))
-                  allowed.add(adjacent);
-          return spaces.filter((space) => allowed.has(space));
-      }
       return spaces;
   }
 
@@ -490,7 +471,7 @@ function createReinforcementEventSystem(api) {
       const unit = state.units.find((candidate) => candidate.id === id);
       if (!unit)
           return [];
-      return api.supplySources(state, api.AP, unit.nation).filter((space) => state.control[space] === api.AP && api.stackLegal(state, space, unit));
+      return api.supplySources(state, api.AP, unit).filter((space) => state.control[space] === api.AP && api.stackLegal(state, space, unit));
   }
 
   function selectPiaveExchange(state, token) {
