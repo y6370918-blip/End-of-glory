@@ -558,6 +558,19 @@ function createCombatSystem(api) {
           .filter((unit) => unit && api.isCombatUnit(unit));
       if (!combatUnits.length)
           return "normal";
+      const movementUnitsAreValid = combatUnits.every((unit) =>
+          unit.moved && unit.attack_eligible);
+      // attack_mode is fixed when the attack is committed.  Combat-card
+      // windows temporarily change the active player and event processing can
+      // alter activation metadata, so resolving the battle must not downgrade
+      // a declared movement attack by re-inferring its origin from mutable
+      // state.
+      if (declaration?.attack_mode === "movement")
+          return movementUnitsAreValid ? "movement" : "normal";
+      if (declaration?.attack_mode === "normal")
+          return "normal";
+      if (declaration?.attack_origin?.kind === "movement")
+          return movementUnitsAreValid ? "movement" : "normal";
       const forced = new Set(state.ops?.forced_attacks || []);
       const marked = new Set(state.ops?.attack_marker_spaces || []);
       const declaredMarkerOrigins = new Set(Object.values(declaration?.mo_marker_origins || {}).flat());
@@ -568,8 +581,7 @@ function createCombatSystem(api) {
           marked.has(unit.location) ||
           declaredMarkerOrigins.has(unit.location)) ||
           (declaration?.attack_origin?.kind && declaration.attack_origin.kind !== "normal");
-      return !hasRealAttackMarker && combatUnits.every((unit) =>
-          unit.moved && unit.attack_eligible)
+      return !hasRealAttackMarker && movementUnitsAreValid
           ? "movement"
           : "normal";
   }

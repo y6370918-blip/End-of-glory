@@ -1,6 +1,38 @@
 "use strict";
 
 function createCombatStates(api) {
+  function attackOriginKind(state, attackerIds) {
+    if (state.ops?.source === "mo_penalty") return "mo_penalty";
+
+    // During the first three turns, a move activation is resolved one stack at
+    // a time.  Record that immutable origin on the declaration instead of
+    // asking the later combat-card/loss states to reconstruct it from whatever
+    // activation markers and unit locations happen to remain at that time.
+    const executionOrigin = state.ops?.execution_origin;
+    if (
+      state.turn <= 3 &&
+      executionOrigin &&
+      state.activations?.[executionOrigin] === "move"
+    ) {
+      const combatUnits = (attackerIds || [])
+        .map((id) => state.units.find((unit) => unit.id === id))
+        .filter((unit) => unit && api.isCombatUnit(unit));
+      if (
+        combatUnits.length &&
+        combatUnits.every((unit) => unit.moved && unit.attack_eligible)
+      )
+        return "movement";
+    }
+
+    // Event-created attack activations (for example forced markers) remain
+    // normal attacks.  This check deliberately follows the move-activation
+    // check: August Guns is an event-created OPS action and its move-activated
+    // stacks must still receive the ordinary T1-T3 movement-attack rules.
+    if (state.ops?.source === "event") return "event";
+
+    return "normal";
+  }
+
   function continueAttackDeclaration(state) {
     const pending = state.ops?.pending_attack;
     if (!pending) throw new Error("No pending attack");
@@ -51,12 +83,7 @@ function createCombatStates(api) {
           target,
           flank: false,
           attack_origin: {
-            kind:
-              state.ops?.source === "mo_penalty"
-                ? "mo_penalty"
-                : state.ops?.source === "event"
-                  ? "event"
-                  : "normal",
+            kind: attackOriginKind(state, selection.selected),
             source: state.ops?.source_id ?? state.ops?.card ?? null,
           },
           mo_assignments: {},
