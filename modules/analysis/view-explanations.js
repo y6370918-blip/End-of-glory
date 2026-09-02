@@ -116,8 +116,8 @@ function candidateNeighbors(state, context) {
       const unit = state.units.find((candidate) => candidate.id === id);
       if (unit?.location) origins.add(unit.location);
     }
-  } else if (state.state === "advance_destination") {
-    for (const id of state.pending_retreat?.selected_advance_units || []) {
+  } else if (state.state === "advance_select" && state.pending_retreat?.selected_follow_unit) {
+    for (const id of [state.pending_retreat.selected_follow_unit]) {
       const unit = state.units.find((candidate) => candidate.id === id);
       if (unit?.location) origins.add(unit.location);
     }
@@ -132,7 +132,7 @@ function candidateNeighbors(state, context) {
     ops_attack: "declare_attack",
     sr: "sr_destination",
     retreat: "retreat_destination",
-    advance_destination: "advance_destination",
+    advance_select: "advance_destination",
   }[state.state];
   const exact = context.candidateSpaces?.(state, action, origins);
   if (exact)
@@ -187,6 +187,7 @@ function pieceContext(state, actions, result, context) {
   const legalPieces = new Set();
   for (const action of [
     "select_move_unit",
+    "drop_move_unit",
     "select_attacker",
     "select_sr_unit",
     "select_retreat_unit",
@@ -198,6 +199,7 @@ function pieceContext(state, actions, result, context) {
 
   let relevantAction = null;
   if (["ops_move", "movement_units"].includes(state.state)) relevantAction = "select_move_unit";
+  else if (state.state === "movement") relevantAction = "drop_move_unit";
   else if (state.state === "ops_attack") relevantAction = "select_attacker";
   else if (state.state === "sr") relevantAction = "select_sr_unit";
   else if (state.state === "retreat" && !state.pending_retreat?.selected_unit)
@@ -206,8 +208,12 @@ function pieceContext(state, actions, result, context) {
   if (!relevantAction) return;
 
   const origin = state.ops?.move_selection?.origin;
+  const movementUnits = relevantAction === "drop_move_unit"
+    ? new Set(state.ops?.movement?.units || [])
+    : null;
   for (const unit of state.units) {
     if (unit.faction !== state.active || legalPieces.has(unit.id)) continue;
+    if (movementUnits && !movementUnits.has(unit.id)) continue;
     if (origin && unit.location !== origin) continue;
     const exact = context.explainPieceAction?.(state, relevantAction, unit);
     let code = exact?.code || "rule_forbidden";

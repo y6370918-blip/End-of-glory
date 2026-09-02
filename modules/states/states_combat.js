@@ -19,34 +19,6 @@ function createCombatStates(api) {
     api.commitPendingAttack(state, { ...pending, flank: false });
   }
 
-  function advanceToDestination(state, destination) {
-    const pending = state.pending_retreat;
-    if (!api.advanceDestinations(state, pending).includes(destination))
-      throw new Error("Illegal advance destination");
-    const ids = pending.selected_advance_units.slice();
-    const units = ids.map((id) => api.findUnit(state, id)).filter(Boolean);
-    if (!units.length || units.length !== ids.length)
-      throw new Error("Advance units no longer exist");
-    const continuing = Boolean(pending.advance_group?.length);
-    if (!api.advanceCanEnter(state, ids, destination))
-      throw new Error("Advance is no longer legal");
-    if (!continuing && !pending.advanced_ids.length) api.clearUndo(state);
-    api.snapshot(state, "Post-combat advance");
-    for (const unit of units) api.advanceUnitInto(state, pending, unit, destination);
-    if (api.intactFort(state, destination) &&
-        api.spaceById[destination]?.faction === api.other(units[0].faction) &&
-        !api.refreshBesiegedSpace(state, destination))
-      throw new Error("The advancing group cannot establish the required siege");
-    pending.advanced = pending.advanced_ids.length;
-    if (!continuing) {
-      pending.units = pending.units.filter((id) => !ids.includes(id));
-      pending.advance_group = [destination];
-    } else pending.advance_group.push(destination);
-    if (api.secondAdvanceDestinations(state, pending, ids).length)
-      state.state = "advance_select";
-    else api.finishAdvanceGroup(state);
-  }
-
   return {
     ops_attack: {
       message: "选择进攻单位和目标。",
@@ -68,10 +40,7 @@ function createCombatStates(api) {
         const selection = api.attackSelectionActions(state);
         if (!selection.deselectable.includes(id))
           throw new Error("Unit must remain in this attack");
-        state.ops.attack_selection = api.pruneOrphanAttackHqs(
-          state,
-          selection.selected.filter((candidate) => candidate !== id),
-        );
+        state.ops.attack_selection = selection.selected.filter((candidate) => candidate !== id);
       },
       declare_attack(state, target) {
         const selection = api.attackSelectionActions(state);
@@ -407,7 +376,7 @@ function createCombatStates(api) {
           return;
         }
         if (pending.resume === "cancel_retreat") {
-          api.finishCombatSequence(state);
+          state.state = "post_retreat_cancel";
           return;
         }
         state.state = "combat_losses";
@@ -444,7 +413,7 @@ function createCombatStates(api) {
           state.pending_replacement.resume = "cancel_retreat";
           return;
         }
-        api.finishCombatSequence(state);
+        state.state = "post_retreat_cancel";
       },
       proceed_retreat(state) {
         const pending = state.pending_retreat;
@@ -456,16 +425,60 @@ function createCombatStates(api) {
       },
     },
 
+    post_retreat_cancel: {
+      message: "撤退取消已完成，确认后继续。",
+      prompt(_state, builder) {
+        builder.enable("done");
+      },
+      done(state) {
+        api.clearUndo(state);
+        api.finishCombatSequence(state);
+      },
+    },
+
+    movement_retreat_choice: {
+      message: "移动后进攻：防守方选择撤退或不撤退。",
+      prompt(state, builder) {
+        if (state.pending_retreat?.mode !== "movement_choice") return;
+        builder.enable("proceed_retreat");
+        builder.enable("decline_optional_retreat");
+      },
+      proceed_retreat(state) {
+        const pending = state.pending_retreat;
+        if (pending?.mode !== "movement_choice" || !pending.movement_attack)
+          throw new Error("No movement-attack retreat choice is pending");
+        api.clearUndo(state);
+        pending.mode = "movement_mandatory";
+        pending.cancel_stage_complete = true;
+        api.log(state, "防守方选择撤退。");
+        state.state = "retreat";
+      },
+      decline_optional_retreat(state) {
+        const pending = state.pending_retreat;
+        if (pending?.mode !== "movement_choice" || !pending.movement_attack)
+          throw new Error("No movement-attack retreat choice is pending");
+        api.clearUndo(state);
+        api.log(state, "防守方选择不撤退。");
+        api.finishCombatSequence(state);
+      },
+    },
+
     retreat: {
-      message: "逐单位撤退。",
+      message(state) {
+        return state.pending_retreat?.phase === "overstack_extra"
+          ? "最终地区超堆叠：该地区本次撤退单位必须各再撤退1格。"
+          : state.pending_retreat?.mode === "movement_forced"
+            ? "战略撤退：逐枚选择撤退1格或2格。"
+            : state.pending_retreat?.movement_attack
+              ? "移动后进攻：逐单位完成撤退。"
+              : "逐单位撤退。";
+      },
       prompt(state, builder) {
         const pending = state.pending_retreat;
         const selected = pending.selected_unit;
         if (selected) {
           builder.add("deselect_retreat_unit", selected);
           builder.addAll("retreat_destination", api.retreatDestinations(state, api.findUnit(state, selected)));
-          if (pending.mode === "movement_optional")
-            builder.enable("decline_optional_retreat");
           return;
         }
         for (const id of pending.units || []) {
@@ -473,7 +486,7 @@ function createCombatStates(api) {
           if (!unit) continue;
           const remaining = Number(pending.remaining?.[id]);
           if (Number.isInteger(remaining) && remaining > 0) {
-            if (pending.mode === "movement_optional" || api.retreatUnitHasRoute(state, id, remaining))
+            if (api.retreatUnitHasRoute(state, id, remaining))
               builder.add("select_retreat_unit", id);
             else if (api.isCombatUnit(unit))
               builder.add("eliminate", id);
@@ -492,7 +505,7 @@ function createCombatStates(api) {
         const remaining = Number(pending.remaining?.[id]);
         if (pending?.selected_unit || !pending?.units?.includes(id) ||
             !Number.isInteger(remaining) || remaining <= 0 ||
-            (pending.mode !== "movement_optional" && !api.retreatUnitHasRoute(state, id, remaining)))
+            !api.retreatUnitHasRoute(state, id, remaining))
           throw new Error("Unit has no complete legal retreat path");
         pending.selected_unit = id;
       },
@@ -517,23 +530,11 @@ function createCombatStates(api) {
         if (pending?.selected_unit !== id) throw new Error("Unit is not selected");
         pending.selected_unit = null;
       },
-      decline_optional_retreat(state) {
-        const pending = state.pending_retreat;
-        const id = pending?.selected_unit;
-        if (pending?.mode !== "movement_optional" || !id || !pending.units.includes(id))
-          throw new Error("No optional retreat unit is selected");
-        api.snapshot(state, "该单位不撤退");
-        pending.declined_units ||= [];
-        if (!pending.declined_units.includes(id)) pending.declined_units.push(id);
-        pending.units = pending.units.filter((unitId) => unitId !== id);
-        pending.selected_unit = null;
-        api.log(state, `[[unit:${id}]]选择不撤退。`);
-        if (!pending.units.length) api.finishAllRetreats(state);
-      },
       eliminate(state, id) {
         const pending = state.pending_retreat;
         const unit = api.findUnit(state, id);
-        if (pending?.mode !== "mandatory" || !pending.units.includes(id) || !api.isCombatUnit(unit))
+        if (!["mandatory", "movement_mandatory", "movement_forced"].includes(pending?.mode) ||
+            !pending.units.includes(id) || !api.isCombatUnit(unit))
           throw new Error("Unit is not subject to mandatory retreat elimination");
         const distances = pending.remaining?.[id] != null
           ? [Number(pending.remaining[id])]
@@ -567,43 +568,17 @@ function createCombatStates(api) {
         pending.selected_unit = null;
         api.log(state, `[[unit:${id}]]撤退：[[space:${origin}]] → [[space:${destination}]]。`);
         const final = pending.remaining[id] === 0;
-        const overstacked = api.retreatSpaceOverstacked(
-          state,
-          destination,
-          pending.faction,
-        );
-        const alreadyPaid = Boolean(pending.overstack_loss_paid?.[id]);
-        if (overstacked && alreadyPaid) {
-          // This unit already paid the one loss for its current forced
-          // overstack continuation.  It must keep retreating until it reaches
-          // a legal stack, but it does not pay again in every full space.
-          if (final) pending.remaining[id] = 1;
-          api.setActiveFaction(state, pending.faction);
-          state.state = "retreat";
-        } else if (overstacked) {
-          pending.overstack = {
-            space: destination,
-            unit: id,
-            group: [id],
-            final,
-            loss_paid: false,
-          };
-          api.setActiveFaction(state, pending.faction);
-          state.state = "retreat_overstack";
-        } else {
-          if (pending.overstack_loss_paid) delete pending.overstack_loss_paid[id];
-          if (final) {
-            api.finishRetreatUnit(state, id);
-            return;
-          }
-          api.setActiveFaction(state, pending.faction);
-          state.state = "retreat";
+        if (final) {
+          api.finishRetreatUnit(state, id);
+          return;
         }
+        api.setActiveFaction(state, pending.faction);
+        state.state = "retreat";
       },
     },
 
     retreat_overstack: {
-      message: "处理超堆叠。",
+      message: "最终撤退地区超堆叠：选择一枚本次撤退战斗单位承受损失。",
       prompt(state, builder) {
         builder.addAll("retreat_loss", api.retreatOverstackLossCandidates(state));
       },
@@ -614,7 +589,7 @@ function createCombatStates(api) {
         const previousState = state.state;
         const previousSide = state.combat.pending_side;
         api.snapshot(state, "撤退超堆叠损失");
-        pending.overstack.loss_paid = true;
+        pending.overstack_loss_complete = true;
         state.combat.pending_side = pending.faction;
         api.reduceCombatUnit(state, id);
         state.combat.pending_side = previousSide;
@@ -627,114 +602,60 @@ function createCombatStates(api) {
       },
     },
 
-    advance_select: {
-      message: "选择挺进单位。",
-      prompt(state, builder) {
-        const pending = state.pending_retreat;
-        const selected = pending.selected_advance_units || [];
-        const selectedOrigin = selected.length ? api.findUnit(state, selected[0])?.location : null;
-        const candidates = (pending.advance_group?.length ? [] : pending.units).filter((id) => {
-          const unit = api.findUnit(state, id);
-          return (
-            unit &&
-            (!selectedOrigin || unit.location === selectedOrigin) &&
-            (selected.includes(id) ||
-              pending.maximum == null ||
-              unit.type === "hq" ||
-              api.advanceCountedUnitCount(state, pending.advanced_ids) +
-                api.advanceCountedUnitCount(state, selected) < pending.maximum) &&
-            api.advanceSelectionCanAdd(state, pending, [...selected, id])
-          );
-        });
-        builder.addAll("select_advance_unit", candidates.filter((id) => !selected.includes(id)));
-        if (selected.length && api.advanceDestinations(state, pending).length)
-          builder.addAll("advance_destination", api.advanceDestinations(state, pending));
-        if (
-          !pending.advance_group?.length ||
-          api.advanceGroupStackLegal(
-            state,
-            pending.advance_group.at(-1),
-            selected,
-            state.combat.attacker,
-          )
-        )
-          builder.enable("decline_advance");
+    retreat_complete: {
+      message: "撤退已完成，确认后继续。",
+      prompt(_state, builder) {
+        builder.enable("done");
       },
-      select_advance_unit(state, id) {
-        const pending = state.pending_retreat;
-        if (!pending.units.includes(id)) throw new Error("Unit cannot advance");
-        if (pending.advance_group?.length)
-          throw new Error("No new unit may join an advance already in progress");
-        const unit = api.findUnit(state, id);
-        if (
-          pending.maximum != null &&
-          unit?.type !== "hq" &&
-          api.advanceCountedUnitCount(state, pending.advanced_ids) +
-            api.advanceCountedUnitCount(state, pending.selected_advance_units) >= pending.maximum &&
-          !pending.selected_advance_units.includes(id)
-        )
-          throw new Error("Advance limit reached");
-        const selectedUnits = pending.selected_advance_units
-          .map((unitId) => api.findUnit(state, unitId))
-          .filter(Boolean);
-        if (selectedUnits.length && selectedUnits[0].location !== unit.location)
-          throw new Error("An advance group must begin in one attack space");
-        const projected = [...pending.selected_advance_units, id];
-        if (!api.advanceSelectionCanAdd(state, pending, projected))
-          throw new Error("Advance would violate stacking, connection, fort, or occupancy limits");
-        if (!pending.selected_advance_units.includes(id)) {
-          pending.selected_advance_units.push(id);
-          // Ordinary vacant spaces retain the PUG one-click advance.  Against
-          // an intact fort, corps may need to be accumulated until the group
-          // reaches the printed siege strength; the last required click then
-          // performs the advance automatically.
-          const selectedHasHq = pending.selected_advance_units.some((unitId) =>
-            api.findUnit(state, unitId)?.type === "hq");
-          const supportFlowStillOpen = pending.units.some((candidateId) => {
-            if (pending.selected_advance_units.includes(candidateId)) return false;
-            const candidate = api.findUnit(state, candidateId);
-            return (candidate?.type === "hq" || selectedHasHq) &&
-              api.advanceSelectionCanAdd(state, pending, [
-                ...pending.selected_advance_units,
-                candidateId,
-              ]);
-          });
-          if (!supportFlowStillOpen && api.advanceDestinations(state, pending).includes(pending.target))
-            advanceToDestination(state, pending.target);
-        }
-      },
-      advance_destination: advanceToDestination,
-      decline_advance(state) {
-        const pending = state.pending_retreat;
-        if (pending.advance_group?.length) {
-          if (
-            !api.advanceGroupStackLegal(
-              state,
-              pending.advance_group.at(-1),
-              pending.selected_advance_units,
-              state.combat.attacker,
-            )
-          )
-            throw new Error("The advancing group may not stop overstacked");
-          api.finishAdvanceGroup(state);
-        } else {
-          if (!(pending.advanced_ids || []).length) api.clearUndo(state);
-          api.finishCombatSequence(state);
-        }
+      done(state) {
+        api.clearUndo(state);
+        api.beginPostRetreatAdvance(state);
       },
     },
 
-    advance_destination: {
-      message: "选择挺进地区。",
+    advance_select: {
+      message: (state) => state.pending_retreat?.selected_follow_unit
+        ? "选择该单位的第二步挺进地区。"
+        : "逐枚选择挺进单位；完成后点击结束挺进。",
       prompt(state, builder) {
-        builder.addAll("advance_destination", api.advanceDestinations(state));
-        builder.enable("cancel");
+        const pending = state.pending_retreat;
+        if (!pending) return;
+        if (pending.selected_follow_unit) {
+          builder.addAll(
+            "advance_destination",
+            api.advanceFollowDestinations(state, pending, pending.selected_follow_unit),
+          );
+          builder.add("select_advance_unit", pending.selected_follow_unit);
+          return;
+        }
+        builder.addAll("select_advance_unit", [
+          ...api.advanceFirstStepUnitIds(state, pending),
+          ...api.advanceFollowUnitIds(state, pending),
+        ]);
+        if (api.canEndAdvance(state, pending)) builder.enable("end_advance");
+      },
+      select_advance_unit(state, id) {
+        const pending = state.pending_retreat;
+        if (!pending) throw new Error("No pending advance");
+        if (pending.selected_follow_unit === id ||
+            api.advanceFollowUnitIds(state, pending).includes(id)) {
+          api.selectAdvanceFollowUnit(state, id);
+          return;
+        }
+        if (!(pending.advanced_ids || []).length) api.clearUndo(state);
+        api.snapshot(state, "逐枚挺进");
+        api.advancePieceFirstStep(state, id);
       },
       advance_destination(state, destination) {
-        advanceToDestination(state, destination);
+        api.snapshot(state, "继续挺进");
+        api.advancePieceFollowStep(state, destination);
       },
-      cancel(state) {
-        state.state = "advance_select";
+      end_advance(state) {
+        if (!api.canEndAdvance(state))
+          throw new Error("HQ护送或要塞围攻尚未完成");
+        if (!(state.pending_retreat?.advanced_ids || []).length) api.clearUndo(state);
+        api.snapshot(state, "结束挺进");
+        api.finishCombatSequence(state);
       },
     },
   };

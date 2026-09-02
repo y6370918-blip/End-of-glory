@@ -100,6 +100,7 @@ function createMovementStates(api) {
         const movement = api.movementContext(state);
         if (!movement) return;
         builder.addAll("move", api.movementStepDestinations(state));
+        builder.addAll("drop_move_unit", api.droppableMovementUnitIds(state));
         if (api.canFinishUnitMovement(state)) builder.enable("stop");
         if (!movement.path.length) builder.enable("cancel");
       },
@@ -107,6 +108,10 @@ function createMovementStates(api) {
         const unit = api.findUnit(state, state.ops.moving);
         if (!unit) throw new Error("Moving unit not found");
         api.moveUnitOneSpace(state, unit, destination);
+      },
+      drop_move_unit(state, id) {
+        api.snapshot(state, "放下移动单位");
+        api.dropMovementUnit(state, id);
       },
       stop(state) {
         api.snapshot(state, "结束移动");

@@ -49,7 +49,10 @@ function createActivationStates(api) {
       message: (state) => {
         const pending = state.ops?.pending_activation;
         const name = api.spaceById[pending?.space]?.name || pending?.space || "大区";
-        return `${name}：选择最多3枚战斗单位（HQ不计，1 OP）`;
+        const selected = pending?.selected || [];
+        const combat = api.regionActivationCountedUnitCount(state, selected);
+        const hq = api.regionActivationHqCount(state, selected);
+        return `${name}：战斗单位 ${combat}/3，HQ ${hq}/1（1 OP）`;
       },
       prompt(state, builder) {
         const pending = state.ops?.pending_activation;

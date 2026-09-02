@@ -1127,7 +1127,7 @@ function renderActions() {
 					EogActionProtocol.labelFor(action, undefined, view.action_labels),
 					action,
 					undefined,
-					["done", "stop", "finish", "event_units_confirm", "confirm_mo", "confirm_mo_penalty_loss", "confirm_losses"].includes(action) ? "primary" : ""
+					["done", "stop", "finish", "end_advance", "event_units_confirm", "confirm_mo", "confirm_mo_penalty_loss", "confirm_losses"].includes(action) ? "primary" : ""
 				)
 			)
 

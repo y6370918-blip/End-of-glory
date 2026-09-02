@@ -50,20 +50,15 @@ function createDeterministicSystem(api) {
       }
 
       if (state.state === "retreat") {
+        if (api.retreatQueueComplete(state)) {
+          api.finishAllRetreats(state);
+          continue;
+        }
         if (api.deferUnroutableRetreatHqs(state)) continue;
         return;
       }
 
-      if (state.state === "advance_select") {
-        const actions = stateActions(state);
-        if (!(actions.select_advance_unit || []).length &&
-            !(actions.advance_destination || []).length &&
-            actions.decline_advance === 1) {
-          api.stateEngine.dispatch(state, "decline_advance");
-          continue;
-        }
-        return;
-      }
+      if (state.state === "advance_select") return;
 
       if (state.state === "combat_losses" &&
           !api.legalCombatLossUnitIds(state).length) {

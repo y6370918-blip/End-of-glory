@@ -138,7 +138,11 @@ function createViewSystem(api) {
               selected: (state.ops.pending_activation.selected || []).slice(),
               required: [],
               minimum: 1,
-              maximum: 3,
+              maximum: 4,
+              counted_maximum: 3,
+              counted_types: ["army", "corps"],
+              support_maximum: 1,
+              support_types: ["hq"],
           };
       if (state.ops?.combine_selection?.army_id)
           return {
@@ -206,8 +210,8 @@ function createViewSystem(api) {
               maximum: 1,
           };
       if (state.pending_retreat) {
-          const selected = ["advance_select", "advance_destination"].includes(state.state)
-              ? state.pending_retreat.selected_advance_units || []
+          const selected = state.state === "advance_select"
+              ? [state.pending_retreat.selected_follow_unit].filter(Boolean)
               : [state.pending_retreat.selected_unit].filter(Boolean);
           if (selected.length)
               return {
@@ -215,10 +219,7 @@ function createViewSystem(api) {
                   selected: selected.slice(),
                   required: [],
                   minimum: 1,
-                  maximum: ["advance_select", "advance_destination"].includes(state.state)
-                      ? Math.max(1, state.pending_retreat.units?.length ||
-                          state.pending_retreat.advance_units?.length || 1)
-                      : 1,
+                  maximum: 1,
               };
       }
       if (state.pending_event?.selected_units)

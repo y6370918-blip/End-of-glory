@@ -247,7 +247,26 @@ function ensureState(state) {
       ]),
     );
     state.pending_retreat.advanced_ids ||= [];
-    state.pending_retreat.selected_advance_units ||= [];
+    if (previousVersion >= 53) {
+      state.pending_retreat.follow_units ||= [];
+      state.pending_retreat.selected_follow_unit ||= null;
+      state.pending_retreat.first_step_paths ||= {};
+      state.pending_retreat.required_follow_hqs ||= [];
+      state.pending_retreat.pending_siege ||= false;
+      delete state.pending_retreat.selected_advance_units;
+      delete state.pending_retreat.advance_group;
+    }
+    if (previousVersion >= 54 && state.pending_retreat.faction) {
+      state.pending_retreat.completed_units ||= [];
+      state.pending_retreat.waiting_hqs ||= [];
+      state.pending_retreat.overstack_spaces ||= [];
+      state.pending_retreat.overstack_space ||= null;
+      state.pending_retreat.overstack_units ||= [];
+      state.pending_retreat.overstack_loss_complete ||= false;
+      state.pending_retreat.extra_retreat_units ||= [];
+      state.pending_retreat.extra_retreat_round ||= 0;
+      state.pending_retreat.phase ||= "retreat";
+    }
     if (previousVersion < 49) {
       if (!Array.isArray(state.pending_retreat.selected_units))
         state.pending_retreat.selected_units = state.pending_retreat.selected_unit
@@ -1718,7 +1737,225 @@ function ensureState(state) {
       setRollbackSnapshots(state, rollbackSnapshots);
     }
   }
-  state.version = 52;
+  if (previousVersion < 53) {
+    const migrateHqFlowState = (snapshot) => {
+      if (!snapshot || typeof snapshot !== "object") return;
+      const movement = snapshot.ops?.movement;
+      if (movement) {
+        movement.units ||= [movement.unit].filter(Boolean);
+        movement.active_units ||= movement.units.filter(
+          (id) => !(movement.stopped_units || []).includes(id),
+        );
+        movement.stopped_units ||= movement.units.filter(
+          (id) => !movement.active_units.includes(id),
+        );
+        movement.path ||= [];
+        movement.spent_by_unit ||= Object.fromEntries(
+          movement.units.map((id) => [id, movement.path.length]),
+        );
+        movement.paths_by_unit ||= Object.fromEntries(
+          movement.units.map((id) => {
+            const unit = snapshot.units?.find((candidate) => candidate.id === id);
+            return [id, (unit?.movement_path || movement.path).slice()];
+          }),
+        );
+      }
+      const pending = snapshot.pending_retreat;
+      if (pending) {
+        const oldSelected = (pending.selected_advance_units || []).slice();
+        const oldGroup = (pending.advance_group || []).slice();
+        pending.follow_units ||= [];
+        pending.first_step_paths ||= {};
+        pending.required_follow_hqs ||= [];
+        pending.selected_follow_unit = null;
+        pending.pending_siege = false;
+        if (oldGroup.length) {
+          for (const id of oldSelected) {
+            pending.first_step_paths[id] = oldGroup.slice();
+            if (oldGroup.length === 1 && !pending.follow_units.includes(id))
+              pending.follow_units.push(id);
+          }
+        }
+        delete pending.selected_advance_units;
+        delete pending.advance_group;
+      }
+      if (snapshot.state === "advance_destination") snapshot.state = "advance_select";
+      snapshot.version = 53;
+    };
+    migrateHqFlowState(state);
+    for (const entry of state.undo || []) migrateHqFlowState(entry?.state);
+    const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
+    if (rollbackSnapshots.length) {
+      for (const snapshotState of rollbackSnapshots) migrateHqFlowState(snapshotState);
+      setRollbackSnapshots(state, rollbackSnapshots);
+    }
+  }
+  if (previousVersion < 54) {
+    const migrateRetreatFlowState = (snapshot) => {
+      if (!snapshot || typeof snapshot !== "object") return;
+      const pending = snapshot.pending_retreat;
+      if (!pending?.faction) {
+        snapshot.version = 54;
+        return;
+      }
+      const live = new Set((snapshot.units || []).map((unit) => unit.id));
+      const uniqueLive = (ids) => [...new Set((ids || []).filter((id) => live.has(id)))];
+      pending.units = uniqueLive(pending.units);
+      pending.waiting_hqs = uniqueLive(pending.waiting_hqs);
+      pending.completed_units = uniqueLive(pending.completed_units);
+      const declined = new Set(pending.declined_units || []);
+      const active = new Set(pending.units);
+      for (const id of Object.keys(pending.paths || {})) {
+        const path = pending.paths[id] || [];
+        if (live.has(id) && !active.has(id) && !declined.has(id) &&
+            (Number(pending.remaining?.[id]) === 0 || path.length > 1) &&
+            !pending.completed_units.includes(id))
+          pending.completed_units.push(id);
+      }
+      for (const id of pending.waiting_hqs) {
+        if (!pending.completed_units.includes(id)) pending.completed_units.push(id);
+        pending.units = pending.units.filter((unitId) => unitId !== id);
+      }
+      pending.overstack_spaces ||= [];
+      pending.overstack_space ||= null;
+      pending.overstack_units ||= [];
+      pending.overstack_loss_complete ||= false;
+      pending.extra_retreat_units ||= [];
+      pending.extra_retreat_round ||= 0;
+      pending.phase ||= "retreat";
+
+      const legacy = pending.overstack;
+      if (legacy) {
+        const group = uniqueLive(legacy.group || [legacy.unit].filter(Boolean));
+        const paid = Boolean(legacy.loss_paid) ||
+          snapshot.pending_replacement?.resume === "retreat_overstack";
+        if (paid && snapshot.pending_replacement?.resume === "retreat_overstack") {
+          pending.overstack_space = legacy.space || null;
+          pending.overstack_units = group;
+          pending.overstack_loss_complete = true;
+          pending.phase = "overstack_loss";
+        } else if (paid) {
+          pending.extra_retreat_units = group;
+          pending.units = uniqueLive([...pending.units, ...group]);
+          pending.phase = "overstack_extra";
+          for (const id of group)
+            pending.remaining[id] = Math.max(1, Number(pending.remaining[id]) || 0);
+          snapshot.state = "retreat";
+        } else {
+          if (legacy.final) {
+            for (const id of group)
+              if (!pending.completed_units.includes(id)) pending.completed_units.push(id);
+            pending.units = pending.units.filter((id) => !group.includes(id));
+          }
+          pending.phase = "retreat";
+          snapshot.state = "retreat";
+        }
+        delete pending.overstack;
+      }
+
+      const paidIds = uniqueLive(Object.keys(pending.overstack_loss_paid || {}));
+      if (paidIds.length) {
+        pending.extra_retreat_units = uniqueLive([
+          ...pending.extra_retreat_units,
+          ...paidIds,
+        ]);
+        pending.units = uniqueLive([...pending.units, ...paidIds]);
+        pending.phase = "overstack_extra";
+        snapshot.state = "retreat";
+      }
+      delete pending.overstack_loss_paid;
+      delete pending.deferred_hqs;
+      if (snapshot.state === "retreat_overstack" && !snapshot.pending_replacement)
+        snapshot.state = "retreat";
+      snapshot.version = 54;
+    };
+    migrateRetreatFlowState(state);
+    for (const entry of state.undo || []) migrateRetreatFlowState(entry?.state);
+    const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
+    if (rollbackSnapshots.length) {
+      for (const snapshotState of rollbackSnapshots)
+        migrateRetreatFlowState(snapshotState);
+      setRollbackSnapshots(state, rollbackSnapshots);
+    }
+  }
+  if (previousVersion < 55) {
+    const migrateMovementRetreatChoice = (snapshot) => {
+      if (!snapshot || typeof snapshot !== "object") return;
+      const pending = snapshot.pending_retreat;
+      if (!pending) {
+        snapshot.version = 55;
+        return;
+      }
+      const movementMode = [
+        "movement_optional",
+        "movement_choice",
+        "movement_mandatory",
+        "movement_forced",
+      ].includes(pending.mode);
+      if (!movementMode) {
+        snapshot.version = 55;
+        return;
+      }
+      pending.movement_attack = true;
+      const modifierChoices = snapshot.combat?.modifiers?.retreat_choice;
+      const cardChoices = snapshot.combat?.modifiers?.cards?.find((entry) =>
+        Number(entry?.id) === 602 || Array.isArray(entry?.effect?.retreat_choice),
+      )?.effect?.retreat_choice;
+      const strategicChoices = Array.isArray(modifierChoices) && modifierChoices.length
+        ? modifierChoices.slice()
+        : Array.isArray(cardChoices) && cardChoices.length
+          ? cardChoices.slice()
+          : null;
+      const paths = Object.values(pending.paths || {}).filter(Array.isArray);
+      const hasMoved = paths.some((path) => path.length > 1);
+      const hasDeclined = (pending.declined_units || []).length > 0;
+      const activeRetreatPhase = snapshot.state === "retreat" &&
+        (!pending.phase || pending.phase === "retreat");
+
+      if (strategicChoices) {
+        pending.mode = "movement_forced";
+        pending.steps = null;
+        pending.choices = strategicChoices;
+        pending.selected_unit = null;
+        for (const id of pending.units || [])
+          if ((pending.paths?.[id] || []).length <= 1) pending.remaining[id] = null;
+        if (activeRetreatPhase || snapshot.state === "movement_retreat_choice")
+          snapshot.state = "retreat";
+      } else if (pending.mode === "movement_optional") {
+        const margin = Number(snapshot.combat?.defense_loss || 0) -
+          Number(snapshot.combat?.attack_loss || 0);
+        const steps = Math.min(2, Math.max(1, margin));
+        pending.steps = steps;
+        pending.choices = null;
+        pending.selected_unit = null;
+        for (const id of pending.units || [])
+          if ((pending.paths?.[id] || []).length <= 1) pending.remaining[id] = steps;
+        if (!activeRetreatPhase || (pending.phase && pending.phase !== "retreat")) {
+          pending.mode = "movement_mandatory";
+        } else if (hasMoved) {
+          pending.mode = "movement_mandatory";
+          snapshot.state = "retreat";
+        } else if (hasDeclined) {
+          pending.mode = "movement_mandatory";
+          pending.units = [];
+          snapshot.state = "retreat";
+        } else {
+          pending.mode = "movement_choice";
+          snapshot.state = "movement_retreat_choice";
+        }
+      }
+      snapshot.version = 55;
+    };
+    migrateMovementRetreatChoice(state);
+    for (const entry of state.undo || []) migrateMovementRetreatChoice(entry?.state);
+    const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
+    if (rollbackSnapshots.length) {
+      for (const snapshotState of rollbackSnapshots)
+        migrateMovementRetreatChoice(snapshotState);
+      setRollbackSnapshots(state, rollbackSnapshots);
+    }
+  }
+  state.version = 55;
   Engine.ensureSupply(state);
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
@@ -2101,7 +2338,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 52,
+    version: 55,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {

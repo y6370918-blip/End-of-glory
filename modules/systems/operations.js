@@ -84,16 +84,16 @@ function createOperationsSystem(api) {
       return reason("rule_forbidden", "撤退优先级、已走路径或最终堆叠限制该地区");
     }
     if (action === "advance_destination") {
-      const ids = state.pending_retreat?.selected_advance_units || [];
-      const advancingFaction = ids.length
-        ? state.units.find((unit) => unit.id === ids[0])?.faction
-        : state.combat?.attacker || faction;
+      const pending = state.pending_retreat;
+      const id = pending?.selected_follow_unit;
+      const unit = state.units.find((candidate) => candidate.id === id);
+      const advancingFaction = unit?.faction || state.combat?.attacker || faction;
       if (api.unitsAt(state, destination, api.other(faction)).length)
         return reason("enemy_blocked");
       if (!canOccupyByEarlyWarDepth(state, advancingFaction, destination))
         return reason("early_occupation_depth", "超出占领纵深", "important");
-      if (!api.advanceCanEnter(state, ids, destination)) {
-        if (!api.advanceGroupStackLegal(state, destination, ids, faction)) return reason("overstack");
+      if (!id || !api.advanceFollowDestinations(state, pending, id).includes(destination)) {
+        if (unit && !api.advanceGroupStackLegal(state, destination, [id], faction)) return reason("overstack");
         if (api.intactFort(state, destination)) return reason("fort_blocked");
         return reason("connection_mode", "该地区不在本次合法挺进路径上");
       }
@@ -113,6 +113,10 @@ function createOperationsSystem(api) {
       if (!movementRoutes(state, unit, selection?.selected || []).length)
         return reason(unit.type === "hq" ? "hq_escort" : "movement_points", "该单位没有合法移动路径");
     }
+    if (action === "drop_move_unit") {
+      const blocked = movementDropBlockReason(state, unit.id);
+      if (blocked) return reason(unit.type === "hq" ? "hq_escort" : "rule_forbidden", blocked);
+    }
     if (action === "select_sr_unit") {
       if (state.sr?.used_units?.includes(unit.id)) return reason("already_used_sr");
       if (unit.location && !unit.supplied) return reason("supply");
@@ -131,14 +135,16 @@ function createOperationsSystem(api) {
         : action === "select_retreat_two"
           ? 2
           : Number(pending.remaining?.[unit.id] ?? pending.steps ?? 1);
-      if (pending.mode !== "movement_optional" && !api.retreatUnitHasRoute(state, unit.id, distance))
+      if (!api.retreatUnitHasRoute(state, unit.id, distance))
         return reason("rule_forbidden", "该单位没有完整的合法撤退路径");
     }
     if (action === "select_advance_unit") {
       const pending = state.pending_retreat;
-      if (!pending?.units?.includes(unit.id)) return reason("rule_forbidden", "该单位不属于本次挺进候选");
-      if (!api.advanceSelectionCanAdd(state, pending, [...(pending.selected_advance_units || []), unit.id]))
-        return reason("overstack", "加入该单位后没有合法共同挺进目的地");
+      if (!pending?.units?.includes(unit.id) && !pending?.follow_units?.includes(unit.id))
+        return reason("rule_forbidden", "该单位不属于本次挺进候选");
+      if (!api.advanceFirstStepUnitIds(state, pending).includes(unit.id) &&
+          !api.advanceFollowUnitIds(state, pending).includes(unit.id))
+        return reason(unit.type === "hq" ? "hq_escort" : "overstack", "该单位当前没有合法挺进步骤");
     }
     return reason("rule_forbidden");
   }
@@ -211,7 +217,8 @@ function createOperationsSystem(api) {
           required,
           minimum: largeArea ? Math.min(1, candidates.length) : candidates.length,
           maximum: largeArea
-              ? Math.min(3, candidates.filter((unit) => unit.type !== "hq").length)
+              ? Math.min(3, candidates.filter(api.isCombatUnit).length) +
+                  Math.min(1, candidates.filter((unit) => unit.type === "hq").length)
               : candidates.length,
           large_area: largeArea,
       };
@@ -223,10 +230,39 @@ function createOperationsSystem(api) {
           .filter((unit) => unit && unit.type !== "hq").length;
   }
 
+  function regionActivationHqCount(state, unitIds) {
+      return (unitIds || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter((unit) => unit?.type === "hq").length;
+  }
+
+  function regionActivationSelectionCompletable(state, selected, candidateIds = null) {
+      const pending = state.ops?.pending_activation;
+      const candidates = candidateIds || pending?.candidates || [];
+      const selectedSet = new Set(selected || []);
+      const units = [...selectedSet]
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(Boolean);
+      if (units.length !== selectedSet.size ||
+          regionActivationCountedUnitCount(state, selected) > 3 ||
+          regionActivationHqCount(state, selected) > 1)
+          return false;
+      const remainingCombatSlots = 3 - regionActivationCountedUnitCount(state, selected);
+      return units.filter((unit) => unit.type === "hq").every((hq) =>
+          units.some((unit) => api.isCombatUnit(unit) &&
+              api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation)) ||
+          (remainingCombatSlots > 0 && candidates.some((id) => {
+              if (selectedSet.has(id)) return false;
+              const unit = state.units.find((candidate) => candidate.id === id);
+              return unit && api.isCombatUnit(unit) &&
+                  api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation);
+          })));
+  }
+
   function regionActivationCanAddUnit(state, selected, id) {
       const unit = state.units.find((candidate) => candidate.id === id);
-      return Boolean(unit &&
-          (unit.type === "hq" || regionActivationCountedUnitCount(state, selected) < 3));
+      if (!unit) return false;
+      return regionActivationSelectionCompletable(state, [...new Set([...(selected || []), id])]);
   }
 
   function selectedActivationUnits(state, spaceId, unitIds = null) {
@@ -423,6 +459,7 @@ function createOperationsSystem(api) {
           .filter((space) => state.turn > 3 || !space.large_area ||
               !state.activations[space.id] || state.activations[space.id] === kind)
           .filter((space) => activationCandidates(state, space.id).length)
+          .filter((space) => activationCandidates(state, space.id).some(api.isCombatUnit))
           .filter((space) => kind !== "attack" ||
           activationCandidates(state, space.id).some(api.isCombatUnit))
           .filter((space) => kind !== "attack" ||
@@ -1388,6 +1425,7 @@ function createOperationsSystem(api) {
               api.landNeighbors(origin).some((space) =>
                   api.unitsAt(state, space, api.other(unit.faction)).some(api.isCombatUnit))])),
           spent_by_unit: Object.fromEntries(ids.map((id) => [id, 0])),
+          paths_by_unit: Object.fromEntries(ids.map((id) => [id, []])),
       };
       state.state = "movement";
       return state.ops.movement;
@@ -1544,12 +1582,63 @@ function createOperationsSystem(api) {
       return Boolean(movement && movementEndpointLegal(state, movement));
   }
 
+  function movementDropBlockReason(state, id) {
+      const movement = movementContext(state);
+      if (!movement?.path?.length || !movement.active_units?.includes(id))
+          return "Unit is not moving";
+      const unit = state.units.find((candidate) => candidate.id === id);
+      if (!unit) return "Unit no longer exists";
+      const location = unit.location;
+      const continuing = new Set(movement.active_units.filter((unitId) => unitId !== id));
+      const finalUnits = api.unitsAt(state, location, unit.faction)
+          .filter((candidate) => !continuing.has(candidate.id));
+      if (!api.spaceById[location]?.large_area) {
+          if (finalUnits.filter(api.isCombatUnit).length > 3)
+              return "Dropping this unit would overstack the space";
+          if (finalUnits.filter((candidate) => candidate.type === "hq").length > 1)
+              return "Dropping this unit would exceed the HQ limit";
+      }
+      if (finalUnits.some((candidate) => candidate.type === "hq" &&
+          !hqEndLegal(state, candidate, location, continuing)))
+          return "An HQ must stop with a national combat unit or at a supply source";
+      if (continuing.size) {
+          const remainingMovement = {
+              ...movement,
+              active_units: [...continuing],
+          };
+          if (!movementEndpointLegal(state, remainingMovement, remainingMovement.active_units) &&
+              !movementStepDestinations(state, remainingMovement).length)
+              return "The remaining movement group would have no legal endpoint";
+      }
+      return null;
+  }
+
+  function droppableMovementUnitIds(state) {
+      const movement = movementContext(state);
+      return (movement?.active_units || []).filter((id) => !movementDropBlockReason(state, id));
+  }
+
+  function dropMovementUnit(state, id) {
+      const reason = movementDropBlockReason(state, id);
+      if (reason) throw new Error(reason);
+      const movement = movementContext(state);
+      finishMovementUnits(state, [id]);
+      if (!movement.active_units.length) {
+          state.ops.moving = null;
+          state.ops.movement = null;
+          state.ops.move_selection = null;
+          state.state = resumeOpsExecutionState(state);
+      }
+  }
+
   function finalizeMovementUnit(state, unit, movement) {
-      const enteredAttackMarker = [movement.origin, ...movement.path].some((space) =>
-          (state.ops?.attack_marker_spaces || []).includes(space) ||
-          (state.ops?.forced_attacks || []).includes(space) ||
-          state.activations?.[space] === "attack");
-      unit.movement_path = movement.path.slice();
+      const unitPath = movement.paths_by_unit?.[unit.id] || movement.path;
+      const destination = unitPath.at(-1);
+      const destinationHasAttackMarker = Boolean(destination &&
+          ((state.ops?.attack_marker_spaces || []).includes(destination) ||
+              (state.ops?.forced_attacks || []).includes(destination) ||
+              state.activations?.[destination] === "attack"));
+      unit.movement_path = unitPath.slice();
       unit.moved = true;
       unit.attack_eligible =
           state.turn <= 3 &&
@@ -1557,10 +1646,10 @@ function createOperationsSystem(api) {
               !movement.began_in_fort_limited_supply[unit.id] &&
               !movement.began_in_limited_supply?.[unit.id] &&
               !movement.began_adjacent_enemy?.[unit.id] &&
-              !enteredAttackMarker;
+              !destinationHasAttackMarker;
       api.log(state, `[[unit:${unit.id}]]：${[
           movement.origin,
-          ...movement.path,
+          ...unitPath,
       ]
           .map((space) => `[[space:${space}]]`)
           .join(" → ")}。`);
@@ -1626,6 +1715,9 @@ function createOperationsSystem(api) {
           movingUnit.location = requested;
           movement.spent_by_unit[movingUnit.id] =
               (movement.spent_by_unit[movingUnit.id] || 0) + 1;
+          movement.paths_by_unit ||= {};
+          movement.paths_by_unit[movingUnit.id] ||= movement.path.slice();
+          movement.paths_by_unit[movingUnit.id].push(requested);
       }
       movement.path.push(requested);
       for (const movingUnit of activeUnits)
@@ -1955,6 +2047,15 @@ function createOperationsSystem(api) {
               }
           }
       }
+      // POG/PUG begins resolving activated spaces as soon as the final OP is
+      // spent.  Keeping an empty activation state here made event+OPS yellow
+      // cards appear stuck at "0 OP" and left continuation dependent on a
+      // separate header button.  Schlieffen free SR and usable Italian bonus
+      // OP remain explicit pre-resolution choices.
+      if (state.ops.remaining <= 0 &&
+          !(state.ops.schlieffen && schlieffenSrUnits(state).length) &&
+          !((state.ops.italian_bonus || 0) > 0 && earlyActivationAvailable(state)))
+          requestOpsFinish(state);
   }
 
   function activate(state, space, kind) {
@@ -1987,6 +2088,7 @@ function createOperationsSystem(api) {
       if (!pending || !api.spaceById[pending.space]?.large_area) return false;
       const selected = pending.selected || [];
       if (!selected.length || regionActivationCountedUnitCount(state, selected) > 3 ||
+          regionActivationHqCount(state, selected) > 1 ||
           selected.some((id) => !pending.candidates.includes(id)) ||
           selected.some((id) => regionUnitActivated(state, id))) return false;
       const units = selected.map((id) => state.units.find((unit) => unit.id === id)).filter(Boolean);
@@ -1994,11 +2096,12 @@ function createOperationsSystem(api) {
           units.some((unit) => unit.location !== pending.space) ||
           units.some((unit) => unit.supplied === false && !unit.limited_supply && !unit.fort_limited_supply))
           return false;
+      const combatUnits = units.filter(api.isCombatUnit);
+      const hqs = units.filter((unit) => unit.type === "hq");
+      if (!combatUnits.length || hqs.some((unit) => !combatUnits.some((combat) =>
+          api.nationalityGroup(combat.nation) === api.nationalityGroup(unit.nation))))
+          return false;
       if (pending.kind === "attack") {
-          const combatUnits = units.filter(api.isCombatUnit);
-          if (!combatUnits.length || units.some((unit) => unit.type === "hq" &&
-              !combatUnits.some((combat) =>
-                  api.nationalityGroup(combat.nation) === api.nationalityGroup(unit.nation)))) return false;
           if (!api.geometricAttackTargets(state, combatUnits).length) return false;
       }
       if (pending.kind === "construct" && !units.some(api.isCombatUnit)) return false;
@@ -2120,6 +2223,8 @@ return Object.freeze({
     constructionMaximumTrench,
     constructionUnits,
     crossTheaterSrDestinationAllowed,
+    dropMovementUnit,
+    droppableMovementUnitIds,
     earlyActivationAvailable,
     earlyEntryAllowed,
     earlySrDestinationAllowed,
@@ -2156,6 +2261,7 @@ return Object.freeze({
     movementContext,
     pendingRegionActivationLegal,
     movementDestinationKeepsHqsResolvable,
+    movementDropBlockReason,
     movementDestinations,
     movementEndpointLegal,
     movementPaths,
@@ -2170,6 +2276,8 @@ return Object.freeze({
     regionActivationBatchForUnit,
     regionActivationCanAddUnit,
     regionActivationCountedUnitCount,
+    regionActivationHqCount,
+    regionActivationSelectionCompletable,
     regionActivationStacks,
     selectRegionActivationUnit,
     deselectRegionActivationUnit,
