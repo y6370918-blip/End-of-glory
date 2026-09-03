@@ -55,9 +55,12 @@ function createActionStates(api) {
     },
 
     review_rollback_proposal: {
-      message: "审查回滚。",
-      prompt(_state, builder) {
-        builder.enable("accept_rollback");
+      message: (state) => api.rollbackSnapshot(state, state.rollback_proposal?.index)
+        ? "审查回滚。"
+        : "检查点存档不可用，请拒绝此回滚提议。",
+      prompt(state, builder) {
+        if (api.rollbackSnapshot(state, state.rollback_proposal?.index))
+          builder.enable("accept_rollback");
         builder.enable("reject_rollback");
       },
       accept_rollback: api.acceptRollbackProposal,

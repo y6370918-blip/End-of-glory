@@ -297,10 +297,12 @@ function rollbackEntries(
       group: `T${entry.turn}:AR${entry.round || 0}`,
       kind: entry.kind,
       label: entry.label,
+      available: Boolean(snapshot),
+      unavailable_reason: snapshot ? null : "检查点存档缺失或与回合不匹配，不能回滚。",
       log_cursor: cursor,
       removed_logs: removed.slice(-maximumLogs),
       omitted_logs: omitted,
-      changes: semanticDiff(snapshot || {}, state, role),
+      changes: snapshot ? semanticDiff(snapshot, state, role) : null,
     };
   });
 }

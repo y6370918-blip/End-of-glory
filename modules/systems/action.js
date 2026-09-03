@@ -207,6 +207,8 @@ function createActionSystem(api) {
       index = Number(index);
       if (!Number.isInteger(index) || !state.rollback[index])
           throw new Error("Rollback checkpoint is no longer available");
+      if (!api.rollbackSnapshot(state, index))
+          throw new Error("Rollback checkpoint state does not match its turn/round");
       if (api.AUXILIARY_FLOW_STATES.has(state.state))
           throw new Error("A modal flow is already active");
       state.rollback_proposal = {
@@ -239,10 +241,7 @@ function createActionSystem(api) {
       if (!entry)
           throw new Error("Rollback checkpoint is no longer available");
       const rollback = state.rollback.slice();
-      const rollbackStates = Array.from(
-          { length: rollback.length },
-          (_, index) => api.rollbackSnapshot(state, index),
-      );
+      const rollbackStates = api.rollbackSnapshots(state);
       const snapshotState = rollbackStates[proposal.index];
       if (!snapshotState)
           throw new Error("Rollback checkpoint state is unavailable");

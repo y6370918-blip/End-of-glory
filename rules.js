@@ -26,9 +26,12 @@ const {
 } = require("./modules/core/event-flow.js");
 const {
   compactHistoryState,
+  clearRollback,
   decodeRollbackStates,
   encodeRollbackStates,
   rollbackSnapshot,
+  rollbackSnapshots,
+  repairRollbackHistory,
   setRollbackSnapshots,
 } = require("./modules/core/history.js");
 const {
@@ -1956,6 +1959,7 @@ function ensureState(state) {
     }
   }
   state.version = 55;
+  repairRollbackHistory(state);
   Engine.ensureSupply(state);
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
@@ -2065,7 +2069,7 @@ function restoreSnapshot(state, entry) {
 }
 
 function checkpoint(state, kind, label) {
-  const snapshots = decodeRollbackStates(state.rollback_state);
+  const snapshots = rollbackSnapshots(state);
   state.rollback.push({
     turn: state.turn,
     round: state.action_round,
@@ -2507,8 +2511,10 @@ const Engine = createEngine({
   },
   adapters: {
     checkpoint,
+    clearRollback,
     clearUndo,
     rollbackSnapshot,
+    rollbackSnapshots,
     setRollbackSnapshots,
     log,
     random,
@@ -2825,13 +2831,15 @@ exports.query = function (state, current, query) {
     };
   }
   if (query === "combat_preview") return clone(queried.combat);
-  if (query === "rollback")
+  if (query === "rollback") {
+    const snapshots = rollbackSnapshots(queried);
     return ViewExplanations.rollbackEntries(
       queried,
       current,
       20,
-      (index) => rollbackSnapshot(queried, index),
+      (index) => snapshots[index],
     );
+  }
   return null;
 };
 

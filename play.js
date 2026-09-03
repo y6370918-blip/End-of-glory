@@ -1913,7 +1913,9 @@ function openRollbackDialog() {
 		update()
 	}
 	const update = () => {
-		const checkpoint = view.rollback?.find((entry) => entry.index === Number(select.value))
+		const checkpoint = select.value === "" ? null
+			: checkpoints.find((entry) => entry.index === Number(select.value))
+		byId("submit-rollback").disabled = !checkpoint
 		const detail = byId("rollback-detail")
 		if (!checkpoint) {
 			detail.textContent = "没有可用检查点。"
@@ -2374,7 +2376,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		close.addEventListener("click", () => { close.closest(".dialog").hidden = true })
 	byId("rollback-form").addEventListener("submit", (event) => {
 		event.preventDefault()
-		const index = Number(byId("rollback-checkpoint").value)
+		const value = byId("rollback-checkpoint").value
+		const index = Number(value)
+		if (value === "" || !Number.isInteger(index) || !actionIncludes("propose_rollback", index)) return
 		byId("rollback-dialog").close()
 		perform("propose_rollback", index)
 	})

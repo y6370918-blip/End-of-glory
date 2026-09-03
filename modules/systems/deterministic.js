@@ -143,14 +143,11 @@ function createDeterministicSystem(api) {
         return;
       }
 
-      if (state.state === "movement_units") {
-        const actions = stateActions(state);
-        if (!(actions.move || []).length && actions.finish === 1) {
-          api.stateEngine.dispatch(state, "finish");
-          continue;
-        }
-        return;
-      }
+      // A partial group may have no destinations until an HQ or its escort is
+      // added (or another unit is deselected). This is still a player choice,
+      // not exhausted movement: "finish" ends the entire OPS movement phase.
+      // Preserve the selection both after clicks and when restoring a save.
+      if (state.state === "movement_units") return;
 
       if (state.state === "sr" && !state.sr?.selected_unit) {
         const actions = stateActions(state);

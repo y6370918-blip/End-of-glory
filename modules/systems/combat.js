@@ -1698,7 +1698,7 @@ function createCombatSystem(api) {
       api.clearUndo(state);
       // Mutual rollback must obey the same public-information boundary. A new
       // action-round checkpoint will be created after this combat is complete.
-      state.rollback.length = 0;
+      api.clearRollback(state);
       for (const [nation, id] of Object.entries(state.combat.mo_assignments)) {
           const definition = api.moDefinition(state, id);
           if (definition &&

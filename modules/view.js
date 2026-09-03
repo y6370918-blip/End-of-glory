@@ -12,8 +12,11 @@ function createViewSystem(api) {
           !["opening_ap_card", "opening_cp_august_guns"].includes(state.state)) {
           if (api.undoAvailable(state))
               actions.undo = 1;
-          if (state.rollback.length)
-              actions.propose_rollback = state.rollback.map((_, index) => index);
+          if (state.rollback.length) {
+              const snapshots = api.rollbackSnapshots(state);
+              actions.propose_rollback = state.rollback
+                  .map((_, index) => index).filter((index) => snapshots[index]);
+          }
           actions.flag_supply_warnings = 1;
       }
       api.stateEngine.prompt(state, builder);
@@ -616,6 +619,7 @@ function createViewSystem(api) {
       const faction = api.roleFaction(current);
       const canAct = api.actionAllowed(state, current);
       const actionView = buildActionView(state, current);
+      const historySnapshots = api.rollbackSnapshots(state);
       const currentCombatContext = combatContext(state);
       const naval = api.clone(state.naval);
       const combatWindow = api.clone(state.combat_window);
@@ -761,7 +765,7 @@ function createViewSystem(api) {
               state,
               current,
               20,
-              (index) => api.rollbackSnapshot(state, index),
+              (index) => historySnapshots[index],
           ),
           rollback_proposal: state.rollback_proposal
               ? {
