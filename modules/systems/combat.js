@@ -1389,6 +1389,15 @@ function createCombatSystem(api) {
                   delete state.events[card.event];
               }
           }
+          // Cancellation spends this attack, not the remaining OPS action.
+          // Keep ownership fixed to the declaration after either card window.
+          api.setActiveFaction(state, attacker);
+          for (const unit of attackingUnits)
+              unit.attacked = true;
+          if (state.ops?.forced_attacks?.length) {
+              const participating = new Set(attackingUnits.map((unit) => unit.location));
+              state.ops.forced_attacks = state.ops.forced_attacks.filter((space) => !participating.has(space));
+          }
           state.combat_window = null;
           api.log(state, `战斗 ${target} 被战斗牌取消。`);
           api.clearCombatEvents(state);
@@ -1396,7 +1405,14 @@ function createCombatSystem(api) {
               api.finishOps(state);
               return;
           }
-          state.state = "ops_activate";
+          // Returning to ops_activate during execution makes its Finish end
+          // the entire action, bypassing other early stacks and later attacks.
+          if (state.ops?.execution_phase === "attack") {
+              api.prepareOpsAttackSelection(state);
+              state.state = "ops_attack";
+          }
+          else
+              state.state = "ops_activate";
           return;
       }
       const preCombatFortDestruction = modifiers.cards.some((entry) => entry.effect.destroy_belgian_fort &&
@@ -2186,12 +2202,14 @@ function createCombatSystem(api) {
   }
 
   function hqRelocationSpaces(state, hq) {
-      return api.supplySources(state, hq.faction, hq).filter((space) => api.spaceCanActivate(state, space) && api.stackLegal(state, space, hq));
+      return api.supplySources(state, hq.faction, hq).filter((space) =>
+          api.spaceCanActivate(state, space) && api.stackLegal(state, space, hq) &&
+          api.hqEndLegal(state, hq, space));
   }
 
   function beginCombatHqRelocation(state, combat, resume = null) {
-      if (combat.hq_relocation_complete)
-          return false;
+      // Retreat/advance or post-combat effects can orphan another HQ after an
+      // earlier check. Always validate the current board, not a stale flag.
       const affected = new Set([
           combat.target,
           ...Object.values(combat.origins || {}),
@@ -2239,6 +2257,11 @@ function createCombatSystem(api) {
           if (!card)
               throw new Error("Delayed event HQ relocation lost its source card");
           api.finishEvent(state, card);
+          return;
+      }
+      if (pending.resume === "finish_ops") {
+          api.setActiveFaction(state, pending.owner);
+          api.finishOps(state);
           return;
       }
       state.combat.hq_relocation_complete = true;

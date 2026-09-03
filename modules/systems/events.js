@@ -128,6 +128,13 @@ function createEventSystem(api) {
     return null;
   }
 
+  function ohlDiscardCandidates(state) {
+    const hasCombatDiscard = state.discard.cp.some((id) => api.cardById[id]?.combat_card);
+    // Payment must leave at least one CC to take. With an empty CC discard,
+    // only discarding a CC is a complete legal use of this ability.
+    return state.hands.cp.filter((id) => hasCombatDiscard || api.cardById[id]?.combat_card);
+  }
+
   
 
   function enterNation(state, nation) {
@@ -1178,23 +1185,28 @@ function createEventSystem(api) {
               if (id === "skip") {
                   state.usage_limits[`ohl:${state.turn}`] = 1;
                   state.pending_event = null;
+                  api.log(state, "德军最高统帅部：本回合不取回战斗牌。");
                   api.resolveAttrition(state, [api.AP]);
                   return;
               }
               const selected = Number(id);
               const index = state.hands.cp.indexOf(selected);
-              if (index < 0 || !pending.cards.includes(selected))
+              if (index < 0 || !pending.cards.includes(selected) ||
+                  !ohlDiscardCandidates(state).includes(selected))
                   throw new Error("Invalid OHL discard");
               state.hands.cp.splice(index, 1);
               state.discard.cp.push(selected);
+              api.log(state, `德军最高统帅部：弃置[[card:${selected}]]。`);
               pending.stage = "take";
               pending.cards = state.discard.cp.filter((cardId) => api.cardById[cardId]?.combat_card);
               return;
           }
           const selected = Number(id);
-          if (!pending.cards.includes(selected))
+          const index = state.discard.cp.indexOf(selected);
+          if (pending.stage !== "take" || !pending.cards.includes(selected) ||
+              index < 0 || !api.cardById[selected]?.combat_card)
               throw new Error("Invalid OHL combat card");
-          state.discard.cp.splice(state.discard.cp.indexOf(selected), 1);
+          state.discard.cp.splice(index, 1);
           state.scheduled_events.push({
               kind: "card_return",
               source_card: 713,
@@ -1202,6 +1214,7 @@ function createEventSystem(api) {
               faction: api.CP,
               card: selected,
           });
+          api.log(state, `德军最高统帅部：将[[card:${selected}]]放入使用区，T${state.turn + pending.operation.return_turns}起仅可作为战斗牌使用。`);
           state.usage_limits[`ohl:${state.turn}`] = 1;
           state.pending_event = null;
           api.resolveAttrition(state, [api.AP]);
@@ -1925,6 +1938,7 @@ function createEventSystem(api) {
   }
 return Object.freeze(own = {
     activeRule,
+    ohlDiscardCandidates,
     addHindenburgDefenseMo,
     advanceWhiteFeatherSr,
     applyEffectOperation,

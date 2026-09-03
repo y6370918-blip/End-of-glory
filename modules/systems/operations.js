@@ -341,10 +341,12 @@ function createOperationsSystem(api) {
       return true;
   }
 
-  function earlySrDestinationAllowed(state, unit, space) {
+  function earlySrDestinationAllowed(state, unit, space, options = {}) {
       if (!earlyEntryAllowed(state, unit, space))
           return false;
-      if (state.turn > 2)
+      // Schlieffen's free SR may leave national borders even in T1-T2.
+      // Keep this exception local to that SR, not every SR during its OPS.
+      if (state.turn > 2 || options.schlieffen)
           return true;
       return (api.nationalityGroup(unit.nation) === api.nationalityGroup(api.spaceById[space]?.nation));
   }
@@ -594,7 +596,10 @@ function createOperationsSystem(api) {
           (unit.supplied !== false || unit.limited_supply || unit.fort_limited_supply) &&
           !unit.moved &&
           !unit.attacked &&
-          (unit.type === "corps" || (unit.type === "army" && unit.reduced)) &&
+          // A dotted LCU cannot be restored by combining either. The SCU
+          // donor still follows the separate existing PE disposal rule.
+          (unit.type === "corps" || (unit.type === "army" && unit.reduced &&
+              api.acceptsReplacementPoints(unit))) &&
           unitIsActivated(state, unit, ["move", "construct"]));
   }
 
@@ -665,8 +670,20 @@ function createOperationsSystem(api) {
           throw new Error("Converted attack activations must be executed");
       if (state.ops?.pending_siege)
           throw new Error("The pending siege force must finish entering the fort");
-      if (orphanHqs(state).some((unit) => unit.faction === state.active))
-          throw new Error("Every HQ must finish with a national combat unit or at a supply source");
+      const orphaned = orphanHqs(state).filter((unit) => unit.faction === state.active);
+      if (orphaned.length) {
+          // An already stranded HQ (including one restored from an older save)
+          // needs an actionable cleanup flow, not a signed Finish that throws.
+          // Keep OPS intact until every HQ has a legal home or is on the track.
+          api.enterEventFlow(state, {
+              kind: "hq_relocation",
+              owner: state.active,
+              queue: orphaned.map((unit) => unit.id),
+              index: 0,
+              resume: "finish_ops",
+          });
+          return;
+      }
       api.refreshBesieged(state);
       const returnAfterForced = state.ops?.return_after_forced;
       const resumeAfterForced = api.clone(state.ops?.resume_after_forced || null);
@@ -1816,7 +1833,7 @@ function createOperationsSystem(api) {
       const blockade = api.activeRule(state, "channel_blockade");
       const destinations = [...supplied].filter((space) => space !== unit.location &&
           api.spaceCanActivate(state, space) &&
-          earlySrDestinationAllowed(state, unit, space) &&
+          earlySrDestinationAllowed(state, unit, space, options) &&
           crossTheaterSrDestinationAllowed(state, unit, space) &&
           (unit.type !== "hq" || hqEndLegal(state, unit, space)) &&
           (overland.has(space) ||
@@ -1836,7 +1853,7 @@ function createOperationsSystem(api) {
       const supplied = api.suppliedSpaces(state, unit.faction, unit);
       return [...supplied].filter((space) => {
           if (!api.spaceCanActivate(state, space) ||
-              !earlySrDestinationAllowed(state, unit, space) ||
+              !earlySrDestinationAllowed(state, unit, space, options) ||
               !crossTheaterSrDestinationAllowed(state, unit, space) ||
               (!options.allowOverstack && !api.stackLegal(state, space, unit)))
               return false;

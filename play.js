@@ -1313,7 +1313,12 @@ function dieElement(faction, value) {
 
 function gameCardElement(id) {
 	let element = cardElements.get(id)
-	if (element) return element
+	if (element) {
+		element.title = cardById[id]?.title || id
+		delete element.dataset.availability
+		element.removeAttribute("aria-label")
+		return element
+	}
 	const card = cardById[id]
 	element = document.createElement("button")
 	element.dataset.card = id
@@ -1378,6 +1383,17 @@ function renderCombatCards() {
 		const element = gameCardElement(entry.id)
 		element.className = `combat-card ${entry.faction || cardById[entry.id]?.faction || ""}`
 		element.title = `${cardById[entry.id]?.title || entry.id} · 持续至 ${entry.expires}`
+		retained.append(element)
+		mounted.add(entry.id)
+	}
+	for (const entry of cards.scheduled || []) {
+		if (mounted.has(entry.id)) continue
+		const element = gameCardElement(entry.id)
+		const availability = `T${entry.due_turn}起可用 · 仅限战斗牌`
+		element.className = `combat-card ${entry.faction} scheduled`
+		element.dataset.availability = availability
+		element.title = `${cardById[entry.id]?.title || entry.id} · ${availability}`
+		element.setAttribute("aria-label", element.title)
 		retained.append(element)
 		mounted.add(entry.id)
 	}
@@ -1516,7 +1532,10 @@ function renderOverviewInfo() {
 		eventList.append(infoStat(card?.title || event, view.events[event]?.duration || "生效中"))
 	}
 	for (const scheduled of view.scheduled_events || [])
-		eventList.append(infoStat(cardById[scheduled.source_card]?.title || scheduled.kind, `预定T${scheduled.due_turn}`))
+		eventList.append(infoStat(cardById[scheduled.source_card]?.title || scheduled.kind,
+			scheduled.kind === "card_return" && scheduled.source_card === 713
+				? `${cardById[scheduled.card]?.title || scheduled.card} · 使用区，T${scheduled.due_turn}起可用`
+				: `预定T${scheduled.due_turn}`))
 	if (view.supply_warnings?.spaces?.length)
 		eventList.append(infoStat("补给警告", view.supply_warnings.spaces.map((id) => spaceById[id]?.name || id).join("、"), "warning"))
 	if (view.rollback_proposal) eventList.append(infoStat("回滚提议", view.rollback_proposal.label, "warning"))
@@ -1570,18 +1589,11 @@ function infoCardLink(id) {
 	return item
 }
 
-function appendCardCatalogGroup(catalog, title, ids, hidden = false) {
-	const cards = hidden ? [] : [...(ids || [])].sort((a, b) => (cardById[a]?.number || a) - (cardById[b]?.number || b))
+function appendCardCatalogGroup(catalog, title, ids) {
+	const cards = [...(ids || [])].sort((a, b) => (cardById[a]?.number || a) - (cardById[b]?.number || b))
 	const heading = document.createElement("dt")
-	heading.textContent = `${title} (${hidden ? Number(ids || 0) : cards.length})`
+	heading.textContent = `${title} (${cards.length})`
 	catalog.append(heading)
-	if (hidden) {
-		const entry = document.createElement("dd")
-		entry.className = "info-card-hidden"
-		entry.textContent = "内容对当前观察者隐藏"
-		catalog.append(entry)
-		return
-	}
 	for (const id of cards) {
 		const entry = document.createElement("dd")
 		entry.append(infoCardLink(id))
@@ -1592,17 +1604,15 @@ function appendCardCatalogGroup(catalog, title, ids, hidden = false) {
 function renderCardInfo(faction, discardOnly = false) {
 	const dialog = byId(discardOnly ? `${faction}_discard_dialog` : `${faction}_card_dialog`)
 	const detail = dialog.querySelector(".dialog_body")
-	const hand = view.hands?.[faction]
 	const catalog = document.createElement("dl")
 	catalog.className = `info-card-catalog ${faction}`
-	if (!discardOnly) {
-		appendCardCatalogGroup(catalog, "手牌", Array.isArray(hand) ? hand : Number(hand || 0), !Array.isArray(hand))
-		appendCardCatalogGroup(catalog, "牌库", view.deck_cards?.[faction] || [])
-	}
+	if (!discardOnly)
+		appendCardCatalogGroup(catalog, "手牌或牌库", view.deck_cards?.[faction] || [])
 	appendCardCatalogGroup(catalog, "弃牌堆", view.discard?.[faction] || [])
 	appendCardCatalogGroup(catalog, "移出游戏", view.removed?.[faction] || [])
 	if (!discardOnly) {
 		appendCardCatalogGroup(catalog, "保留战斗牌", view.combat_cards?.retained?.[faction] || [])
+		appendCardCatalogGroup(catalog, "最高统帅部：下回合可用", (view.combat_cards?.scheduled || []).filter((entry) => entry.faction === faction).map((entry) => entry.id))
 		appendCardCatalogGroup(catalog, "持续生效", (view.combat_cards?.active || []).filter((entry) => entry.faction === faction).map((entry) => entry.id))
 	}
 	detail.replaceChildren(catalog)

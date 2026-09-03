@@ -2710,6 +2710,8 @@ exports.action = function (state, current, action, arg) {
     if (!state || state.state === "game_over") return state;
     if (!actionAllowed(state, current)) return state;
     const offered = buildActionView(clone(state), current);
+    // RTT sends null for no-argument buttons. Use the normalized value for
+    // validation and dispatch so handler defaults (including options = {}) apply.
     const primitiveArg = arg === null ? undefined : arg;
     if (!ActionProtocol.allows(offered.actions, action, primitiveArg))
       return state;
@@ -2739,7 +2741,7 @@ exports.action = function (state, current, action, arg) {
       } else if (action === "flag_supply_warnings") {
         undoActionContext.suppress = true;
         beginSupplyWarningEditor(state);
-      } else if (!Engine.dispatch(state, action, arg, current)) {
+      } else if (!Engine.dispatch(state, action, primitiveArg, current)) {
         throw new Error("Offered action has no state handler");
       }
       undoActionContext.deterministic = true;

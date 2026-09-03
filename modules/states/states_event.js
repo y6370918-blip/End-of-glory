@@ -176,6 +176,10 @@ function createEventStates(api) {
     message(state) {
       const pending = state.pending_event;
       const card = cardById[pending?.card];
+      if (pending?.kind === "ohl")
+        return pending.stage === "discard"
+          ? "德军最高统帅部：弃置一张手牌，或放弃本回合取回战斗牌。"
+          : `德军最高统帅部：选择一张弃牌堆CC放入使用区，T${state.turn + pending.operation.return_turns}起可用。`;
       if (pending?.kind === "reinforcement") return `${card?.title || "增援"}：部署单位。`;
       if (pending?.kind === "replacement_rebuild") {
         if (pending.resume_immediate_rp || pending.resume_combat_fr_rp || card)
@@ -184,6 +188,12 @@ function createEventStates(api) {
       }
       if (pending?.kind === "veteran_upgrade")
         return "补员：选择老兵替换位置。";
+      if (pending?.kind === "hq_relocation") {
+        const hq = currentPendingHq(state, pending);
+        const name = api.pieceById[hq?.piece]?.name || "HQ";
+        const location = api.spaceName(hq?.location);
+        return `${name}（${location}）失去护送：请选择合法补给源，或将领放置到回合轨。`;
+      }
       if (pending?.kind === "scheduled_return") return "部署返场单位。";
       if (pending?.kind === "mo_penalty") return "处理未完成MO。";
       if (pending?.kind === "august_reposition") return "八月炮火：重部署。";
@@ -461,7 +471,7 @@ function createEventStates(api) {
         return;
       }
       if (pending?.kind === "hq_relocation") {
-        api.snapshot(state, "战后HQ重新部署");
+        api.snapshot(state, pending.resume === "finish_ops" ? "行动结束HQ重新部署" : "战后HQ重新部署");
         relocateCombatHq(state, pending, space);
         return;
       }
@@ -1178,7 +1188,10 @@ function createEventStates(api) {
       } else if (pending.kind === "august_belgian_relocation") {
         actions.event_space = augustBelgianSpaces(state, pending);
       } else if (pending.kind === "ohl") {
-        const options = pending.cards.map((id) => ({
+        const candidates = pending.stage === "discard"
+          ? api.ohlDiscardCandidates(state).filter((id) => pending.cards.includes(id))
+          : pending.cards;
+        const options = candidates.map((id) => ({
           id: String(id),
           label: `${pending.stage === "discard" ? "弃置" : "取回"}：${cardById[id].title}`,
         }));

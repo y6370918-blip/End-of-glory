@@ -1251,6 +1251,17 @@ body.action-pending #board-panels {
 .combat-card.ap.legal { box-shadow: 0 0 0 4px pink, 1px 1px 4px #0008; }
 .combat-card.cp.legal { box-shadow: 0 0 0 4px skyblue, 1px 1px 4px #0008; }
 
+.combat-card.scheduled::after {
+	content: attr(data-availability);
+	position: absolute;
+	inset: auto 0 0;
+	padding: 6px 2px;
+	background: #253746;
+	color: white;
+	font: 13px/18px sans-serif;
+	pointer-events: none;
+}
+
 .combat-card img {
 	display: block;
 	width: 100%;
@@ -1683,12 +1694,6 @@ body.action-pending #board-panels {
 
 .info-card-link.ap { color: #6b3f06; }
 .info-card-link.cp { color: #0f4690; }
-
-.info-card-hidden {
-	padding-left: 18px;
-	color: #7f8c8d;
-	font-style: italic;
-}
 
 #info-card-tooltip {
 	position: fixed;

@@ -82,7 +82,9 @@ function semanticDiff(before, after, role) {
       },
     };
     if (
-      JSON.stringify(beforeHand) !== JSON.stringify(afterHand) ||
+      (own
+        ? JSON.stringify(beforeHand) !== JSON.stringify(afterHand)
+        : beforeHand.length !== afterHand.length) ||
       deck.before_count !== deck.after_count ||
       Object.values(publicPiles).some(
         (pile) => JSON.stringify(pile.before) !== JSON.stringify(pile.after),

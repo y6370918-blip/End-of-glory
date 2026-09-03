@@ -19,7 +19,6 @@ function createActivationStates(api) {
         builder.addAll("select_sr_unit", api.schlieffenSrUnits(state));
         if (
           !state.ops.pending_siege &&
-          !api.orphanHqs(state).some((unit) => unit.faction === state.active) &&
           (state.turn >= 4 || !api.earlyActivationAvailable(state))
         )
           builder.enable("finish");

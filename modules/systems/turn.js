@@ -124,6 +124,9 @@ function createTurnSystem(api) {
           ...state.discard[faction],
           ...state.removed[faction],
           ...state.retained_combat_cards[faction],
+          ...(state.scheduled_events || [])
+              .filter((entry) => entry.kind === "card_return" && entry.faction === faction)
+              .map((entry) => entry.card),
       ]);
       const additions = api.data.cards
           .filter((card) => card.faction === faction &&
@@ -257,11 +260,10 @@ function createTurnSystem(api) {
       }
       const ohl = api.activeRule(state, "ohl");
       const usageKey = `ohl:${state.turn}`;
-      const combatCards = state.discard.cp.filter((id) => api.cardById[id]?.combat_card);
+      const paymentCards = api.ohlDiscardCandidates(state);
       if (ohl?.discard_for_combat_card &&
           !state.usage_limits[usageKey] &&
-          state.hands.cp.length &&
-          combatCards.length) {
+          paymentCards.length) {
           state.pending_event = {
               card: 713,
               faction: api.CP,
@@ -627,9 +629,17 @@ function createTurnSystem(api) {
           return true;
       }
       const cards = state.scheduled_events.filter((entry) => entry.kind === "card_return" && entry.due_turn <= state.turn);
-      for (const entry of cards)
-          if (!state.hands[entry.faction].includes(entry.card))
-              state.hands[entry.faction].push(entry.card);
+      for (const entry of cards) {
+          // OHL sets aside a public CC, not an extra hand card. Scheduled
+          // ownership keeps it locked through the preceding turn's cleanup.
+          const destination = entry.source_card === 713
+              ? state.retained_combat_cards[entry.faction]
+              : state.hands[entry.faction];
+          if (!destination.includes(entry.card))
+              destination.push(entry.card);
+          if (entry.source_card === 713)
+              api.log(state, `德军最高统帅部：[[card:${entry.card}]]自T${state.turn}起可作为战斗牌使用。`);
+      }
       if (cards.length)
           state.scheduled_events = state.scheduled_events.filter((entry) => !(entry.kind === "card_return" && entry.due_turn <= state.turn));
       const adjustments = state.scheduled_events.filter((entry) => entry.kind === "rp_adjustment" && entry.due_turn <= state.turn);

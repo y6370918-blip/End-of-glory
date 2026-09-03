@@ -761,7 +761,8 @@ function createCombatCardSystem(api) {
       const combat = state.combat;
       const defender = api.other(combat.attacker);
       const factions = [defender, combat.attacker];
-      if (!factions.some((faction) => state.hands[faction].some((id) => postCombatCardLegal({ ...state, post_combat_window: { side: faction } }, api.cardById[id], faction))))
+      if (!factions.some((faction) => [...state.hands[faction], ...state.retained_combat_cards[faction]]
+          .some((id) => postCombatCardLegal({ ...state, post_combat_window: { side: faction } }, api.cardById[id], faction))))
           return false;
       state.post_combat_window = {
           attacker: combat.attacker,
@@ -778,13 +779,16 @@ function createCombatCardSystem(api) {
       const card = api.cardById[Number(id)];
       if (!postCombatCardLegal(state, card))
           throw new Error("Invalid post-combat card");
-      const index = state.hands[state.active].indexOf(card.id);
+      const pool = state.hands[state.active].includes(card.id)
+          ? state.hands[state.active]
+          : state.retained_combat_cards[state.active];
+      const index = pool.indexOf(card.id);
       if (index < 0)
-          throw new Error("Post-combat card is not in hand");
+          throw new Error("Post-combat card is not in hand or the available play area");
       const firstUseKey = `combat_card_first:${card.id}`;
       const firstUse = !state.usage_limits[firstUseKey];
       state.usage_limits[firstUseKey] = 1;
-      state.hands[state.active].splice(index, 1);
+      pool.splice(index, 1);
       markCombatCardUsed(state, card.id);
       const disposition = api.cardUseDisposition(state, card, "combat");
       state[disposition === "remove" ? "removed" : "discard"][state.active].push(card.id);

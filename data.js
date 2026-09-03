@@ -11286,8 +11286,7 @@ const data = {
 				"ardennes",
 				"bar_le_duc",
 				"champagne",
-				"saint_mihiel",
-				"vouziers"
+				"saint_mihiel"
 			],
 			"connections_by_mode": {
 				"move": {
@@ -11295,15 +11294,13 @@ const data = {
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					],
 					"cp": [
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					]
 				},
 				"attack": {
@@ -11311,15 +11308,13 @@ const data = {
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					],
 					"cp": [
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					]
 				},
 				"supply": {
@@ -11327,15 +11322,13 @@ const data = {
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					],
 					"cp": [
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					]
 				},
 				"sr": {
@@ -11343,15 +11336,13 @@ const data = {
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					],
 					"cp": [
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					]
 				},
 				"retreat": {
@@ -11359,15 +11350,13 @@ const data = {
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					],
 					"cp": [
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					]
 				},
 				"advance": {
@@ -11375,15 +11364,13 @@ const data = {
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					],
 					"cp": [
 						"ardennes",
 						"bar_le_duc",
 						"champagne",
-						"saint_mihiel",
-						"vouziers"
+						"saint_mihiel"
 					]
 				}
 			}
@@ -13463,7 +13450,6 @@ const data = {
 			"connections": [
 				"kortrijk",
 				"lille",
-				"neuve_chapelle",
 				"saint_omer",
 				"veurne"
 			],
@@ -13472,14 +13458,12 @@ const data = {
 					"ap": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					],
 					"cp": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					]
@@ -13488,14 +13472,12 @@ const data = {
 					"ap": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					],
 					"cp": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					]
@@ -13504,14 +13486,12 @@ const data = {
 					"ap": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					],
 					"cp": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					]
@@ -13520,14 +13500,12 @@ const data = {
 					"ap": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					],
 					"cp": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					]
@@ -13536,14 +13514,12 @@ const data = {
 					"ap": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					],
 					"cp": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					]
@@ -13552,14 +13528,12 @@ const data = {
 					"ap": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					],
 					"cp": [
 						"kortrijk",
 						"lille",
-						"neuve_chapelle",
 						"saint_omer",
 						"veurne"
 					]
@@ -14451,8 +14425,7 @@ const data = {
 				"abbeville",
 				"arras",
 				"lille",
-				"saint_omer",
-				"ypres"
+				"saint_omer"
 			],
 			"connections_by_mode": {
 				"move": {
@@ -14460,15 +14433,13 @@ const data = {
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					],
 					"cp": [
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					]
 				},
 				"attack": {
@@ -14476,15 +14447,13 @@ const data = {
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					],
 					"cp": [
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					]
 				},
 				"supply": {
@@ -14492,15 +14461,13 @@ const data = {
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					],
 					"cp": [
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					]
 				},
 				"sr": {
@@ -14508,15 +14475,13 @@ const data = {
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					],
 					"cp": [
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					]
 				},
 				"retreat": {
@@ -14524,15 +14489,13 @@ const data = {
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					],
 					"cp": [
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					]
 				},
 				"advance": {
@@ -14540,15 +14503,13 @@ const data = {
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					],
 					"cp": [
 						"abbeville",
 						"arras",
 						"lille",
-						"saint_omer",
-						"ypres"
+						"saint_omer"
 					]
 				}
 			}
@@ -17113,80 +17074,67 @@ const data = {
 			"control": "ap",
 			"connections": [
 				"ardennes",
-				"rethel",
-				"verdun"
+				"rethel"
 			],
 			"connections_by_mode": {
 				"move": {
 					"ap": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					],
 					"cp": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					]
 				},
 				"attack": {
 					"ap": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					],
 					"cp": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					]
 				},
 				"supply": {
 					"ap": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					],
 					"cp": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					]
 				},
 				"sr": {
 					"ap": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					],
 					"cp": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					]
 				},
 				"retreat": {
 					"ap": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					],
 					"cp": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					]
 				},
 				"advance": {
 					"ap": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					],
 					"cp": [
 						"ardennes",
-						"rethel",
-						"verdun"
+						"rethel"
 					]
 				}
 			}
@@ -26633,23 +26581,6 @@ const data = {
 			]
 		},
 		{
-			"a": "ypres",
-			"b": "neuve_chapelle",
-			"type": "land",
-			"modes": [
-				"move",
-				"attack",
-				"supply",
-				"sr",
-				"retreat",
-				"advance"
-			],
-			"factions": [
-				"ap",
-				"cp"
-			]
-		},
-		{
 			"a": "kortrijk",
 			"b": "tournai",
 			"type": "land",
@@ -26664,7 +26595,8 @@ const data = {
 			"factions": [
 				"ap",
 				"cp"
-			]
+			],
+			"river_from": "tournai"
 		},
 		{
 			"a": "kortrijk",
@@ -28094,23 +28026,6 @@ const data = {
 		{
 			"a": "vouziers",
 			"b": "ardennes",
-			"type": "land",
-			"modes": [
-				"move",
-				"attack",
-				"supply",
-				"sr",
-				"retreat",
-				"advance"
-			],
-			"factions": [
-				"ap",
-				"cp"
-			]
-		},
-		{
-			"a": "vouziers",
-			"b": "verdun",
 			"type": "land",
 			"modes": [
 				"move",

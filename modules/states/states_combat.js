@@ -330,7 +330,7 @@ function createCombatStates(api) {
       prompt(state, builder) {
         builder.addAll(
           "combat_card",
-          state.hands[state.active].filter((id) =>
+          [...state.hands[state.active], ...state.retained_combat_cards[state.active]].filter((id) =>
             api.postCombatCardLegal(state, api.cardById[id]),
           ),
         );

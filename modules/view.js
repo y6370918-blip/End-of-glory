@@ -315,6 +315,9 @@ function createViewSystem(api) {
           hidden_counts: hiddenCounts,
           available: Array.isArray(actions?.combat_card) ? actions.combat_card.slice() : [],
           retained: api.clone(state.retained_combat_cards),
+          scheduled: (state.scheduled_events || [])
+              .filter((entry) => entry.kind === "card_return" && entry.source_card === 713)
+              .map((entry) => ({ id: entry.card, faction: entry.faction, due_turn: entry.due_turn })),
           active,
       };
   }
@@ -327,7 +330,9 @@ function createViewSystem(api) {
   }
 
   function publicDeckCards(state) {
-      const sorted = (faction) => state.decks[faction].slice().sort((a, b) => {
+      // Like PUG's card catalog, this is one unordered hand-or-deck pool.
+      // Publishing the deck alone reveals the opponent's hand by subtraction.
+      const sorted = (faction) => [...state.decks[faction], ...state.hands[faction]].sort((a, b) => {
           const numberA = Number(api.cardById[a]?.number ?? a);
           const numberB = Number(api.cardById[b]?.number ?? b);
           return numberA - numberB || Number(a) - Number(b);
