@@ -1696,7 +1696,7 @@ function createEventSystem(api) {
               unit.reduced = false;
           }
           api.log(state, `意大利参战：恢复${ids.length}枚意大利LCU。`);
-          if (pending.event_finished) {
+          if (eventHasFinished(state)) {
               state.pending_event = null;
               api.nextFactionAction(state);
           }
@@ -1907,12 +1907,24 @@ function createEventSystem(api) {
       finishEvent(state, card, choice.effects || []);
   }
 
+  function eventHasFinished(state) {
+      const pending = state.pending_event;
+      if (!pending) return false;
+      // Post-event selections reference an already-disposed card. Older saves
+      // may lack event_finished, so its concrete card zone is also authoritative.
+      return Boolean(pending.event_finished ||
+          state.removed?.[pending.owner]?.includes(pending.card) ||
+          state.discard?.[pending.owner]?.includes(pending.card));
+  }
+
   function cancelEvent(state) {
       const pending = state.pending_event;
       if (!pending)
           throw new Error("No pending event");
       if (state.active !== pending.owner)
           throw new Error("The responding player cannot cancel this event");
+      if (eventHasFinished(state))
+          throw new Error("A resolved event cannot be canceled");
       if (Number.isInteger(pending.next_unit_id_before))
           state.next_unit_id = pending.next_unit_id_before;
       if (pending.early_vp)
@@ -1963,6 +1975,7 @@ return Object.freeze(own = {
     beginSalientChoice,
     beginWhiteFeatherSearch,
     cancelEvent,
+    eventHasFinished,
     chooseImmediateRpMode,
     commitAugustBelgianRelocation,
     commitAugustGunsReposition,

@@ -65,6 +65,7 @@ const { createMoSystem } = require("./modules/systems/mo.js");
 const { createNavalSystem } = require("./modules/systems/naval.js");
 const { createReplacementSystem } = require("./modules/systems/replacement.js");
 const { createSupplySystem } = require("./modules/systems/supply.js");
+const { TEST_SCENARIOS, createSetupSystem } = require("./modules/systems/setup.js");
 const { createUnitSystem } = require("./modules/systems/units.js");
 const { createTurnSystem } = require("./modules/systems/turn.js");
 const { createActionSystem } = require("./modules/systems/action.js");
@@ -85,7 +86,7 @@ const { createTurnStates } = require("./modules/states/states_turn.js");
 const { createEventStates } = require("./modules/states/states_event.js");
 
 exports.roles = [AP_ROLE, CP_ROLE];
-exports.scenarios = [HISTORICAL];
+exports.scenarios = [HISTORICAL, ...Object.keys(TEST_SCENARIOS)];
 exports.default_scenario = HISTORICAL;
 
 const spaceById = Object.fromEntries(
@@ -2555,6 +2556,7 @@ const Engine = createEngine({
     turn: createTurnSystem,
     action: createActionSystem,
     events: createEventSystem,
+    setup: createSetupSystem,
     view: createViewSystem,
     deterministic: createDeterministicSystem,
   },
@@ -2897,12 +2899,16 @@ exports.resign = function (state, current) {
 };
 
 exports.setup = function (seed, scenario = HISTORICAL, options = {}) {
-  if (scenario !== HISTORICAL)
+  if (!exports.scenarios.includes(scenario))
     throw new Error(`Unsupported public scenario: ${scenario}`);
   const state = createState(seed, options);
-  setupDeck(state, AP);
-  setupDeck(state, CP);
-  updateSupply(state);
+  if (scenario === HISTORICAL) {
+    setupDeck(state, AP);
+    setupDeck(state, CP);
+    updateSupply(state);
+  } else {
+    Engine.setupTestScenario(state, scenario);
+  }
   return exposeRttState(state);
 };
 

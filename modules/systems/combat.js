@@ -2239,6 +2239,29 @@ function createCombatSystem(api) {
       return state.units.find((unit) => unit.id === pending.queue[pending.index]);
   }
 
+  function beginOverrunHqRelocation(state, space, faction) {
+      if (!api.unitsAt(state, space, faction).some(api.isCombatUnit))
+          return false;
+      const hqs = api.unitsAt(state, space, api.other(faction))
+          .filter((unit) => unit.type === "hq" && !api.hqEndLegal(state, unit));
+      if (!hqs.length)
+          return false;
+      // Complete the entry and capture before interrupting movement/advance.
+      // The HQ owner chooses its destination, then the occupying side resumes.
+      const pending = {
+          kind: "hq_relocation",
+          owner: hqs[0].faction,
+          queue: hqs.map((hq) => hq.id),
+          index: 0,
+          resume: "after_hq_overrun",
+          resume_state: state.state,
+          resume_faction: faction,
+      };
+      api.setActiveFaction(state, pending.owner);
+      api.enterEventFlow(state, pending);
+      return true;
+  }
+
   function advanceCombatHqRelocation(state, pending) {
       pending.index += 1;
       while (pending.index < pending.queue.length &&
@@ -2251,6 +2274,12 @@ function createCombatSystem(api) {
           return;
       }
       state.pending_event = null;
+      if (pending.resume === "after_hq_overrun") {
+          api.setActiveFaction(state, pending.resume_faction);
+          state.state = pending.resume_state;
+          api.updateSupply(state);
+          return;
+      }
       if (pending.resume === "finish_delayed_event") {
           const card = api.cardById[pending.resume_card];
           if (!card)
@@ -3079,7 +3108,7 @@ function createCombatSystem(api) {
           !api.connectionAllows(unit.location, destination, "advance", unit.faction) ||
           !api.canOccupyByEarlyWarDepth(state, unit.faction, destination) ||
           !api.spaceCanActivate(state, destination) ||
-          api.unitsAt(state, destination, api.other(unit.faction)).length)
+          api.unitsAt(state, destination, api.other(unit.faction)).some(api.isCombatUnit))
           return false;
       if (!follow && (!(pending.units || []).includes(id) || (pending.advanced_ids || []).includes(id)))
           return false;
@@ -3166,6 +3195,7 @@ function createCombatSystem(api) {
           if (!pending.follow_units.includes(id)) pending.follow_units.push(id);
       }
       refreshAdvanceRequirements(state, pending);
+      beginOverrunHqRelocation(state, pending.target, unit.faction);
   }
 
   function selectAdvanceFollowUnit(state, id) {
@@ -3190,6 +3220,7 @@ function createCombatSystem(api) {
       pending.selected_follow_unit = null;
       pending.first_step_paths[id].push(destination);
       refreshAdvanceRequirements(state, pending);
+      beginOverrunHqRelocation(state, destination, unit.faction);
   }
 
   function canEndAdvance(state, pending = state.pending_retreat) {
@@ -3235,7 +3266,7 @@ function createCombatSystem(api) {
       pending.advance_max_steps = completedRetreatLengths.length
           ? Math.max(1, ...completedRetreatLengths)
           : Number(pending.advance_max_steps || pending.steps || 1);
-      if (!pending.units.length || api.unitsAt(state, pending.target, api.other(combat.attacker)).length) {
+      if (!pending.units.length || api.unitsAt(state, pending.target, api.other(combat.attacker)).some(api.isCombatUnit)) {
           api.clearUndo(state);
           finishCombatSequence(state);
           return;
@@ -3387,6 +3418,7 @@ return Object.freeze({
     attacksTarget,
     beginCombat,
     beginCombatHqRelocation,
+    beginOverrunHqRelocation,
     beginCombatRepair,
     beginCounterattackEvent,
     beginPostRetreatAdvance,

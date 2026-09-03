@@ -39,7 +39,7 @@ function createOperationsSystem(api) {
         return reason("connection_mode");
       if (!canOccupyByEarlyWarDepth(state, faction, destination))
         return reason("early_occupation_depth", "超出占领纵深", "important");
-      if (api.unitsAt(state, destination, api.other(faction)).length)
+      if (api.unitsAt(state, destination, api.other(faction)).some(api.isCombatUnit))
         return reason("enemy_blocked");
       const moving = (movement?.active_units || [])
         .map((id) => state.units.find((unit) => unit.id === id)).filter(Boolean);
@@ -88,7 +88,7 @@ function createOperationsSystem(api) {
       const id = pending?.selected_follow_unit;
       const unit = state.units.find((candidate) => candidate.id === id);
       const advancingFaction = unit?.faction || state.combat?.attacker || faction;
-      if (api.unitsAt(state, destination, api.other(faction)).length)
+      if (api.unitsAt(state, destination, api.other(advancingFaction)).some(api.isCombatUnit))
         return reason("enemy_blocked");
       if (!canOccupyByEarlyWarDepth(state, advancingFaction, destination))
         return reason("early_occupation_depth", "超出占领纵深", "important");
@@ -1198,7 +1198,7 @@ function createOperationsSystem(api) {
                   continue;
               if (!api.spaceCanActivate(state, next))
                   continue;
-              if (api.unitsAt(state, next, api.other(unit.faction)).length)
+              if (api.unitsAt(state, next, api.other(unit.faction)).some(api.isCombatUnit))
                   continue;
               const nextPath = [...path, next];
               if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
@@ -1263,7 +1263,7 @@ function createOperationsSystem(api) {
           for (const next of api.neighborsFor(current, "move", unit.faction)) {
               if (!api.spaceCanActivate(state, next))
                   continue;
-              if (api.unitsAt(state, next, api.other(unit.faction)).length)
+              if (api.unitsAt(state, next, api.other(unit.faction)).some(api.isCombatUnit))
                   continue;
               const nextPath = [...path, next];
               if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
@@ -1327,7 +1327,7 @@ function createOperationsSystem(api) {
               throw new Error("Movement exceeds the occupation depth");
           if (!api.spaceCanActivate(state, next))
               throw new Error("The Italian theater is not active");
-          if (api.unitsAt(state, next, api.other(unit.faction)).length)
+          if (api.unitsAt(state, next, api.other(unit.faction)).some(api.isCombatUnit))
               throw new Error("Movement path crosses enemy units");
           if (index === path.length - 1 && !api.stackLegal(state, next, unit))
               throw new Error("Movement cannot end in an overstacked space");
@@ -1470,7 +1470,9 @@ function createOperationsSystem(api) {
       try {
           for (const unit of moving)
               unit.location = destination;
-          return !orphanHqs(state).some((hq) => !existing.has(hq.id));
+          // Only our own HQs need an escort; enemy HQs relocate after entry.
+          return !orphanHqs(state).some((hq) =>
+              hq.faction === moving[0]?.faction && !existing.has(hq.id));
       }
       finally {
           moving.forEach((unit, index) => {
@@ -1782,13 +1784,13 @@ function createOperationsSystem(api) {
           state.ops.movement = null;
           state.ops.move_selection = null;
           state.state = resumeOpsExecutionState(state);
-          return;
       }
-      if (intactEnemyFort || movementStepDestinations(state).length === 0) {
+      else if (intactEnemyFort || movementStepDestinations(state).length === 0) {
           if (!movementEndpointLegal(state, movement))
               throw new Error("The selected units cannot stop in this space");
           finishUnitMovement(state);
       }
+      api.beginOverrunHqRelocation(state, requested, unit.faction);
   }
 
   function crossTheaterSrDestinationAllowed(state, unit, destination) {

@@ -43,6 +43,7 @@ function createEventStates(api) {
     delayedUnitCandidates,
     desertionImmediateCandidates,
     eventChoice,
+    eventHasFinished,
     eventSelectionAvailable,
     eventUnitCandidates,
     eventUnits,
@@ -199,6 +200,8 @@ function createEventStates(api) {
       if (pending?.kind === "august_reposition") return "八月炮火：重部署。";
       if (pending?.kind === "precombat_restore")
         return `${card?.title || "战前恢复"}：选择恢复单位（剩余${pending.remaining || 0}次）。`;
+      if (pending?.kind === "italy_entry_restore")
+        return `意大利参战：选择恢复${pending.required}枚受损LCU（已选${pending.selected_units?.length || 0}/${pending.required}）。`;
       if (pending?.kind === "combat_repair")
         return `${card?.title || "战斗后修复"}：选择修复单位（剩余${pending.remaining || 0} RP）。`;
       if (pending?.kind === "regional_rotation") {
@@ -845,6 +848,7 @@ function createEventStates(api) {
       if (
         state.active === pending.owner &&
         !pending.locked &&
+        !eventHasFinished(state) &&
         ![
           "scheduled_return",
           "ohl",
