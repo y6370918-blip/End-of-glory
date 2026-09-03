@@ -678,23 +678,30 @@ const upgradeBoxLayouts = eog_data.ui?.pools?.upgrade || {
 let replacementReserveTarget = null
 let replacementEliminatedTarget = null
 
+function reserveTargetAction() {
+	if (view.actions?.replacement_to_reserve === 1) return { action: "replacement_to_reserve" }
+	if (view.actions?.reinforcement_to_reserve === 1) return { action: "reinforcement_to_reserve" }
+	if (actionIncludes("sr_destination", "reserve")) return { action: "sr_destination", arg: "reserve" }
+	return null
+}
+
 function updateReplacementReserveTarget() {
-	const enabled = view.actions?.replacement_to_reserve === 1
-	if (!enabled) {
+	const entry = reserveTargetAction()
+	const faction = factionCode(view.pending_event?.faction || view.active)
+	const layout = reserveBoxLayouts[faction]
+	if (!entry || !layout) {
 		replacementReserveTarget?.remove()
 		replacementReserveTarget = null
 		return
 	}
-	const faction = view.pending_event?.faction || view.active
-	const layout = reserveBoxLayouts[faction]
-	if (!layout) return
 	if (!replacementReserveTarget) {
 		replacementReserveTarget = document.createElement("button")
 		replacementReserveTarget.type = "button"
 		replacementReserveTarget.className = "pool-target replacement-reserve-target"
 		replacementReserveTarget.addEventListener("click", (event) => {
 			event.stopPropagation()
-			perform("replacement_to_reserve")
+			const current = reserveTargetAction()
+			if (current) perform(current.action, current.arg)
 		})
 		byId("piece-layer").append(replacementReserveTarget)
 	}
@@ -706,9 +713,15 @@ function updateReplacementReserveTarget() {
 	replacementReserveTarget.style.top = `${sourceToDisplay(minimumY)}px`
 	replacementReserveTarget.style.width = `${sourceToDisplay(maximumX - minimumX)}px`
 	replacementReserveTarget.style.height = `${sourceToDisplay(maximumY - minimumY)}px`
-	replacementReserveTarget.title = view.pending_event?.kind === "veteran_upgrade"
-		? `${layout.label}：替换后放入预备区`
-		: `${layout.label}：重建SCU到预备区`
+	replacementReserveTarget.dataset.action = entry.action
+	replacementReserveTarget.dataset.faction = faction
+	replacementReserveTarget.title = entry.action === "sr_destination"
+		? `${layout.label}：战略转移到预备区`
+		: entry.action === "reinforcement_to_reserve"
+			? `${layout.label}：增援放入预备区`
+			: view.pending_event?.kind === "veteran_upgrade"
+				? `${layout.label}：替换后放入预备区`
+				: `${layout.label}：重建SCU到预备区`
 	replacementReserveTarget.setAttribute("aria-label", replacementReserveTarget.title)
 }
 
@@ -719,7 +732,7 @@ function updateReplacementEliminatedTarget() {
 		replacementEliminatedTarget = null
 		return
 	}
-	const faction = view.pending_event?.faction || view.active
+	const faction = factionCode(view.pending_event?.faction || view.active)
 	const layout = eliminatedBoxLayouts[faction]
 	if (!layout) return
 	if (!replacementEliminatedTarget) {
@@ -1120,6 +1133,8 @@ function renderActions() {
 	const container = byId("actions")
 	container.replaceChildren()
 	const actions = view.actions || {}
+	if (actionIncludes("sr_destination", "reserve"))
+		container.append(button("战略转移到预备区", "sr_destination", "reserve"))
 	for (const [action, value] of Object.entries(actions))
 		if (value === 1 && EogActionProtocol.surfaceFor(action) === "top")
 			container.append(

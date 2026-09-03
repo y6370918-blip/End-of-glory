@@ -626,7 +626,7 @@ function createOperationsSystem(api) {
           .map((unit) => unit.id);
   }
 
-  function beginOps(state, card, oneOp = false) {
+  function beginOps(state, card, oneOp = false, options = {}) {
       const cardRule = card && api.ruleModifier(card);
       const schlieffen = cardRule?.key === "schlieffen_plan" ? api.clone(cardRule) : null;
       const italy = api.activeRule(state, "italy_entry");
@@ -634,7 +634,11 @@ function createOperationsSystem(api) {
       const italyOffset = italy && state.commitment[state.active] === "total"
           ? (italy.total_war_free_ops_offset ?? italy.free_ops_offset)
           : italy?.free_ops_offset;
-      const opsEffect = api.clone(api.cardSpecById[card?.id]?.ops || null);
+      // These modifiers belong to OP granted by the card's event (including
+      // 649/650 and Trentino), never to spending the card for ordinary OP.
+      const opsEffect = options.event
+          ? api.clone(api.cardSpecById[card?.id]?.ops || null)
+          : null;
       state.ops = {
           card: card?.id || null,
           total: printedOps,
@@ -1848,6 +1852,7 @@ function createOperationsSystem(api) {
   }
 
   function reserveSrDestinations(state, unit, options = {}) {
+      api.normalizeOffMapUnit(api.hydrateUnit(unit));
       if (unit.type !== "corps")
           return [];
       const supplied = api.suppliedSpaces(state, unit.faction, unit);

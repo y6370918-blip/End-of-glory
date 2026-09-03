@@ -499,6 +499,7 @@ body main {
 .pool-target {
 	position: absolute;
 	z-index: 125;
+	pointer-events: auto;
 	box-sizing: border-box;
 	padding: 0;
 	border: 5px solid #ffe600;

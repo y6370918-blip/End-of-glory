@@ -78,7 +78,7 @@ function createReplacementEventSystem(api) {
       if (resumeNaval)
           api.continueNavalEvents(state);
       else if (resumeOpsCard)
-          api.beginOps(state, api.effectiveCard(state, api.cardById[resumeOpsCard]));
+          api.beginOps(state, api.effectiveCard(state, api.cardById[resumeOpsCard]), false, { event: true });
       else
           api.nextFactionAction(state);
   }

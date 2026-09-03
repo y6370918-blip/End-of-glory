@@ -357,6 +357,8 @@ function createEventSystem(api) {
               if (operation.track === "turkish" && operation.amount > 0)
                   state.turn_flags.turkish_front_advanced = state.turn;
           }
+          else if (turnLocked)
+              api.log(state, `${card.title}：土耳其战线被加里波利锁定，本次战线移动未执行。`);
       }
       else if (operation.type === "entry")
           enterNation(state, operation.nation);
@@ -495,8 +497,10 @@ function createEventSystem(api) {
               state.turn_flags.turkish_front_locked === state.turn)
               delete state.turn_flags.turkish_front_locked;
           if (operation.key === "gallipoli_lock" &&
-              !state.events[operation.canceled_by_event])
+              !state.events[operation.canceled_by_event]) {
               state.turn_flags.turkish_front_locked = state.turn;
+              api.log(state, `${card.title}：本回合剩余时间禁止双方移动土耳其战线（包括双方事件）。`);
+          }
           if (operation.key === "kemal") {
               state.turn_flags.turkish_front_cost_increase =
                   operation.turkish_front_cost_increase;
@@ -774,7 +778,7 @@ function createEventSystem(api) {
           card.color === "yellow" ||
           rule?.key === "august_guns" ||
           (!card.combat_card && spec?.duration === "action_round" && spec?.combat)) {
-          api.beginOps(state, card);
+          api.beginOps(state, card, false, { event: true });
           if (rule?.key === "trench_capability")
               state.ops.prohibit_attack = true;
           if (rule?.key === "august_guns") {
@@ -1767,7 +1771,7 @@ function createEventSystem(api) {
           state.pending_event = null;
           api.setActiveFaction(state, pending.owner);
           if (resumeOpsCard)
-              api.beginOps(state, api.effectiveCard(state, api.cardById[resumeOpsCard]));
+              api.beginOps(state, api.effectiveCard(state, api.cardById[resumeOpsCard]), false, { event: true });
           else {
               state.state = "action_card";
               api.nextFactionAction(state);

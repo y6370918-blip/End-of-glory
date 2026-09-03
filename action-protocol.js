@@ -97,7 +97,7 @@
 		spend_rebuild: { target: "piece", label: "重建单位" },
 		select_combine_lcu: { target: "piece", label: "选择组合LCU" },
 		select_combine_scu: { target: "piece", label: "选择组合SCU" },
-		replacement_to_reserve: { surface: "target", label: "放入预备区" },
+		replacement_to_reserve: { label: "放入预备区" },
 		replacement_to_eliminated: { surface: "target", label: "留在消灭区" },
 		event_front_step: { target: "piece", label: "减损单位" },
 

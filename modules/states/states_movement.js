@@ -140,7 +140,13 @@ function createMovementStates(api) {
             .filter((unit) => unit.faction === state.active)
             .map((unit) => unit.id),
         );
-        const units = [...state.units, ...state.reserves[state.active]]
+        // Historical and newly reinforced reserve counters may contain only
+        // id/piece/reduced. Resolve their template before filtering SR units,
+        // while keeping map-only movement and supply fields off the counter.
+        const reserves = state.reserves[state.active].map((unit) =>
+          api.normalizeOffMapUnit(api.hydrateUnit(unit)),
+        );
+        const units = [...state.units, ...reserves]
           .filter((unit) => unit.faction === state.active && (!unit.location || unit.supplied))
           .filter((unit) => !state.sr.used_units?.includes(unit.id))
           .filter((unit) => !unresolvedHqs.size || unresolvedHqs.has(unit.id))
