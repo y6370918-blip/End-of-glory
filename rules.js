@@ -33,6 +33,10 @@ const {
   rollbackSnapshots,
   repairRollbackHistory,
   setRollbackSnapshots,
+  saveRollbackPoint,
+  saveCombatRollbackPoint,
+  migrateRollbackHistory,
+  rollbackMeta,
 } = require("./modules/core/history.js");
 const {
   clone,
@@ -1188,7 +1192,11 @@ function ensureState(state) {
   }
   if (repairedDestroyedFortControl) updateSupply(state);
   if (!Array.isArray(state.rollback)) state.rollback = [];
-  for (const entry of state.rollback) {
+  for (const [index, entry] of state.rollback.entries()) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      state.rollback[index] = { kind: "unavailable", label: "无效检查点", available: false, log_cursor: 0 };
+      continue;
+    }
     if (!Number.isInteger(entry.log_cursor))
       entry.log_cursor = Array.isArray(entry.state?.log)
         ? entry.state.log.length
@@ -1958,7 +1966,8 @@ function ensureState(state) {
       setRollbackSnapshots(state, rollbackSnapshots);
     }
   }
-  state.version = 55;
+  if (previousVersion < 56) migrateRollbackHistory(state);
+  state.version = 56;
   repairRollbackHistory(state);
   Engine.ensureSupply(state);
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
@@ -1976,7 +1985,10 @@ function random(state) {
 }
 
 function roll(state, sides = 6) {
-  return Math.floor(random(state) * sides) + 1;
+  const result = Math.floor(random(state) * sides) + 1;
+  const point = state.rollback?.at(-1);
+  if (point) (point.events ||= []).push(`T${state.turn} ${state.state}: 掷骰 ${result}`);
+  return result;
 }
 
 function shuffle(state, items) {
@@ -2054,6 +2066,7 @@ function restoreSnapshot(state, entry) {
   const undo = state.undo;
   const rollback = state.rollback;
   const rollbackState = state.rollback_state;
+  const pendingCombat = state.combat_rollback_pending;
   const log = Array.isArray(state.log) ? state.log : [];
   const cursor = Number.isInteger(entry?.log_cursor)
     ? entry.log_cursor
@@ -2065,26 +2078,12 @@ function restoreSnapshot(state, entry) {
   state.undo = undo;
   state.rollback = rollback;
   state.rollback_state = rollbackState;
+  if (pendingCombat) state.combat_rollback_pending = pendingCombat;
   state.log = log.slice(0, cursor);
 }
 
-function checkpoint(state, kind, label) {
-  const snapshots = rollbackSnapshots(state);
-  state.rollback.push({
-    turn: state.turn,
-    round: state.action_round,
-    actor: state.active,
-    kind,
-    label,
-    log_cursor: state.log.length,
-  });
-  snapshots.push(compactHistoryState(state));
-  const max = Number(state.options.max_rollback_points || 14);
-  while (state.rollback.length > max) {
-    state.rollback.shift();
-    snapshots.shift();
-  }
-  setRollbackSnapshots(state, snapshots);
+function checkpoint(state, kind, _label, snapshotState = null) {
+  saveRollbackPoint(state, kind, snapshotState);
 }
 
 function set_up_historical_scenario() {
@@ -2342,11 +2341,13 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 55,
+    version: 56,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
-      max_rollback_points: 14,
+      max_rollback_turns: 2,
+      max_rollback_action_rounds: 4,
+      no_supply_warnings: false,
       enforce_supply: true,
       ...options,
     },
@@ -2512,6 +2513,9 @@ const Engine = createEngine({
   adapters: {
     checkpoint,
     clearRollback,
+    compactHistoryState,
+    saveCombatRollbackPoint,
+    rollbackMeta,
     clearUndo,
     rollbackSnapshot,
     rollbackSnapshots,
@@ -2926,6 +2930,7 @@ exports.analysis = Engine.registerAnalysis(
 );
 
 exports._test = {
+  startActionRound: Engine.startActionRound,
   activeFaction,
   advanceDeterministicStates: Engine.advanceDeterministicStates,
   checkpoint,

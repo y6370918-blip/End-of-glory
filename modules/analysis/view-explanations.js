@@ -1,6 +1,6 @@
 "use strict";
 
-const { semanticDiff } = require("./semantic-diff.js");
+const { rollbackLabel, rollbackActionKey } = require("../core/history.js");
 
 const HINT_ORDER = Object.freeze({
   rule_forbidden: 0,
@@ -276,8 +276,8 @@ function actionHints(state, faction, actions, context) {
 
 function rollbackEntries(
   state,
-  role = null,
-  maximumLogs = 20,
+  _role = null,
+  _maximumLogs = 20,
   snapshotAt = null,
 ) {
   return (state.rollback || []).map((entry, index) => {
@@ -288,21 +288,28 @@ function rollbackEntries(
       : Array.isArray(entry.state?.log)
         ? entry.state.log.length
         : 0;
-    const removed = (state.log || []).slice(cursor);
-    const omitted = Math.max(0, removed.length - maximumLogs);
+    const events = (entry.events || []).filter((text) =>
+      /\[\[die:|[\u2680-\u2685]|\b[WB][1-6]\b|掷骰/.test(String(text)));
     return {
       index,
       turn: entry.turn,
       round: entry.round,
-      group: `T${entry.turn}:AR${entry.round || 0}`,
+      active: entry.active ?? entry.actor,
+      action: entry.action ?? entry.round,
+      combat_index: entry.combat_index,
+      space: entry.space,
+      space_name: entry.space_name,
+      turn_start: entry.kind === "turn_start",
+      group: rollbackActionKey(entry),
       kind: entry.kind,
-      label: entry.label,
+      name: rollbackLabel(entry),
+      label: rollbackLabel(entry),
       available: Boolean(snapshot),
       unavailable_reason: snapshot ? null : "检查点存档缺失或与回合不匹配，不能回滚。",
       log_cursor: cursor,
-      removed_logs: removed.slice(-maximumLogs),
-      omitted_logs: omitted,
-      changes: snapshot ? semanticDiff(snapshot, state, role) : null,
+      log_index: cursor,
+      events,
+      event_count: events.length,
     };
   });
 }

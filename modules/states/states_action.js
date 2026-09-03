@@ -68,7 +68,7 @@ function createActionStates(api) {
     },
 
     confirm_rollback: {
-      message: "确认回滚。",
+      message: (state) => `${state.rollback_confirmation?.message || "已回滚"}。请确认继续。`,
       prompt(_state, builder) {
         builder.enable("confirm_rollback");
       },
@@ -79,6 +79,32 @@ function createActionStates(api) {
         state.state = confirmation.return_state;
         state.phase = confirmation.return_phase;
         state.rollback_confirmation = null;
+      },
+    },
+
+    rollback_turn_end: {
+      message: "补员阶段前：继续回合末结算。",
+      prompt(_state, builder) { builder.enable("done"); },
+      done: api.continueTurnEnd,
+    },
+
+    rollback_combat_start: {
+      message: "战斗前：确认或取消本场进攻。",
+      prompt(_state, builder) {
+        builder.enable("done");
+        builder.enable("cancel");
+      },
+      done(state) {
+        const declaration = state.ops?.pending_attack;
+        if (!declaration) throw new Error("Rollback combat declaration is missing");
+        api.validateAttackDeclaration(state, declaration);
+        state.ops.rollback_combat_count = (state.ops.rollback_combat_count || 0) + 1;
+        state.ops.pending_attack = null;
+        api.beginCombat(state, declaration);
+      },
+      cancel(state) {
+        state.ops.pending_attack = null;
+        state.state = "ops_attack";
       },
     },
 

@@ -853,27 +853,125 @@ body.flat .activation-counter {
 	font-size: 14px;
 }
 
-.rollback-log-preview {
-	max-height: 280px;
-	margin: 8px 0;
-	padding: 8px 8px 8px 32px;
-	overflow: auto;
-	border: 1px solid #8b7c64;
-	background: #f4ecdc;
-	font-family: ui-monospace, "Cascadia Mono", monospace;
+.modal-dialog {
+	width: min(560px, calc(100vw - 32px));
+	max-width: 560px;
+	padding: 12px 14px 10px;
+	border: 1px solid #9a845e;
+	border-radius: 8px;
+	background: floralwhite;
+	box-shadow: 0 8px 24px rgba(40, 30, 12, 0.2);
+	color: #2f2414;
+}
+
+.modal-dialog h3 {
+	font-weight: bold;
+	margin: 0;
+	color: #4a3112;
+}
+
+.rollback_intro {
+	margin-top: 8px;
+	color: #5a452b;
+	font-size: 12px;
+	line-height: 1.35;
+}
+
+.rollback_intro p {
+	margin: 0;
+}
+
+.rollback_intro p + p {
+	margin-top: 6px;
+}
+
+#propose_rollback_details,
+#review_rollback_details {
+	margin: 10px 0 8px;
+	max-height: 220px;
+	overflow-y: auto;
+}
+
+.rollback_label {
+	display: block;
+	margin-top: 10px;
+	font-weight: bold;
+	font-size: 17px;
+	color: #4a3112;
+}
+
+#rollback_checkpoint,
+#rollback_timepoint {
+	width: 100%;
+	margin-top: 4px;
+	padding: 8px 10px;
+	border: 1px solid #b79a6f;
+	border-radius: 4px;
+	background: #fffdf7;
+	color: #362712;
+	font-size: 14px;
+	box-sizing: border-box;
+}
+
+.rollback_event {
+	padding: 6px 0 6px 12px;
+	border-left: 2px solid rgba(122, 90, 43, 0.35);
+	background: transparent;
+}
+
+.rollback_summary {
+	margin: 0 0 10px;
+	color: #4c371a;
 	font-size: 13px;
 	line-height: 1.4;
 }
 
-.rollback-change-preview {
-	max-height: 240px;
-	margin: 8px 0;
-	padding: 8px 8px 8px 28px;
-	overflow: auto;
-	border: 1px solid #53708b;
-	background: #e6eef5;
-	font-size: 13px;
-	line-height: 1.4;
+.rollback_header {
+	margin-bottom: 8px;
+	font-size: 14px;
+}
+
+.rollback_event_list {
+	display: grid;
+	gap: 8px;
+}
+
+.rollback_empty {
+	padding: 8px 10px;
+	border: 1px dashed rgba(122, 90, 43, 0.28);
+	color: #5d4a31;
+}
+
+.rollback_buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.rollback_buttons button {
+	min-width: 84px;
+	padding: 6px 12px;
+	border: 1px solid #8f7349;
+	border-radius: 4px;
+	background: #f8ecd3;
+	color: #3f2e16;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.rollback_buttons button:hover {
+	background: #f1e1bc;
+}
+
+.rollback_buttons .primary {
+	background: #7d5a2c;
+	border-color: #5c3915;
+	color: #fff7ea;
+}
+
+.rollback_buttons .primary:hover {
+	background: #8d6733;
 }
 
 .piece.staged {
@@ -1732,13 +1830,11 @@ dialog::backdrop {
 	backdrop-filter: blur(2px);
 }
 
-#rollback-form,
 #bug-report-form {
 	display: grid;
 	gap: 10px;
 }
 
-#rollback-form select,
 #bug-report-form textarea {
 	box-sizing: border-box;
 	width: 100%;

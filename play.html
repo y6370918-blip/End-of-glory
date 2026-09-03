@@ -98,7 +98,40 @@
 
 		<footer id="status"></footer>
 		<dialog id="card-dialog" class="detail-dialog"><button class="dialog-close" data-close aria-label="关闭">×</button><div id="card-detail"></div></dialog>
-		<dialog id="rollback-dialog" class="modal-dialog"><button class="dialog-close" data-close aria-label="关闭">×</button><form id="rollback-form" method="dialog"><h2>提议回滚</h2><label for="rollback-group">回合与行动轮</label><select id="rollback-group" name="group"></select><label for="rollback-checkpoint">检查点</label><select id="rollback-checkpoint" name="checkpoint"></select><div id="rollback-detail"></div><div class="dialog-actions"><button type="button" data-close>取消</button><button id="submit-rollback" type="submit">提交给对手</button></div></form></dialog>
+<dialog id="propose_rollback_dialog" class="modal-dialog">
+			<h3>提议回滚</h3>
+			<div class="rollback_intro">
+				<p>选择一个之前的检查点并发起回滚提议。</p>
+				<p>如果对手同意，游戏会重置到选定位置。</p>
+			</div>
+			<form id="propose_rollback_form">
+				<label class="rollback_label" for="rollback_checkpoint">回滚到:</label>
+				<select name="checkpoint" id="rollback_checkpoint" onchange="update_rollback_dialog()"></select>
+				<div id="rollback_timepoint_group" hidden>
+					<label class="rollback_label" for="rollback_timepoint">时间点:</label>
+					<select name="timepoint" id="rollback_timepoint" onchange="update_rollback_dialog()"></select>
+				</div>
+			</form>
+			<div id="propose_rollback_details"></div>
+			<div class="rollback_buttons">
+				<button type="button" onclick="propose_rollback_cancel(event)">取消</button>
+				<button type="button" id="submit-rollback" class="primary" onclick="propose_rollback_submit(event)">提交</button>
+			</div>
+		</dialog>
+
+		<dialog id="review_rollback_dialog" class="modal-dialog">
+			<h3>审查回滚提议</h3>
+			<div class="rollback_intro">
+				<p>你的对手提议回滚到之前的检查点。</p>
+				<p>请查看将撤销的记录，再决定接受或拒绝。</p>
+			</div>
+			<div id="review_rollback_details"></div>
+			<div class="rollback_buttons">
+				<button type="button" onclick="review_rollback_cancel(event)">取消</button>
+				<button type="button" id="accept-rollback" class="primary" onclick="review_rollback_accept(event)">接受</button>
+				<button type="button" onclick="review_rollback_reject(event)">拒绝</button>
+			</div>
+		</dialog>
 		<dialog id="bug-report-dialog" class="modal-dialog"><button class="dialog-close" data-close aria-label="关闭">×</button><form id="bug-report-form" method="dialog"><h2>反馈问题</h2><label for="bug-report-note">问题说明</label><textarea id="bug-report-note" rows="6"></textarea><label class="dialog-checkbox"><input id="bug-report-send-chat" type="checkbox" /> 同时发送到聊天</label><div class="dialog-actions"><button type="button" data-close>取消</button><button type="submit">下载报告</button></div></form></dialog>
 	</body>
 </html>

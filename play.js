@@ -1136,7 +1136,7 @@ function renderActions() {
 	if (actionIncludes("sr_destination", "reserve"))
 		container.append(button("战略转移到预备区", "sr_destination", "reserve"))
 	for (const [action, value] of Object.entries(actions))
-		if (value === 1 && EogActionProtocol.surfaceFor(action) === "top")
+		if (value === 1 && !["accept_rollback", "reject_rollback"].includes(action) && EogActionProtocol.surfaceFor(action) === "top")
 			container.append(
 				button(
 					EogActionProtocol.labelFor(action, undefined, view.action_labels),
@@ -1165,6 +1165,14 @@ function renderActions() {
 			container.append(button(label, action, arg, action === "retain_combat_card" ? "primary" : ""))
 		}
 
+	if (actions.accept_rollback || actions.reject_rollback) {
+		const review = document.createElement("button")
+		review.textContent = "审查回滚提议"
+		review.id = "review-rollback"
+		review.addEventListener("click", review_rollback)
+		container.append(review)
+	} else if (byId("review_rollback_dialog").open) byId("review_rollback_dialog").close()
+	if (!actions.propose_rollback && byId("propose_rollback_dialog").open) byId("propose_rollback_dialog").close()
 	if (!container.children.length && !Object.keys(actions).length) container.textContent = "等待对手行动。"
 }
 
@@ -1862,98 +1870,364 @@ function onReply(query, payload) {
 	renderSpaces()
 }
 
-function rollbackChangeLines(changes) {
-	if (!changes) return []
-	const lines = []
-	for (const unit of changes.units || []) {
-		const before = unit.before
-		const after = unit.after
-		if (!before) lines.push(`单位 ${unit.id}：进入 ${after.pool}${after.location ? `（${after.location}）` : ""}`)
-		else if (!after) lines.push(`单位 ${unit.id}：从 ${before.pool} 移除`)
-		else if (before.pool !== after.pool || before.location !== after.location)
-			lines.push(`单位 ${unit.id}：${before.pool}${before.location ? `/${before.location}` : ""} → ${after.pool}${after.location ? `/${after.location}` : ""}`)
-		else if (before.reduced !== after.reduced)
-			lines.push(`单位 ${unit.id}：${before.reduced ? "减员" : "满员"} → ${after.reduced ? "减员" : "满员"}`)
-		else if (before.moved !== after.moved || before.attacked !== after.attacked)
-			lines.push(`单位 ${unit.id}：使用状态改变`)
-	}
-	for (const group of [changes.resources, changes.board, changes.activations, changes.flow])
-		for (const entry of group || []) lines.push(`${entry.key}：${JSON.stringify(entry.before)} → ${JSON.stringify(entry.after)}`)
-	for (const [faction, cards] of Object.entries(changes.cards || {})) {
-		const hand = cards.hand
-		lines.push(`${faction.toUpperCase()} 手牌：${hand.before_count ?? hand.before?.length ?? 0} → ${hand.after_count ?? hand.after?.length ?? 0}；牌库 ${cards.deck.before_count} → ${cards.deck.after_count}`)
-	}
-	return lines
+// Rollback dialogs and grouping copied from local PUG; only EOG action/log/ID adapters differ.
+function rollback_selection_index(value) {
+	return value == null || String(value).trim() === "" ? NaN : Number(value)
 }
 
 function openRollbackDialog() {
-	const legal = actionValue("propose_rollback")
-	if (!Array.isArray(legal) || !legal.length) return
-	const groupSelect = byId("rollback-group")
-	const select = byId("rollback-checkpoint")
-	const checkpoints = legal
-		.map((index) => view.rollback?.find((entry) => entry.index === index))
-		.filter(Boolean)
-	const groups = [...new Map(checkpoints.map((entry) => [entry.group || `T${entry.turn}:AR${entry.round || 0}`, entry])).entries()]
-	groupSelect.replaceChildren()
-	for (const [group, entry] of groups) {
+	if (!Array.isArray(actionValue("propose_rollback")) || !actionValue("propose_rollback").length) {
+		return
+	}
+	const form = document.getElementById("propose_rollback_form")
+	if (!Array.isArray(view?.rollback) || view.rollback.length === 0) {
+		return
+	}
+	form.checkpoint.innerHTML = ""
+	for (const i of get_primary_rollback_indices()) {
+		const rollback = view.rollback[i]
 		const option = document.createElement("option")
-		option.value = group
-		option.textContent = `第 ${entry.turn} 回合 · 行动轮 ${entry.round || 0}`
-		groupSelect.append(option)
+		option.value = i
+		option.textContent = format_rollback_option_label(rollback, is_latest_rollback_family(i))
+		form.checkpoint.add(option, 0)
 	}
-	const populate = () => {
-		select.replaceChildren()
-		for (const checkpoint of checkpoints.filter((entry) => (entry.group || `T${entry.turn}:AR${entry.round || 0}`) === groupSelect.value)) {
-			const option = document.createElement("option")
-			option.value = String(checkpoint.index)
-			option.textContent = `${checkpoint.label} · ${checkpoint.kind}`
-			select.append(option)
-		}
-		update()
+	const default_index = get_default_rollback_index()
+	form.checkpoint.value = String(get_rollback_primary_index(default_index))
+	update_rollback_dialog(default_index)
+	document.getElementById("propose_rollback_dialog").showModal()
+}
+
+function get_rollback_point(index) {
+	if (!Array.isArray(view?.rollback) || !Number.isInteger(index) || index < 0 || index >= view.rollback.length) {
+		return null
 	}
-	const update = () => {
-		const checkpoint = select.value === "" ? null
-			: checkpoints.find((entry) => entry.index === Number(select.value))
-		byId("submit-rollback").disabled = !checkpoint
-		const detail = byId("rollback-detail")
-		if (!checkpoint) {
-			detail.textContent = "没有可用检查点。"
-			return
-		}
-		const summary = document.createElement("p")
-		summary.textContent = `将请求对手同意回滚到“${checkpoint.label}”。以下 ${checkpoint.removed_logs?.length || 0} 条公开记录会被撤销。`
-		const changeList = document.createElement("ul")
-		changeList.className = "rollback-change-preview"
-		const changeLines = rollbackChangeLines(checkpoint.changes)
-		for (const line of changeLines.slice(0, 30)) {
-			const item = document.createElement("li")
-			item.textContent = line
-			changeList.append(item)
-		}
-		if (changeLines.length > 30) {
-			const item = document.createElement("li")
-			item.textContent = `另有 ${changeLines.length - 30} 项状态变化省略。`
-			changeList.append(item)
-		}
-		const list = document.createElement("ol")
-		list.className = "rollback-log-preview"
-		for (const line of checkpoint.removed_logs || []) {
-			const item = document.createElement("li")
-			appendLogText(item, line)
-			list.append(item)
-		}
-		if (checkpoint.omitted_logs) {
-			const item = document.createElement("li")
-			item.textContent = `另有 ${checkpoint.omitted_logs} 条较早记录省略。`
-			list.prepend(item)
-		}
-		detail.replaceChildren(summary, changeList, list)
+	return view.rollback[index]
+}
+
+function is_combat_rollback_point(rollback) {
+	return rollback?.kind === "combat"
+}
+
+function is_action_round_rollback_point(rollback) {
+	return !!(rollback && (rollback.kind === "action_round" || (!rollback.kind && !rollback.turn_start)))
+}
+
+function get_rollback_action_key(rollback) {
+	if (!rollback) {
+		return ""
 	}
-	groupSelect.onchange = populate
-	select.onchange = update
-	populate()
-	byId("rollback-dialog").showModal()
+	return `${rollback.turn}|${rollback.active}|${rollback.action || 1}`
+}
+
+function get_primary_rollback_indices() {
+	if (!Array.isArray(view?.rollback)) {
+		return []
+	}
+	const indices = []
+	for (let i = 0; i < view.rollback.length; i++) {
+		if (!is_combat_rollback_point(view.rollback[i]) && actionIncludes("propose_rollback", i)) {
+			indices.push(i)
+		}
+	}
+	return indices
+}
+
+function get_rollback_primary_index(index) {
+	const rollback = get_rollback_point(index)
+	if (!is_combat_rollback_point(rollback)) {
+		return index
+	}
+	const action_key = get_rollback_action_key(rollback)
+	for (let i = index - 1; i >= 0; i--) {
+		const candidate = view.rollback[i]
+		if (is_action_round_rollback_point(candidate) && get_rollback_action_key(candidate) === action_key) {
+			return i
+		}
+	}
+	return index
+}
+
+function get_combat_rollback_indices_for_action(action_index) {
+	const action = get_rollback_point(action_index)
+	if (!is_action_round_rollback_point(action)) {
+		return []
+	}
+	const action_key = get_rollback_action_key(action)
+	const indices = []
+	for (let i = action_index + 1; i < view.rollback.length; i++) {
+		const rollback = view.rollback[i]
+		if (is_combat_rollback_point(rollback) && get_rollback_action_key(rollback) === action_key && rollback.available !== false) {
+			indices.push(i)
+		}
+	}
+	return indices.slice(0, 5)
+}
+
+function get_latest_rollback_index() {
+	return Array.isArray(view?.rollback) && view.rollback.length > 0 ? view.rollback.length - 1 : -1
+}
+
+function is_latest_rollback_family(index) {
+	const latest = get_latest_rollback_index()
+	if (index === latest) {
+		return true
+	}
+	return get_combat_rollback_indices_for_action(index).includes(latest)
+}
+
+function format_rollback_option_label(rollback, is_latest = false) {
+	let text = rollback.name
+	if (is_latest) {
+		text += " · 当前"
+	}
+	return text
+}
+
+function get_rollback_space_name(rollback) {
+	if (rollback?.space_name) {
+		return rollback.space_name
+	}
+	const space = rollback?.space
+	if (spaceById[space]?.name) return spaceById[space].name
+	return rollback?.name || "战斗"
+}
+
+function format_rollback_timepoint_label(rollback, is_latest = false) {
+	let text
+	if (is_combat_rollback_point(rollback)) {
+		text = `${get_rollback_space_name(rollback)} 战斗前`
+	} else {
+		text = "行动轮开始"
+	}
+	if (is_latest) {
+		text += " · 当前"
+	}
+	return text
+}
+
+function update_rollback_timepoint_select(form, preferred_index = null) {
+	const group = document.getElementById("rollback_timepoint_group")
+	if (!form.timepoint || !group) {
+		return rollback_selection_index(form.checkpoint.value)
+	}
+	const action_index = rollback_selection_index(form.checkpoint.value)
+	const combat_indices = get_combat_rollback_indices_for_action(action_index)
+	const current_timepoint = rollback_selection_index(form.timepoint.value)
+	form.timepoint.innerHTML = ""
+	if (combat_indices.length < 2) {
+		group.hidden = true
+		return action_index
+	}
+
+	group.hidden = false
+	const choices = [action_index, ...combat_indices]
+	const latest = get_latest_rollback_index()
+	for (const index of choices) {
+		const rollback = get_rollback_point(index)
+		const option = document.createElement("option")
+		option.value = index
+		option.textContent = format_rollback_timepoint_label(rollback, index === latest)
+		form.timepoint.add(option)
+	}
+
+	let selected = Number.isInteger(preferred_index) && choices.includes(preferred_index)
+		? preferred_index
+		: current_timepoint
+	if (!choices.includes(selected)) {
+		selected = action_index
+	}
+	form.timepoint.value = String(selected)
+	return selected
+}
+
+function get_selected_rollback_index() {
+	const form = document.getElementById("propose_rollback_form")
+	const group = document.getElementById("rollback_timepoint_group")
+	if (form?.timepoint && group && !group.hidden) {
+		return rollback_selection_index(form.timepoint.value)
+	}
+	return rollback_selection_index(form.checkpoint.value)
+}
+
+function is_rollback_dice_record(text) {
+	return /\[\[die:|[\u2680-\u2685]|\b[WB][1-6]\b|掷骰/.test(String(text || ""))
+}
+
+function collect_rollback_events(from_index) {
+	const rollback = get_rollback_point(from_index)
+	if (!rollback) {
+		return []
+	}
+	const history = view.log
+	if (Number.isInteger(rollback.log_index) && Array.isArray(history)) {
+		return history
+			.slice(rollback.log_index)
+			.map((text, offset) => ({
+				type: "log",
+				text: String(text ?? ""),
+				index: rollback.log_index + offset
+			}))
+			.filter((entry) => is_rollback_dice_record(entry.text))
+	}
+	const events = []
+	for (let i = from_index; i < view.rollback.length; i++) {
+		const item_events = view.rollback[i].events || []
+		for (const event of item_events) {
+			events.push({ type: "text", text: event })
+		}
+	}
+	return events
+}
+
+function count_rollback_events(from_index) {
+	return collect_rollback_events(from_index).length
+}
+
+function get_default_rollback_index() {
+	if (!Array.isArray(view?.rollback) || view.rollback.length === 0) {
+		return -1
+	}
+	for (let i = view.rollback.length - 1; i >= 0; i--) {
+		if (actionIncludes("propose_rollback", i) && count_rollback_events(i) > 0) {
+			return i
+		}
+	}
+	return actionValue("propose_rollback")?.at(-1) ?? -1
+}
+
+function append_rollback_summary(details, rollback, from_index, event_count) {
+	const summary = document.createElement("div")
+	summary.className = "rollback_summary"
+	summary.textContent =
+		event_count > 0
+			? `回滚到 ${rollback.name} 将撤销 ${view.rollback.length - from_index} 个检查点中的 ${event_count} 条掷骰记录。`
+			: `回滚到 ${rollback.name} 不会撤销任何掷骰记录。`
+	details.appendChild(summary)
+}
+
+/**
+ * 渲染回滚详情内容。
+ * @param {HTMLElement} details - 详情容器元素。
+ * @param {number} from_index - 起始索引。
+ * @param {string} header_text - 头部文本。
+ */
+function render_rollback_details(details, from_index, header_text) {
+	details.innerHTML = ""
+	const rollback = get_rollback_point(from_index)
+	if (!rollback) {
+		return
+	}
+	const rollback_header = document.createElement("div")
+	rollback_header.className = "rollback_header"
+	rollback_header.textContent = header_text
+	details.appendChild(rollback_header)
+	const event_count = count_rollback_events(from_index)
+	const events = collect_rollback_events(from_index)
+	append_rollback_summary(details, rollback, from_index, event_count)
+	if (events.length === 0) {
+		const detail = document.createElement("div")
+		detail.className = "rollback_empty"
+		detail.textContent = "不会撤销任何掷骰"
+		details.appendChild(detail)
+		return
+	}
+	const event_list = document.createElement("div")
+	event_list.className = "rollback_event_list"
+	const savedFaction = logGroupFaction
+	const savedIndex = logGroupIndex
+	resetLogGroup()
+	let contextCursor = 0
+	for (const event of events) {
+		if (event.type === "log") {
+			for (; contextCursor < event.index; ++contextCursor) {
+				if (/^(#ap|#cp|\.h[123])/.test(String(view.log[contextCursor]))) onLog(view.log[contextCursor], contextCursor)
+			}
+		}
+		const detail =
+			event.type === "log" ? onLog(event.text, event.index) : document.createElement("div")
+		detail.classList.add("rollback_event")
+		if (event.type !== "log") {
+			appendLogText(detail, event.text)
+		}
+		event_list.appendChild(detail)
+	}
+	logGroupFaction = savedFaction
+	logGroupIndex = savedIndex
+	details.appendChild(event_list)
+}
+
+/**
+ * 更新回滚对话框内容。
+ */
+function update_rollback_dialog(preferred_index = null) {
+	const form = document.getElementById("propose_rollback_form")
+	const details = document.getElementById("propose_rollback_details")
+	const selected_index = update_rollback_timepoint_select(form, preferred_index)
+	byId("submit-rollback").disabled = !Number.isInteger(selected_index) || !actionIncludes("propose_rollback", selected_index)
+	render_rollback_details(details, selected_index, "将撤销以下记录：")
+}
+
+/**
+ * 取消回滚提议。
+ * @param {Event} evt - 事件对象。
+ */
+function propose_rollback_cancel(evt) {
+	evt.preventDefault()
+	document.getElementById("propose_rollback_dialog").close()
+}
+
+/**
+ * 提交回滚提议。
+ * @param {Event} evt - 事件对象。
+ */
+function propose_rollback_submit(evt) {
+	evt.preventDefault()
+	const index = get_selected_rollback_index()
+	if (!Number.isInteger(index) || !actionIncludes("propose_rollback", index)) return
+	perform("propose_rollback", index)
+	document.getElementById("propose_rollback_dialog").close()
+}
+
+/**
+ * 显示审查回滚提议对话框。
+ */
+function review_rollback() {
+	if (!view?.rollback_proposal || !Array.isArray(view.rollback)) {
+		return
+	}
+	const details = document.getElementById("review_rollback_details")
+	const index = view.rollback_proposal.index
+	const rollback = get_rollback_point(index)
+	if (!rollback || rollback.available === false) {
+		details.textContent = "检查点存档不可用，只能拒绝此提议。"
+	} else render_rollback_details(details, index, `回滚到 ${rollback.name} 将撤销：`)
+	byId("accept-rollback").disabled = actionValue("accept_rollback") !== 1
+	document.getElementById("review_rollback_dialog").showModal()
+}
+
+/**
+ * 取消审查回滚提议。
+ */
+function review_rollback_cancel() {
+	document.getElementById("review_rollback_dialog").close()
+}
+
+/**
+ * 拒绝回滚提议。
+ */
+function review_rollback_reject() {
+	if (actionValue("reject_rollback") !== 1) return
+	perform("reject_rollback")
+	document.getElementById("review_rollback_dialog").close()
+}
+
+/**
+ * 接受回滚提议。
+ */
+function review_rollback_accept() {
+	if (actionValue("accept_rollback") !== 1) return
+	perform("accept_rollback")
+	document.getElementById("review_rollback_dialog").close()
 }
 
 function buildBugReport(note) {
@@ -2308,6 +2582,8 @@ function onUpdate() {
 window.on_update = onUpdate
 window.on_log = onLog
 window.on_reply = onReply
+Object.assign(window, { update_rollback_dialog, propose_rollback_cancel, propose_rollback_submit,
+	review_rollback_cancel, review_rollback_reject, review_rollback_accept })
 
 document.addEventListener("DOMContentLoaded", () => {
 	initializeDiceSprite()
@@ -2374,14 +2650,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	byId("piece-button").addEventListener("click", toggleCounters)
 	for (const close of document.querySelectorAll(".dialog_x"))
 		close.addEventListener("click", () => { close.closest(".dialog").hidden = true })
-	byId("rollback-form").addEventListener("submit", (event) => {
-		event.preventDefault()
-		const value = byId("rollback-checkpoint").value
-		const index = Number(value)
-		if (value === "" || !Number.isInteger(index) || !actionIncludes("propose_rollback", index)) return
-		byId("rollback-dialog").close()
-		perform("propose_rollback", index)
-	})
+	byId("propose_rollback_form").addEventListener("submit", propose_rollback_submit)
 	byId("bug-report-form").addEventListener("submit", submitBugReport)
 	for (const close of document.querySelectorAll("[data-close]"))
 		close.addEventListener("click", () => close.closest("dialog").close())

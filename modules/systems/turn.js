@@ -70,7 +70,6 @@ function createTurnSystem(api) {
       state.phase = "强制进攻";
       state.state = "mo_review";
       api.setActiveFaction(state, api.CP);
-      api.checkpoint(state, "turn", "T1");
       api.log(state, "《荣耀终结》1914 Historical 开局。");
   }
 
@@ -197,11 +196,11 @@ function createTurnSystem(api) {
           unit.attacked = false;
           unit.attack_eligible = false;
       }
-      api.checkpoint(state, "action-round", `T${state.turn} AR${state.action_round}`);
       api.log(state, "");
       if (state.action_round === 1)
           api.log(state, ".h2 行动阶段");
       api.log(state, `.h3cp 行动轮 ${state.action_round}`);
+      api.checkpoint(state, state.action_round === 1 ? "turn_start" : "action_round");
   }
 
   function continueNextFactionAction(state) {
@@ -217,6 +216,7 @@ function createTurnSystem(api) {
           enterFactionAction(state, api.AP);
           api.log(state, "");
           api.log(state, `.h3ap 行动轮 ${state.action_round}`);
+          api.checkpoint(state, "action_round");
           return;
       }
       api.cleanupEmptyFortifications(state);
@@ -224,8 +224,16 @@ function createTurnSystem(api) {
           startActionRound(state);
       else if (checkVictory(state))
           return;
-      else if (!api.beginFrontMoCommitmentReview(state) &&
-          !api.beginMoPenaltyResolution(state))
+      else {
+          const snapshot = api.compactHistoryState(state);
+          snapshot.state = "rollback_turn_end";
+          api.checkpoint(state, "pre_replacement", null, snapshot);
+          continueTurnEnd(state);
+      }
+  }
+
+  function continueTurnEnd(state) {
+      if (!api.beginFrontMoCommitmentReview(state) && !api.beginMoPenaltyResolution(state))
           beginAttrition(state);
   }
 
@@ -233,7 +241,7 @@ function createTurnSystem(api) {
       if (state.active === api.CP && api.beginSalientChoice(state))
           return;
       const warnings = state.supply_warnings;
-      if (warnings?.owner === state.active &&
+      if (!state.options.no_supply_warnings && warnings?.owner === state.active &&
           Array.isArray(warnings.spaces) &&
           warnings.spaces.length) {
           state.pending_supply_warning_review = {
@@ -368,6 +376,7 @@ function createTurnSystem(api) {
           enterFactionAction(state, api.AP);
           state.phase = "行动阶段";
           api.log(state, `T${state.turn} 行动轮 ${state.action_round}：协约国行动。`);
+          api.checkpoint(state, "action_round");
           return;
       }
       finishAttritionPhases(state);
@@ -592,7 +601,6 @@ function createTurnSystem(api) {
       state.action_round = 0;
       state.last_action_use = { ap: null, cp: null };
       state.reinforcement_events_this_turn = { ap: [], cp: [] };
-      api.checkpoint(state, "turn", `T${state.turn}`);
       if (beginScheduledReturns(state))
           return;
       beginMoPhase(state);
@@ -841,6 +849,7 @@ return Object.freeze({
     checkVictory,
     commitScheduledReturns,
     continueNextFactionAction,
+    continueTurnEnd,
     discardRetainedCombatCards,
     drawCards,
     finalTerritoryVp,

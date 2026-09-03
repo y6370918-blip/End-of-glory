@@ -12,12 +12,12 @@ function createViewSystem(api) {
           !["opening_ap_card", "opening_cp_august_guns"].includes(state.state)) {
           if (api.undoAvailable(state))
               actions.undo = 1;
-          if (state.rollback.length) {
+          if (!state.options.no_supply_warnings && state.rollback.length) {
               const snapshots = api.rollbackSnapshots(state);
               actions.propose_rollback = state.rollback
                   .map((_, index) => index).filter((index) => snapshots[index]);
           }
-          actions.flag_supply_warnings = 1;
+          if (!state.options.no_supply_warnings) actions.flag_supply_warnings = 1;
       }
       api.stateEngine.prompt(state, builder);
       for (const [action, value] of Object.entries(actions)) {
@@ -761,6 +761,7 @@ function createViewSystem(api) {
                   editing: true,
               }
               : api.clone(state.supply_warnings),
+          rollback_meta: api.rollbackMeta(state),
           rollback: api.ViewExplanations.rollbackEntries(
               state,
               current,

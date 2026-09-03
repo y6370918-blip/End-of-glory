@@ -204,6 +204,8 @@ function createActionSystem(api) {
   }
 
   function beginRollbackProposal(state, index) {
+      if (index == null || String(index).trim() === "" || state.options.no_supply_warnings)
+          throw new Error("Rollback checkpoint is unavailable");
       index = Number(index);
       if (!Number.isInteger(index) || !state.rollback[index])
           throw new Error("Rollback checkpoint is no longer available");
@@ -246,10 +248,17 @@ function createActionSystem(api) {
       if (!snapshotState)
           throw new Error("Rollback checkpoint state is unavailable");
       const message = `已回滚到：${entry.label}`;
+      const seed = state.seed;
       api.restoreSnapshot(state, { ...entry, state: snapshotState });
+      // Mutual rollback does not permit replaying the checkpoint's old dice.
+      // Ordinary undo deliberately continues to restore its own saved seed.
+      state.seed = seed;
+      api.clearUndo(state);
+      delete state.combat_rollback_pending;
+      state.supply_dirty = true;
       api.ensureState(state);
-      state.rollback = rollback.slice(0, proposal.index);
-      api.setRollbackSnapshots(state, rollbackStates.slice(0, proposal.index));
+      state.rollback = rollback.slice(0, proposal.index + 1);
+      api.setRollbackSnapshots(state, rollbackStates.slice(0, proposal.index + 1));
       state.rollback_proposal = null;
       state.rollback_confirmation = {
           message,

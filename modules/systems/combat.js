@@ -1319,6 +1319,7 @@ function createCombatSystem(api) {
       declaration.optional_events_resolved = true;
       validateAttackDeclaration(state, declaration);
       api.snapshot(state, "Declare attack");
+      api.saveCombatRollbackPoint(state, declaration, api.spaceName(declaration.target));
       state.ops.pending_attack = null;
       beginCombat(state, declaration);
   }
@@ -1696,9 +1697,7 @@ function createCombatSystem(api) {
       // Ordinary undo must never cross this information boundary; later
       // post-combat advances create their own, newer snapshots.
       api.clearUndo(state);
-      // Mutual rollback must obey the same public-information boundary. A new
-      // action-round checkpoint will be created after this combat is complete.
-      api.clearRollback(state);
+      // Mutual rollback deliberately survives dice; both players must agree.
       for (const [nation, id] of Object.entries(state.combat.mo_assignments)) {
           const definition = api.moDefinition(state, id);
           if (definition &&
