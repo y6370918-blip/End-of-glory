@@ -60,13 +60,19 @@ function createCombatStates(api) {
         builder.addAll("deselect_attacker", selection.deselectable);
         if (selection.selected.length)
           builder.addAll("declare_attack", selection.targets);
-        if (!state.ops.forced_attacks?.length) builder.enable("finish");
+        if (!state.ops.forced_attacks?.length &&
+            !api.unresolvedAttackActivationSpaces(state).length)
+          builder.enable("finish");
       },
       select_attacker(state, id) {
         const selection = api.attackSelectionActions(state);
         if (!selection.selectable.includes(id))
           throw new Error("Unit cannot join this attack");
-        state.ops.attack_selection = [...selection.selected, id];
+        state.ops.attack_selection = api.defaultAttackHqs(
+          state,
+          [...selection.selected, id],
+          selection.eligible,
+        );
       },
       deselect_attacker(state, id) {
         const selection = api.attackSelectionActions(state);
@@ -95,6 +101,9 @@ function createCombatStates(api) {
         continueAttackDeclaration(state);
       },
       finish(state) {
+        const unresolved = api.unresolvedAttackActivationSpaces(state);
+        if (unresolved.length)
+          throw new Error(`Activated attack spaces must be resolved first: ${unresolved.join(", ")}`);
         if (state.ops?.forced_attacks?.length)
           throw new Error("Converted attack activations must be executed");
         if (state.turn <= 3) api.advanceEarlyStackResolution(state);

@@ -92,7 +92,12 @@ function createNavalSystem(api) {
       if (!next) {
           state.naval.resolving = false;
           const difference = state.naval.pending_difference || 0;
-          state.naval.track = Math.max(-9, Math.min(9, state.naval.track + Math.sign(difference)));
+          const previousTrack = state.naval.track;
+          state.naval.track = Math.max(-9, Math.min(9, previousTrack + Math.sign(difference)));
+          if (state.naval.track !== previousTrack)
+              api.log(state, `海军轨：${previousTrack} → ${state.naval.track}。`);
+          else if (difference)
+              api.log(state, `海军轨停留在${state.naval.track}（已到轨道尽头）。`);
           delete state.naval.pending_difference;
           startNavalDisposition(state);
           return;

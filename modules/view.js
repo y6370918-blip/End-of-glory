@@ -714,6 +714,7 @@ function createViewSystem(api) {
           fortifications: api.clone(state.fortifications),
           markers: api.clone(state.markers),
           besieged: state.besieged.slice(),
+          broken_sieges: (state.broken_sieges || []).slice(),
           destroyed_forts: state.destroyed_forts.slice(),
           activations: api.clone(state.activations),
           hands: privateHands(state, faction),

@@ -341,6 +341,10 @@ function createReinforcementEventSystem(api) {
           .filter((space) => {
           if (placement === "friendly_occupied")
               return api.unitsAt(state, space.id, faction).length > 0;
+          if (placement === "friendly_occupied_or_national_supply")
+              return api.unitsAt(state, space.id, faction).length > 0 ||
+                  (state.control[space.id] === faction &&
+                      normalReinforcementMapSpace(state, faction, piece, space));
           if (placement === "italian_front")
               return space.nation === "it" && state.control[space.id] === faction;
           if (["ap_port_or_supply", "normal_reinforcement"].includes(placement))
@@ -357,8 +361,12 @@ function createReinforcementEventSystem(api) {
       const result = new Set(direct
           .filter((space) => reinforcementStackAllows(state, pending, piece, space, placements))
           .map((space) => space.id));
-      if (["ap_port_or_supply", "normal_reinforcement", "national_supply"].includes(placement))
+      if (["ap_port_or_supply", "normal_reinforcement", "national_supply",
+          "friendly_occupied_or_national_supply"].includes(placement))
           for (const source of direct) {
+              if (placement === "friendly_occupied_or_national_supply" &&
+                  !normalReinforcementMapSpace(state, faction, piece, source))
+                  continue;
               if (source.port || reinforcementStackAllows(state, pending, piece, source, placements))
                   continue;
               for (const adjacent of api.landNeighbors(source.id)) {

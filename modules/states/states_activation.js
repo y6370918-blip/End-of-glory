@@ -3,7 +3,13 @@
 function createActivationStates(api) {
   return {
     ops_activate: {
-      message: (state) => `${state.ops?.remaining ?? 0} OP`,
+      message: (state) => {
+        const remaining = state.ops?.remaining ?? 0;
+        const italian = Math.max(0, Number(state.ops?.italian_bonus) || 0);
+        return italian > 0
+          ? `${remaining} OP + 意大利战场免费 ${italian} OP`
+          : `${remaining} OP`;
+      },
       prompt(state, builder) {
         if (!state.ops) return;
         const selected = state.ops?.preactivation_sr_selected;

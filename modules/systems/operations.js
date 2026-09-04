@@ -43,7 +43,7 @@ function createOperationsSystem(api) {
         return reason("enemy_blocked");
       const moving = (movement?.active_units || [])
         .map((id) => state.units.find((unit) => unit.id === id)).filter(Boolean);
-      if (moving.some((unit) => !canPotentiallyEnterFort(state, unit, destination, movement.path.length + 1)))
+      if (!groupCanEnterEnemyFort(state, movement, destination))
         return reason("fort_blocked", "当前编队不足以进入该敌方要塞");
       if (moving.some((unit) => !earlyEntryAllowed(state, unit, destination)))
         return reason("event_restriction", "回合或战区限制禁止进入该地区", "important");
@@ -414,6 +414,12 @@ function createOperationsSystem(api) {
       return cost;
   }
 
+  function italianBonusForSpace(state, spaceId) {
+      if (!state.ops || api.theaterOf(spaceId) !== "italian")
+          return 0;
+      return Math.max(0, Number(state.ops.italian_bonus) || 0);
+  }
+
   function minimumActivationUnitIds(state, spaceId, kind) {
       const spec = activationSelectionSpec(state, spaceId, kind);
       return spec.required;
@@ -492,7 +498,7 @@ function createOperationsSystem(api) {
           return canCombine || canEntrench;
       })
           .filter((space) => {
-          const bonus = space.nation === "it" ? state.ops.italian_bonus || 0 : 0;
+          const bonus = italianBonusForSpace(state, space.id);
           const spec = activationSelectionSpec(state, space.id, kind);
           const unitIds = spec.required.length ? spec.required : spec.candidates.slice(0, 1);
           return (unitIds.length &&
@@ -657,6 +663,7 @@ function createOperationsSystem(api) {
           pending_siege: null,
           pending_attack: null,
           attack_selection: [],
+          siege_ineligible_units: [],
           combined_units: [],
           activated_units: {},
           region_activations: { move: {}, attack: {}, construct: {} },
@@ -664,12 +671,16 @@ function createOperationsSystem(api) {
           pending_activation: null,
       };
       state.state = "ops_activate";
-      api.log(state, card
-          ? `[[card:${card.id}]] — 行动点 (${printedOps})`
-          : `1 OP — 行动点 (${printedOps})`);
+      const italianBonus = state.ops.italian_bonus > 0
+          ? `；意大利战场免费行动点 (${state.ops.italian_bonus})`
+          : "";
+      api.log(state, `${card ? `[[card:${card.id}]]` : "1 OP"} — 行动点 (${printedOps})${italianBonus}`);
   }
 
   function finishOps(state) {
+      const unresolved = unresolvedAttackActivationSpaces(state);
+      if (unresolved.length)
+          throw new Error(`Activated attack spaces must be resolved first: ${unresolved.join(", ")}`);
       if (state.ops?.forced_attacks?.length)
           throw new Error("Converted attack activations must be executed");
       if (state.ops?.pending_siege)
@@ -840,7 +851,7 @@ function createOperationsSystem(api) {
       }
       const legalOriginGroups = Object.values(attackersByOrigin).filter((ids) => ids.length && api.legalTargetsForAttackers(state, ids).length);
       const automatic = legalOriginGroups.length === 1 ? legalOriginGroups[0] : [];
-      state.ops.attack_selection = (forced || automatic).slice();
+      state.ops.attack_selection = api.defaultAttackHqs(state, forced || automatic, eligible);
   }
 
   function beginSequentialOpsResolution(state) {
@@ -881,6 +892,25 @@ function createOperationsSystem(api) {
 
   function earlyStackHasAttackers(state) {
       return api.eligibleAttackUnitIds(state).length > 0;
+  }
+
+  function unresolvedAttackActivationSpaces(state) {
+      if (!state.ops || state.ops.execution_phase !== "attack")
+          return [];
+      // Christmas Truce explicitly cancels the entire current MO-penalty
+      // attack set.  Combat clears forced_attacks before asking finishOps to
+      // return to the interrupted action, so no printed marker remains to be
+      // resolved in that special flow.
+      if (state.ops.source === "mo_penalty" && !state.ops.forced_attacks?.length)
+          return [];
+      const spaces = new Set();
+      for (const id of api.eligibleAttackUnitIds(state)) {
+          const unit = state.units.find((candidate) => candidate.id === id);
+          if (unit && api.isCombatUnit(unit) &&
+              api.unitIsActivated(state, unit, ["attack"]))
+              spaces.add(unit.location);
+      }
+      return [...spaces];
   }
 
   function finishEarlyStack(state) {
@@ -1141,12 +1171,18 @@ function createOperationsSystem(api) {
       api.log(state, `施里芬计划超堆叠：${api.pieceById[unit.piece]?.name || unit.id}从${api.spaceById[origin]?.name || origin}返回预备区。`);
   }
 
-  function canLeaveBesiegedFort(state, unit) {
-      if (!state.besieged.includes(unit.location) ||
+  function canLeaveBesiegedFort(state, unit, movingIds = [unit.id]) {
+      if (!(state.besieged.includes(unit.location) ||
+          state.broken_sieges?.includes(unit.location)) ||
           !api.intactFort(state, unit.location) ||
           api.spaceById[unit.location]?.faction === unit.faction)
           return true;
-      return api.canBesiege(state, unit.location, unit.faction, [unit.id]);
+      const moving = new Set(movingIds);
+      const remaining = api.unitsAt(state, unit.location, unit.faction)
+          .filter(api.isCombatUnit)
+          .filter((candidate) => !moving.has(candidate.id));
+      return remaining.length === 0 ||
+          api.canBesiege(state, unit.location, unit.faction, movingIds);
   }
 
   function canPotentiallyEnterFort(state, unit, spaceId, distance = 1) {
@@ -1190,7 +1226,7 @@ function createOperationsSystem(api) {
           const currentFort = current !== unit.location &&
               api.intactFort(state, current) &&
               !state.besieged.includes(current) &&
-              state.control[current] === api.other(unit.faction);
+              api.spaceById[current]?.faction === api.other(unit.faction);
           if (currentFort)
               continue;
           for (const next of api.neighborsFor(current, "move", unit.faction)) {
@@ -1242,7 +1278,7 @@ function createOperationsSystem(api) {
           : null;
       if (!api.spaceCanActivate(state, unit.location))
           return [];
-      if (!canLeaveBesiegedFort(state, unit))
+      if (!canLeaveBesiegedFort(state, unit, groupIds.length ? groupIds : [unit.id]))
           return [];
       const origin = unit.location;
       const occupationDepthBySpace = occupationDepths(state, unit.faction);
@@ -1257,7 +1293,7 @@ function createOperationsSystem(api) {
           const currentFort = current !== origin &&
               api.intactFort(state, current) &&
               !state.besieged.includes(current) &&
-              state.control[current] === api.other(unit.faction);
+              api.spaceById[current]?.faction === api.other(unit.faction);
           if (currentFort)
               continue;
           for (const next of api.neighborsFor(current, "move", unit.faction)) {
@@ -1268,11 +1304,12 @@ function createOperationsSystem(api) {
               const nextPath = [...path, next];
               if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
                   continue;
-              if (!canPotentiallyEnterFort(state, unit, next, nextPath.length))
+              const grouped = groupIds.length > 1 && groupIds.includes(unit.id);
+              if (!canPotentiallyEnterFort(state, unit, next, nextPath.length) &&
+                  !(grouped && groupCanEnterEnemyFort(state, { active_units: groupIds }, next)))
                   continue;
               if (!earlyEntryAllowed(state, unit, next))
                   continue;
-              const grouped = groupIds.length > 1 && groupIds.includes(unit.id);
               const endpointLegal = api.stackLegal(state, next, unit) &&
                   (grouped || unit.type !== "hq" || hqEndLegal(state, unit, next)) &&
                   (grouped ||
@@ -1337,7 +1374,7 @@ function createOperationsSystem(api) {
               throw new Error("This unit cannot enter the destination in turns 1-2");
           const intactEnemyFort = api.intactFort(state, next) &&
               !state.besieged.includes(next) &&
-              state.control[next] === api.other(unit.faction);
+              api.spaceById[next]?.faction === api.other(unit.faction);
           if (intactEnemyFort && index !== path.length - 1)
               throw new Error("Movement cannot pass through an enemy fort");
           current = next;
@@ -1526,6 +1563,30 @@ function createOperationsSystem(api) {
       }
   }
 
+  function groupCanLeaveBesiegedFort(state, movement) {
+      const moving = (movement?.active_units || [])
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(Boolean);
+      const location = moving[0]?.location;
+      const faction = moving[0]?.faction;
+      if (!location || !faction || moving.some((unit) => unit.location !== location))
+          return false;
+      if (!(state.besieged.includes(location) ||
+          state.broken_sieges?.includes(location)) ||
+          !api.intactFort(state, location) ||
+          api.spaceById[location]?.faction === faction)
+          return true;
+      const movingIds = movement.active_units || [];
+      const movingSet = new Set(movingIds);
+      const remaining = api.unitsAt(state, location, faction)
+          .filter(api.isCombatUnit)
+          .filter((candidate) => !movingSet.has(candidate.id));
+      // Rule 15.2.4: all besiegers may leave and lift the siege, or a partial
+      // departure may leave a complete siege force behind.
+      return remaining.length === 0 ||
+          api.canBesiege(state, location, faction, movingIds);
+  }
+
   function groupContinuationPossible(movement, destination) {
       const prefix = [...movement.path, destination];
       const continuing = movement.active_units.filter((id) => !(movement.endpoints_by_unit[id] || []).includes(destination));
@@ -1555,6 +1616,8 @@ function createOperationsSystem(api) {
 
   function movementStepDestinations(state, movement = movementContext(state)) {
       if (!movement?.active_units?.length)
+          return [];
+      if (!groupCanLeaveBesiegedFort(state, movement))
           return [];
       const index = movement.path.length;
       let common = null;
@@ -1762,16 +1825,31 @@ function createOperationsSystem(api) {
           delete state.markers.killing_ground;
       }
       const intactEnemyFort = api.intactFort(state, requested) &&
-          state.control[requested] === api.other(unit.faction);
-      if (intactEnemyFort) {
+          api.spaceById[requested]?.faction === api.other(unit.faction);
+      const newSiegeEntry = intactEnemyFort &&
+          !state.besieged.includes(requested);
+      if (newSiegeEntry) {
           const completed = api.refreshBesiegedSpace(state, requested);
           if (!completed)
               throw new Error("The selected group cannot begin a siege");
-          state.ops.pending_siege = null;
       }
-      else if (activeUnits.some(api.isCombatUnit))
+      else if (!intactEnemyFort && activeUnits.some(api.isCombatUnit))
           api.captureSpace(state, requested, unit.faction);
+      if (Number(api.spaceById[current]?.fort) > 0)
+          api.refreshBesiegedSpace(state, current);
       api.updateSupply(state);
+      if (newSiegeEntry) {
+          // POG 15.1.1/15.2.1: every unit in the stack that establishes the
+          // siege stops. A separately selected stack may pass after the siege
+          // has already been established.
+          finishMovementUnits(state, movement.active_units.slice());
+          state.ops.moving = null;
+          state.ops.movement = null;
+          state.ops.move_selection = null;
+          state.state = resumeOpsExecutionState(state);
+          api.beginOverrunHqRelocation(state, requested, unit.faction);
+          return;
+      }
       const exhausted = movement.active_units.filter((id) => {
           const movingUnit = state.units.find((candidate) => candidate.id === id);
           return (movingUnit &&
@@ -1785,7 +1863,8 @@ function createOperationsSystem(api) {
           state.ops.move_selection = null;
           state.state = resumeOpsExecutionState(state);
       }
-      else if (intactEnemyFort || movementStepDestinations(state).length === 0) {
+      else if (movementStepDestinations(state).length === 0 &&
+          groupCanLeaveBesiegedFort(state, movement)) {
           if (!movementEndpointLegal(state, movement))
               throw new Error("The selected units cannot stop in this space");
           finishUnitMovement(state);
@@ -1833,6 +1912,8 @@ function createOperationsSystem(api) {
       if (!unit.supplied)
           return [];
       if (!api.spaceCanActivate(state, unit.location))
+          return [];
+      if (!canLeaveBesiegedFort(state, unit))
           return [];
       const supplied = api.suppliedSpaces(state, unit.faction, unit);
       const overland = overlandSrSpaces(state, unit);
@@ -2021,7 +2102,7 @@ function createOperationsSystem(api) {
           allOut?.ignore_activation_nationality_once &&
           nationalityCount > 1)
           state.usage_limits[`all_out_activation:${state.turn}:${state.action_round}`] = 1;
-      const italianBonus = api.spaceById[space]?.nation === "it" ? state.ops.italian_bonus || 0 : 0;
+      const italianBonus = italianBonusForSpace(state, space);
       const bonusSpent = Math.min(cost, italianBonus);
       const normalCost = cost - bonusSpent;
       if (normalCost > state.ops.remaining)
@@ -2130,7 +2211,7 @@ function createOperationsSystem(api) {
       }
       if (pending.kind === "construct" && !units.some(api.isCombatUnit)) return false;
       return activationCost(state, pending.space, pending.kind, selected) <= state.ops.remaining +
-          (api.spaceById[pending.space]?.nation === "it" ? state.ops.italian_bonus || 0 : 0);
+          italianBonusForSpace(state, pending.space);
   }
 
   function selectRegionActivationUnit(state, id) {
@@ -2267,6 +2348,8 @@ return Object.freeze({
     forcedAttackRequiredUnits,
     commitForcedAttackMarkers,
     groupCanLeaveDestination,
+    groupCanLeaveBesiegedFort,
+    groupCanEnterEnemyFort,
     groupContinuationPossible,
     groupMovementCanBegin,
     groupStepCanOccupy,
@@ -2274,11 +2357,13 @@ return Object.freeze({
     hqAtSupplySource,
     hqEndLegal,
     hqHasNationalStack,
+    italianBonusForSpace,
     legalActivationSpaces,
     legalCombinationArmies,
     legalCombinationCorps,
     legalConstructionSpaces,
     legalMoveUnitIds,
+    unresolvedAttackActivationSpaces,
     legalSrDestinations,
     minimumActivationUnitIds,
     moveUnitOneSpace,

@@ -44,6 +44,10 @@ function createSupplySystem(api) {
 
   function sourceMatchesNation(state, faction, nation, space) {
     if (!space) return false;
+    if (space.supply && space.faction === faction &&
+        Array.isArray(space.supply_nations) &&
+        space.supply_nations.includes(nation))
+      return true;
     if (faction === api.AP && nation === "be") {
       if (!belgianFallbackActive(state)) return space.id === "brussels";
       return londonOpen(state) &&
@@ -56,8 +60,6 @@ function createSupplySystem(api) {
         (space.id === "london" || britishOrFrenchPort(space));
     if (faction === api.CP && nation === "ge" && space.id === "brussels")
       return state.control.brussels === api.CP;
-    if (faction === api.CP && nation === "ge" && space.id === "carnicola")
-      return true;
     return Boolean(
       space.supply &&
       space.faction === faction &&
@@ -153,8 +155,9 @@ function createSupplySystem(api) {
       .join("|");
     const forts = [...(state.destroyed_forts || [])].sort().join(",");
     const besieged = [...(state.besieged || [])].sort().join(",");
+    const brokenSieges = [...(state.broken_sieges || [])].sort().join(",");
     const blockade = JSON.stringify(api.activeRule(state, "channel_blockade") || null);
-    return `${control}#${units}#${forts}#${besieged}#${blockade}`;
+    return `${control}#${units}#${forts}#${besieged}#${brokenSieges}#${blockade}`;
   }
 
   function markSupplyDirty(state) {

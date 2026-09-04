@@ -67,16 +67,29 @@ function createCombatSystem(api) {
   }
 
   function refreshBesiegedSpace(state, spaceId) {
+      state.broken_sieges ||= [];
       const lossFactor = intactFort(state, spaceId);
       const owner = api.spaceById[spaceId]?.faction;
       const besieger = owner && api.other(owner);
+      const wasBesieged = state.besieged.includes(spaceId);
+      const occupyingBesiegers = lossFactor && besieger
+          ? api.unitsAt(state, spaceId, besieger).filter(api.isCombatUnit)
+          : [];
       const besieged = lossFactor && besieger && canBesiege(state, spaceId, besieger);
       if (besieged) {
           if (!state.besieged.includes(spaceId))
               state.besieged.push(spaceId);
+          state.broken_sieges = state.broken_sieges.filter((id) => id !== spaceId);
       }
-      else
+      else {
           state.besieged = state.besieged.filter((id) => id !== spaceId);
+          if (wasBesieged && occupyingBesiegers.length &&
+              !state.broken_sieges.includes(spaceId))
+              state.broken_sieges.push(spaceId);
+          if (!lossFactor || !occupyingBesiegers.length)
+              state.broken_sieges = state.broken_sieges.filter((id) => id !== spaceId);
+      }
+      state.supply_dirty = true;
       return Boolean(besieged);
   }
 
@@ -85,19 +98,21 @@ function createCombatSystem(api) {
           refreshBesiegedSpace(state, space.id);
   }
 
-  function destroyFort(state, spaceId, reason = "Fort destroyed", addFortification = true) {
+  function destroyFort(state, spaceId, reason = "Fort destroyed") {
       if (!intactFort(state, spaceId))
           return false;
+      state.broken_sieges ||= [];
+      const wasBesieged = state.besieged.includes(spaceId);
+      const wasBroken = state.broken_sieges.includes(spaceId);
       state.destroyed_forts.push(spaceId);
       state.supply_dirty = true;
       state.besieged = state.besieged.filter((id) => id !== spaceId);
+      state.broken_sieges = state.broken_sieges.filter((id) => id !== spaceId);
       const occupier = state.units.find((unit) => unit.location === spaceId &&
           api.isCombatUnit(unit) &&
           unit.faction !== api.spaceById[spaceId]?.faction);
-      if (occupier)
+      if (occupier && (wasBesieged || wasBroken))
           api.captureSpace(state, spaceId, occupier.faction);
-      if (addFortification)
-          state.fortifications[spaceId] = Math.max(1, Number(state.fortifications[spaceId]) || 0);
       api.log(state, `${api.spaceById[spaceId]?.name || spaceId}: ${reason}.`);
       return true;
   }
@@ -198,6 +213,8 @@ function createCombatSystem(api) {
       replacement.moved = true;
       replacement.attacked = true;
       state.units.push(replacement);
+      if (intactFort(state, replacement.location))
+          refreshBesiegedSpace(state, replacement.location);
       const sideIds = pending.side === state.combat.attacker
           ? state.combat.attackers
           : state.combat.defenders;
@@ -1159,6 +1176,26 @@ function createCombatSystem(api) {
           .filter(([, ids]) => ids.length));
   }
 
+  function defaultAttackHqs(state, attackerIds, eligibleIds = eligibleAttackUnitIds(state)) {
+      const eligible = new Set(eligibleIds);
+      const selected = [...new Set(attackerIds)].filter((id) => eligible.has(id));
+      const combatUnits = selected
+          .map((id) => state.units.find((unit) => unit.id === id))
+          .filter(api.isCombatUnit);
+      if (!combatUnits.length)
+          return selected;
+      for (const id of eligibleIds) {
+          if (selected.includes(id))
+              continue;
+          const hq = state.units.find((unit) => unit.id === id);
+          if (hq?.type === "hq" && combatUnits.some((unit) =>
+              unit.location === hq.location &&
+              api.nationalityGroup(unit.nation) === api.nationalityGroup(hq.nation)))
+              selected.push(id);
+      }
+      return selected;
+  }
+
   function forcedAttackRequiredIds(state, origin) {
       if (state.ops?.source === "nivelle") {
           const french = api.unitsAt(state, origin, api.AP)
@@ -1348,6 +1385,7 @@ function createCombatSystem(api) {
           throw new Error("Invalid attackers");
       if (!attackingUnits.every((unit) => attacksTarget(state, unit, target)))
           throw new Error("Attacker is not adjacent");
+      markSiegeAttackersIneligible(state, attackingUnits, target);
       const defenders = api.unitsAt(state, target, api.other(attacker)).filter(api.isCombatUnit);
       if (!defenders.length && !intactFort(state, target))
           throw new Error("No defender");
@@ -1420,7 +1458,7 @@ function createCombatSystem(api) {
           api.spaceById[target]?.nation === "be" &&
           intactFort(state, target));
       if (preCombatFortDestruction)
-          destroyFort(state, target, "fort destroyed before combat", false);
+          destroyFort(state, target, "fort destroyed before combat");
       const printedFortLossFactor = intactFort(state, target);
       const defendingFortPresent = Boolean(printedFortLossFactor);
       const fortLossFactor = printedFortLossFactor
@@ -1601,8 +1639,6 @@ function createCombatSystem(api) {
       defenseLoss = Math.max(0, defenseLoss + modifiers.defense_loss_adjust);
       if (declaration.forced_loss_adjust)
           defenseLoss = Math.max(0, defenseLoss + declaration.forced_loss_adjust);
-      if (preCombatFortDestruction)
-          state.fortifications[target] = Math.max(1, Number(state.fortifications[target]) || 0);
       const firstFire = modifiers.first_fire;
       let deferredFire = null;
       let lossOrder = null;
@@ -1810,9 +1846,12 @@ function createCombatSystem(api) {
           if (origin !== target &&
               state.besieged.includes(origin) &&
               intactFort(state, origin) &&
-              !canBesiege(state, origin, state.active, combatUnits
-                  .filter((unit) => unit.location === origin)
-                  .map((unit) => unit.id)))
+              !canBesiege(state, origin, state.active, [
+                  ...(state.ops?.siege_ineligible_units || []),
+                  ...combatUnits
+                      .filter((unit) => unit.location === origin)
+                      .map((unit) => unit.id),
+              ]))
               throw new Error("Attack would leave an enemy fort without a sufficient siege force");
       }
       if (!api.unitsAt(state, target, api.other(state.active)).some(api.isCombatUnit) &&
@@ -1822,9 +1861,11 @@ function createCombatSystem(api) {
           const origins = [...new Set(combatUnits.map((unit) => unit.location))];
           const finalDrm = Number(declaration.flank_final);
           const terrain = api.spaceById[target]?.terrain;
+          const occupiedFort = intactFort(state, target) &&
+              api.unitsAt(state, target, api.other(state.active)).some(api.isCombatUnit);
           if (origins.length < 2 ||
               state.trenches[target] ||
-              intactFort(state, target) ||
+              (intactFort(state, target) && !occupiedFort) ||
               !["clear", "forest"].includes(terrain) ||
               origins.some((origin) => api.connectionRule(origin, target, "alpine")) ||
               !Number.isInteger(finalDrm) ||
@@ -1843,6 +1884,23 @@ function createCombatSystem(api) {
       return attackingUnits;
   }
 
+  function markSiegeAttackersIneligible(state, attackingUnits, target) {
+      if (!state.ops)
+          return;
+      state.ops.siege_ineligible_units ||= [];
+      const ineligible = new Set(state.ops.siege_ineligible_units);
+      for (const unit of attackingUnits) {
+          if (!api.isCombatUnit(unit) ||
+              unit.location === target ||
+              !state.besieged.includes(unit.location) ||
+              !intactFort(state, unit.location) ||
+              api.spaceById[unit.location]?.faction === unit.faction)
+              continue;
+          ineligible.add(unit.id);
+      }
+      state.ops.siege_ineligible_units = [...ineligible];
+  }
+
   function beginCombat(state, declaration) {
       const attackers = declaration.attackers || [];
       const attackingUnits = validateAttackDeclaration(state, declaration);
@@ -1857,6 +1915,11 @@ function createCombatSystem(api) {
               ...declaration,
               forced_loss_adjust: state.ops.forced_loss_adjust,
           };
+      // Once a battle has been declared outside a besieged fort, its
+      // participants cannot be reused as the garrison that maintains that
+      // siege later in the same action round.  Record this before combat-card
+      // cancellation or pre-combat event branches can bypass resolveCombat().
+      markSiegeAttackersIneligible(state, attackingUnits, declaration.target);
       const restoreEffect = api.cardSpecById[628]?.combat;
       const usageKey = `combat_restore:${628}:${state.turn}:${state.action_round}`;
       const remaining = Math.max(0, (restoreEffect?.restore_attackers_before || 0) -
@@ -2130,6 +2193,8 @@ function createCombatSystem(api) {
       token.entry.attacked = token.entry.faction === state.combat.attacker ||
           Boolean(participant?.attacked);
       state.units.push(token.entry);
+      if (intactFort(state, token.entry.location))
+          refreshBesiegedSpace(state, token.entry.location);
       const side = token.entry.faction === state.combat.attacker
           ? state.combat.attackers
           : state.combat.defenders;
@@ -2496,21 +2561,16 @@ function createCombatSystem(api) {
       const mustBesiege = fortLossFactor &&
           api.spaceById[combat.target]?.faction === api.other(combat.attacker) &&
           !state.besieged.includes(combat.target);
-      const byOrigin = new Map();
-      for (const unit of candidates) {
-          if (!byOrigin.has(unit.location)) byOrigin.set(unit.location, []);
-          byOrigin.get(unit.location).push(unit);
+      if (mustBesiege) {
+          const armies = candidates.filter((unit) => unit.type === "army");
+          const corps = candidates.filter((unit) => unit.type === "corps");
+          const possible = [...armies, ...corps].slice(0, maximum);
+          if (!canBesiegeWithUnits([...targetUnits, ...possible], fortLossFactor))
+              return [];
       }
-      const result = [];
-      for (const units of byOrigin.values()) {
-          if (mustBesiege) {
-              const hasArmy = units.some((unit) => unit.type === "army");
-              const corps = units.filter((unit) => unit.type === "corps").length;
-              if (!hasArmy && (corps < fortLossFactor || maximum < fortLossFactor))
-                  continue;
-          }
-          result.push(...units);
-      }
+      // POG validates the advancing force collectively. Units from different
+      // attack origins may therefore combine to establish one siege.
+      const result = candidates;
       const eligibleOrigins = new Map();
       for (const unit of result) {
           const group = api.nationalityGroup(unit.nation);
@@ -2994,7 +3054,6 @@ function createCombatSystem(api) {
           state.markers?.killing_ground?.space === destination;
       const entersEnemyFort = Boolean(intactFort(state, destination) &&
           api.spaceById[destination]?.faction === api.other(unit.faction) &&
-          !state.besieged.includes(destination) &&
           !destroysKillingGround);
       const enteredApItaly = unit.nation === "ah" &&
           api.spaceById[destination]?.nation === "it" &&
@@ -3009,9 +3068,9 @@ function createCombatSystem(api) {
           to: destination,
       });
       api.log(state, `${api.pieceById[unit.piece]?.name || unit.id}挺进：${api.spaceById[origin]?.name || origin} → ${api.spaceById[destination]?.name || destination}。`);
-      // An intact enemy fort remains enemy-controlled while besieged.  The
-      // complete advancing group is validated before movement and the siege
-      // marker is established after every member has entered.
+      // An intact enemy fort remains enemy-controlled while besieged. This is
+      // true for later advancing pieces too: once the first army establishes
+      // the marker, a following corps must not capture the printed fort.
       if (!entersEnemyFort)
           api.captureSpace(state, destination, unit.faction);
       if (enteredApItaly)
@@ -3022,6 +3081,8 @@ function createCombatSystem(api) {
           pending.army_advanced = true;
       if (!pending.advanced_ids.includes(unit.id))
           pending.advanced_ids.push(unit.id);
+      if (Number(api.spaceById[origin]?.fort) > 0)
+          refreshBesiegedSpace(state, origin);
       const salient = state.combat?.modifiers?.cards?.find((entry) => entry.effect.salient_on_advance);
       if (salient) {
           const event = api.cardById[salient.id]?.event;
@@ -3077,8 +3138,7 @@ function createCombatSystem(api) {
 
   function advanceFortCanStillBeBesieged(state, pending, destination) {
       const lossFactor = intactFort(state, destination);
-      if (!lossFactor || api.spaceById[destination]?.faction === state.combat?.attacker ||
-          state.besieged.includes(destination))
+      if (!lossFactor || api.spaceById[destination]?.faction === state.combat?.attacker)
           return true;
       const existing = api.unitsAt(state, destination, state.combat.attacker).filter(api.isCombatUnit);
       if (canBesiegeWithUnits(existing, lossFactor)) return true;
@@ -3114,7 +3174,7 @@ function createCombatSystem(api) {
           return false;
       if (follow && !(pending.follow_units || []).includes(id))
           return false;
-      if (api.isCombatUnit(unit) && pending.maximum != null &&
+      if (!follow && api.isCombatUnit(unit) && pending.maximum != null &&
           advanceCountedUnitCount(state, pending.advanced_ids) >= Number(pending.maximum))
           return false;
       const origin = unit.location;
@@ -3133,6 +3193,13 @@ function createCombatSystem(api) {
           if (!follow && destination === pending.target &&
               !advanceFortCanStillBeBesieged(state, pending, destination))
               return false;
+          if (follow) {
+              const targetFort = intactFort(state, pending.target);
+              if (targetFort &&
+                  api.spaceById[pending.target]?.faction === api.other(state.combat.attacker) &&
+                  !canBesiege(state, pending.target, state.combat.attacker))
+                  return false;
+          }
           return true;
       }
       finally {
@@ -3165,8 +3232,7 @@ function createCombatSystem(api) {
       const lossFactor = intactFort(state, pending?.target);
       if (!lossFactor ||
           api.spaceById[pending.target]?.faction !== api.other(state.combat?.attacker) ||
-          !api.unitsAt(state, pending.target, state.combat?.attacker).length ||
-          state.besieged.includes(pending.target))
+          !api.unitsAt(state, pending.target, state.combat?.attacker).length)
           return false;
       return !canBesiege(state, pending.target, state.combat.attacker);
   }
@@ -3230,9 +3296,6 @@ function createCombatSystem(api) {
   }
 
   function advanceTerrainAllowsSecondStep(state, pending) {
-      if (intactFort(state, pending.target) &&
-          api.spaceById[pending.target]?.faction === api.other(state.combat?.attacker))
-          return false;
       return !["forest", "mountain", "swamp", "desert"].includes(api.spaceById[pending.target]?.terrain);
   }
 
@@ -3440,6 +3503,7 @@ return Object.freeze({
     commitPendingAttack,
     chooseOptionalCombatEvent,
     currentPendingHq,
+    defaultAttackHqs,
     defendedAttackTarget,
     deferUnroutableRetreatHqs,
     destroyFort,

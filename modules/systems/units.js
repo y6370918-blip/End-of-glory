@@ -92,7 +92,15 @@ function createUnitSystem(context) {
   function captureSpace(state, space, faction) {
     if (state.control[space] !== faction) {
       delete state.fortifications[space];
-      delete state.trenches[space];
+      // POG capture handling: a captured level-2 trench survives as a
+      // level-1 trench for the new controller; a level-1 trench is removed.
+      // EOG stores trench ownership through space control, so this conversion
+      // must happen in the same operation as the control change.
+      const capturedTrench = Number(state.trenches[space]) || 0;
+      if (capturedTrench >= 2)
+        state.trenches[space] = 1;
+      else
+        delete state.trenches[space];
     }
     state.control[space] = faction;
     state.supply_dirty = true;
@@ -116,7 +124,8 @@ function createUnitSystem(context) {
   function friendlySpace(state, spaceId, faction) {
     const enemy = unitsAt(state, spaceId, other(faction)).length;
     const friendlyBesieger =
-      state.besieged.includes(spaceId) &&
+      (state.besieged.includes(spaceId) ||
+        state.broken_sieges?.includes(spaceId)) &&
       spaceById[spaceId]?.faction !== faction &&
       unitsAt(state, spaceId, faction).some(isCombatUnit);
     return enemy === 0 &&

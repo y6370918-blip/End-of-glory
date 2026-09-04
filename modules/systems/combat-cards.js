@@ -222,7 +222,13 @@ function createCombatCardSystem(api) {
       const canceledEvents = new Set([...ids]
           .map((id) => api.cardSpecById[id]?.combat?.cancel_event)
           .filter(Boolean));
-      return [...ids].filter((id) => !canceledEvents.has(api.cardById[id]?.event));
+      const canceledIds = new Set(state.combat_window?.canceled_cards || []);
+      for (const played of state.combat?.played_cards || [])
+          if (played.canceled)
+              canceledIds.add(played.id);
+      return [...ids].filter((id) =>
+          !canceledIds.has(id) &&
+          !canceledEvents.has(api.cardById[id]?.event));
   }
 
   function startCombatCardCommitments(state) {

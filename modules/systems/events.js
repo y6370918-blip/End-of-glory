@@ -285,7 +285,10 @@ function createEventSystem(api) {
       const cardAlreadyEvented = state.event_history?.some(
           (entry) => Number(entry.card) === card.id
       );
-      return !card.remove || !cardAlreadyEvented;
+      const returnedEventCanRepeat = Boolean(rule?.reusable_after_return &&
+          !state.events[card.event] &&
+          !state.markers?.killing_ground);
+      return returnedEventCanRepeat || !card.remove || !cardAlreadyEvented;
   }
 
   function gorlitzMoChoices(state, pending = state.pending_event) {

@@ -4645,7 +4645,7 @@ const data = {
 				"somme_marker": true,
 				"ignore_nationality_at_marker": true,
 				"marker_attack_column": 1,
-				"remove_piece_at_expiry": "component-007"
+				"remove_piece_at_expiry": "component-029"
 			},
 			"ops": null,
 			"duration": "action_round",
@@ -7179,7 +7179,7 @@ const data = {
 			"operations": [
 				{
 					"type": "reinforcement",
-					"placement": "friendly_occupied",
+					"placement": "friendly_occupied_or_national_supply",
 					"units": [
 						{
 							"piece": "component-108",
@@ -7285,7 +7285,7 @@ const data = {
 			"operations": [
 				{
 					"type": "reinforcement",
-					"placement": "friendly_occupied",
+					"placement": "friendly_occupied_or_national_supply",
 					"units": [
 						{
 							"piece": "component-108",
@@ -7467,7 +7467,8 @@ const data = {
 					"escalating_ge_rp": 1,
 					"destroy_vp": 1,
 					"maintenance_optional": true,
-					"automatic_attack_mo": true
+					"automatic_attack_mo": true,
+					"reusable_after_return": true
 				}
 			],
 			"combat": null,
@@ -12391,6 +12392,7 @@ const data = {
 			"terrain": "clear",
 			"supply": true,
 			"port": false,
+			"large_area": true,
 			"ui": {
 				"x": 3342,
 				"y": 5797,
@@ -23803,6 +23805,10 @@ const data = {
 			"faction": "cp",
 			"terrain": "mountain",
 			"supply": true,
+			"supply_nations": [
+				"ah",
+				"ge"
+			],
 			"port": false,
 			"ui": {
 				"x": 5919,
@@ -26040,6 +26046,11 @@ const data = {
 			"faction": "ap",
 			"terrain": "clear",
 			"supply": true,
+			"supply_nations": [
+				"it",
+				"fr",
+				"br"
+			],
 			"port": true,
 			"ui": {
 				"x": 4705,

@@ -228,11 +228,11 @@ function migrateRollbackHistory(state) {
        (entry.kind === "pre_replacement" && snapshot.state === "rollback_turn_end"));
     if (!resumable) entry.available = false;
     entry.label = rollbackLabel(entry);
-    if (snapshot) snapshot.version = 56;
+    if (snapshot) snapshot.version = 57;
     delete entry.state;
   }
   setRollbackSnapshots(state, snapshots);
-  for (const entry of state.undo || []) if (entry.state) entry.state.version = 56;
+  for (const entry of state.undo || []) if (entry.state) entry.state.version = 57;
 }
 
 function rollbackMeta(state) {

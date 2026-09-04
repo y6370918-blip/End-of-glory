@@ -122,6 +122,7 @@ function semanticDiff(before, after, role) {
     "trenches",
     "fortifications",
     "besieged",
+    "broken_sieges",
     "destroyed_forts",
     "markers",
     "events",

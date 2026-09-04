@@ -203,6 +203,7 @@ function ensureState(state) {
       ruleModifier(card)?.destroy_vp || 1;
   }
   if (!state.fortifications) state.fortifications = {};
+  if (!Array.isArray(state.broken_sieges)) state.broken_sieges = [];
   for (const [space, value] of Object.entries(state.fortifications))
     state.fortifications[space] = Math.max(0, Number(value) || (value ? 1 : 0));
   if (!state.naval) {
@@ -310,6 +311,8 @@ function ensureState(state) {
     state.ops.preactivation_sr_selected = null;
   if (state.ops && state.ops.pending_attack === undefined)
     state.ops.pending_attack = null;
+  if (state.ops && !Array.isArray(state.ops.siege_ineligible_units))
+    state.ops.siege_ineligible_units = [];
 
   // Repair saves made while the old Miracle on the Marne interruption was
   // active.  That implementation left the CP operation live while AP owned
@@ -1968,7 +1971,70 @@ function ensureState(state) {
     }
   }
   if (previousVersion < 56) migrateRollbackHistory(state);
-  state.version = 56;
+  if (previousVersion < 57) {
+    const migrateFortSiegeState = (snapshot) => {
+      if (!snapshot || typeof snapshot !== "object") return;
+      snapshot.besieged ||= [];
+      snapshot.destroyed_forts ||= [];
+      snapshot.broken_sieges ||= [];
+      const besieged = new Set(snapshot.besieged);
+      const broken = new Set(snapshot.broken_sieges);
+      for (const space of data.spaces.filter((candidate) => Number(candidate.fort) > 0)) {
+        if (snapshot.destroyed_forts.includes(space.id)) {
+          besieged.delete(space.id);
+          broken.delete(space.id);
+          continue;
+        }
+        const owner = space.faction;
+        const besieger = owner && other(owner);
+        const occupants = (snapshot.units || []).filter((unit) =>
+          unit.location === space.id &&
+          unit.faction === besieger &&
+          ["army", "corps"].includes(unit.type || pieceById[unit.piece]?.type));
+        if (!occupants.length) {
+          besieged.delete(space.id);
+          broken.delete(space.id);
+          continue;
+        }
+        const sufficient = occupants.some((unit) =>
+          (unit.type || pieceById[unit.piece]?.type) === "army") ||
+          occupants.filter((unit) =>
+            (unit.type || pieceById[unit.piece]?.type) === "corps").length >= Number(space.fort);
+        if (sufficient) {
+          besieged.add(space.id);
+          broken.delete(space.id);
+        } else {
+          besieged.delete(space.id);
+          broken.add(space.id);
+        }
+      }
+      snapshot.besieged = [...besieged];
+      snapshot.broken_sieges = [...broken];
+      if (snapshot.ops) {
+        snapshot.ops.siege_ineligible_units ||= [];
+        const ineligible = new Set(snapshot.ops.siege_ineligible_units);
+        const combat = snapshot.combat;
+        for (const id of combat?.attackers || []) {
+          const origin = combat.origins?.[id];
+          if (origin && origin !== combat.target && besieged.has(origin))
+            ineligible.add(id);
+        }
+        snapshot.ops.siege_ineligible_units = [...ineligible];
+      }
+      snapshot.supply_dirty = true;
+      delete snapshot.supply_signature;
+      snapshot.version = 57;
+    };
+    migrateFortSiegeState(state);
+    for (const entry of state.undo || []) migrateFortSiegeState(entry?.state);
+    const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
+    if (rollbackSnapshots.length) {
+      for (const snapshotState of rollbackSnapshots)
+        migrateFortSiegeState(snapshotState);
+      setRollbackSnapshots(state, rollbackSnapshots);
+    }
+  }
+  state.version = 57;
   repairRollbackHistory(state);
   Engine.ensureSupply(state);
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
@@ -2342,7 +2408,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 56,
+    version: 57,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -2397,6 +2463,7 @@ function createState(seed, options = {}) {
     trenches: {},
     fortifications: {},
     besieged: [],
+    broken_sieges: [],
     destroyed_forts: [],
     activations: {},
     decks: { ap: [], cp: [] },
