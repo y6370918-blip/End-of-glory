@@ -4,9 +4,10 @@ function createNavalSystem(api) {
   function navalBlockedPorts(state) {
     const position = Number(state.naval?.track) || 0;
     return [
-      ...(position <= -1 ? ["calais", "boulogne"] : []),
-      ...(position <= -3 ? ["dieppe"] : []),
-      ...(position <= -5 ? ["le_havre"] : []),
+      // Follow the printed blue links, not the repeated naval die values.
+      ...(position <= -1 ? ["calais"] : []),
+      ...(position <= -3 ? ["boulogne"] : []),
+      ...(position <= -5 ? ["dieppe"] : []),
     ];
   }
 

@@ -158,7 +158,8 @@ function createSupplySystem(api) {
     const besieged = [...(state.besieged || [])].sort().join(",");
     const brokenSieges = [...(state.broken_sieges || [])].sort().join(",");
     const blockade = JSON.stringify(api.activeRule(state, "channel_blockade") || null);
-    return `${control}#${units}#${forts}#${besieged}#${brokenSieges}#${blockade}#${state.naval?.track}`;
+    const blockedPorts = api.navalBlockedPorts(state).join(",");
+    return `${control}#${units}#${forts}#${besieged}#${brokenSieges}#${blockade}#${state.naval?.track}#${blockedPorts}`;
   }
 
   function markSupplyDirty(state) {

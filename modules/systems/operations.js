@@ -1159,6 +1159,19 @@ function createOperationsSystem(api) {
           .map((unit) => unit.id);
   }
 
+  function movementStackLegal(state, space, faction, incoming = []) {
+      if (api.spaceById[space]?.large_area) return true;
+      const stack = [...new Map([...api.unitsAt(state, space, faction), ...incoming]
+          .map(unit => [unit.id, unit])).values()];
+      if (stack.filter(unit => unit.type === "hq").length > 1) return false;
+      const imported = new Set(faction === api.CP && state.ops?.schlieffen?.allow_temporary_overstack
+          ? state.ops.preactivation_sr_units || [] : []);
+      // Only imported corps can be returned by the event's end-of-action
+      // cleanup. Never permit an overstack that that cleanup cannot resolve.
+      return stack.filter(api.isCombatUnit)
+          .filter(unit => !(unit.type === "corps" && imported.has(unit.id))).length <= 3;
+  }
+
   function returnSchlieffenUnit(state, id) {
       if (!schlieffenOverstackCandidates(state).includes(id))
           throw new Error("This Schlieffen corps does not have to return");
@@ -1252,7 +1265,7 @@ function createOperationsSystem(api) {
       // moving unit may not finish there. Keep those spaces in the route search
       // above, then remove them only from the legal endpoints.
       for (const destination of [...seen.keys()])
-          if (!api.stackLegal(state, destination, unit))
+          if (!movementStackLegal(state, destination, unit.faction, [unit]))
               seen.delete(destination);
       if (unit.type === "hq")
           for (const destination of [...seen.keys()])
@@ -1310,7 +1323,7 @@ function createOperationsSystem(api) {
                   continue;
               if (!earlyEntryAllowed(state, unit, next))
                   continue;
-              const endpointLegal = api.stackLegal(state, next, unit) &&
+              const endpointLegal = movementStackLegal(state, next, unit.faction, [unit]) &&
                   (grouped || unit.type !== "hq" || hqEndLegal(state, unit, next)) &&
                   (grouped ||
                       !api.isCombatUnit(unit) ||
@@ -1366,7 +1379,7 @@ function createOperationsSystem(api) {
               throw new Error("The Italian theater is not active");
           if (api.unitsAt(state, next, api.other(unit.faction)).some(api.isCombatUnit))
               throw new Error("Movement path crosses enemy units");
-          if (index === path.length - 1 && !api.stackLegal(state, next, unit))
+          if (index === path.length - 1 && !movementStackLegal(state, next, unit.faction, [unit]))
               throw new Error("Movement cannot end in an overstacked space");
           if (!canPotentiallyEnterFort(state, unit, next, index + 1))
               throw new Error("Movement cannot enter an enemy fort without a sufficient siege force");
@@ -1528,9 +1541,7 @@ function createOperationsSystem(api) {
               unit.location = destination;
           if (api.spaceById[destination]?.large_area)
               return true;
-          const stack = api.unitsAt(state, destination, moving[0]?.faction);
-          return (stack.filter(api.isCombatUnit).length <= 3 &&
-              stack.filter((unit) => unit.type === "hq").length <= 1);
+          return movementStackLegal(state, destination, moving[0]?.faction);
       }
       finally {
           moving.forEach((unit, index) => {
@@ -1653,13 +1664,7 @@ function createOperationsSystem(api) {
           return false;
       if (units.some((unit) => !(movement.endpoints_by_unit[unit.id] || []).includes(location)))
           return false;
-      if (!api.spaceById[location]?.large_area) {
-          const stack = api.unitsAt(state, location, units[0].faction);
-          if (stack.filter(api.isCombatUnit).length > 3)
-              return false;
-          if (stack.filter((unit) => unit.type === "hq").length > 1)
-              return false;
-      }
+      if (!movementStackLegal(state, location, units[0].faction)) return false;
       return !orphanHqs(state).some((hq) => hq.faction === units[0].faction);
   }
 
@@ -1679,7 +1684,8 @@ function createOperationsSystem(api) {
       const finalUnits = api.unitsAt(state, location, unit.faction)
           .filter((candidate) => !continuing.has(candidate.id));
       if (!api.spaceById[location]?.large_area) {
-          if (finalUnits.filter(api.isCombatUnit).length > 3)
+          const stoppedState = { ...state, units: state.units.filter(candidate => !continuing.has(candidate.id)) };
+          if (!movementStackLegal(stoppedState, location, unit.faction))
               return "Dropping this unit would overstack the space";
           if (finalUnits.filter((candidate) => candidate.type === "hq").length > 1)
               return "Dropping this unit would exceed the HQ limit";
