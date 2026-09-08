@@ -89,19 +89,35 @@ function createUnitSystem(context) {
     return movingUnit?.type === "hq" ? hq < 1 : field < 3;
   }
 
+  function trenchOwner(state, space) {
+    return state.trench_owners?.[space] || state.control[space] || spaceById[space]?.faction;
+  }
+
+  function trenchLevel(state, space, faction) {
+    return trenchOwner(state, space) === faction ? Number(state.trenches[space]) || 0 : 0;
+  }
+
+  function setTrench(state, space, level, faction) {
+    state.trench_owners ||= {};
+    if (level > 0) {
+      state.trenches[space] = level;
+      state.trench_owners[space] = faction;
+    } else {
+      delete state.trenches[space];
+      delete state.trench_owners[space];
+    }
+  }
+
   function captureSpace(state, space, faction) {
     if (state.control[space] !== faction) {
       delete state.fortifications[space];
       // POG capture handling: a captured level-2 trench survives as a
       // level-1 trench for the new controller; a level-1 trench is removed.
-      // EOG stores trench ownership through space control, so this conversion
-      // must happen in the same operation as the control change.
-      const capturedTrench = Number(state.trenches[space]) || 0;
-      if (capturedTrench >= 2)
-        state.trenches[space] = 1;
-      else
-        delete state.trenches[space];
+      // Fort control and the besieger's trench ownership are independent.
     }
+    const capturedTrench = Number(state.trenches[space]) || 0;
+    if (trenchOwner(state, space) !== faction)
+      setTrench(state, space, capturedTrench >= 2 ? 1 : 0, faction);
     state.control[space] = faction;
     state.supply_dirty = true;
     if (faction === AP && state.markers?.hindenburg?.includes(space))
@@ -159,6 +175,9 @@ function createUnitSystem(context) {
     permanentlyRemoveOnMapUnit,
     placeEliminatedUnit,
     stackLegal,
+    trenchOwner,
+    trenchLevel,
+    setTrench,
     unitsAt,
   });
 }

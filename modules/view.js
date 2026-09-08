@@ -712,6 +712,7 @@ function createViewSystem(api) {
           units: visibleUnits,
           control: api.clone(state.control),
           trenches: api.clone(state.trenches),
+          trench_owners: Object.fromEntries(Object.keys(state.trenches).map(space => [space, api.trenchOwner(state, space)])),
           fortifications: api.clone(state.fortifications),
           markers: api.clone(state.markers),
           besieged: state.besieged.slice(),

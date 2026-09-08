@@ -214,12 +214,11 @@ function createReplacementSystem(api) {
   ) {
       if (state.commitment[faction] === "mobilization")
           return null;
-      const mapUnit = state.units.find((candidate) => candidate.id === id && candidate.faction === faction);
-      const eliminatedUnit = state.eliminated[faction].find((candidate) => candidate.id === id);
-      const unit = mapUnit || eliminatedUnit;
+      // Eliminated units must be rebuilt before they can become veterans.
+      const unit = state.units.find((candidate) => candidate.id === id && candidate.faction === faction);
       if (!unit ||
           !api.acceptsReplacementPoints(unit) ||
-          (mapUnit && (unit.supplied === false || unit.fort_limited_supply)) ||
+          unit.supplied === false || unit.fort_limited_supply ||
           api.pieceById[unit.piece]?.veteran ||
           ["component-089", "component-090"].includes(unit.piece))
           return null;
@@ -256,7 +255,7 @@ function createReplacementSystem(api) {
       return {
           kind: "upgrade",
           unit,
-          zone: mapUnit ? "map" : "eliminated",
+          zone: "map",
           key,
           cost,
           tokenIndex,

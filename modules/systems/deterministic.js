@@ -159,6 +159,18 @@ function createDeterministicSystem(api) {
       }
 
       if (isEventState(state.state)) {
+        const pendingUpgrade = state.pending_event;
+        if (pendingUpgrade?.kind === "veteran_upgrade" &&
+            !state.units.some((unit) => unit.id === pendingUpgrade.unit && unit.faction === pendingUpgrade.faction)) {
+          state.pending_event = pendingUpgrade.resume_immediate_rp || pendingUpgrade.resume_combat_fr_rp || null;
+          if (state.pending_event) {
+            api.enterEventFlow(state);
+          } else {
+            state.state = pendingUpgrade.resume_state || "replacement";
+            state.phase = pendingUpgrade.resume_phase || "补员/升级";
+          }
+          continue;
+        }
         let actions = stateActions(state);
         if (state.pending_event?.kind === "veteran_upgrade" &&
             actions.replacement_to_eliminated === 1 &&

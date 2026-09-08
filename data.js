@@ -11171,7 +11171,7 @@ const data = {
 			"name": "Sedan",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "forest",
+			"terrain": "clear",
 			"supply": false,
 			"port": false,
 			"ui": {

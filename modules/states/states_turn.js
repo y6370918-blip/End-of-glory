@@ -282,8 +282,7 @@ function createTurnStates(api) {
         if (!api.voluntaryCleanupOptions(state, state.active).trenches.includes(space))
           throw new Error("Trench is not eligible for voluntary reduction");
         api.snapshot(state, "自愿降级战壕");
-        state.trenches[space] -= 1;
-        if (state.trenches[space] <= 0) delete state.trenches[space];
+        api.setTrench(state, space, state.trenches[space] - 1, state.active);
       },
       done: api.finishVoluntaryCleanup,
     },

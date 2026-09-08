@@ -120,6 +120,7 @@ function semanticDiff(before, after, role) {
   const board = valueChanges(before, after, [
     "control",
     "trenches",
+    "trench_owners",
     "fortifications",
     "besieged",
     "broken_sieges",

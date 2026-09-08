@@ -309,7 +309,7 @@ function createMovementEventSystem(api) {
       if (pending.stage === "retreat") {
           if (!hindenburgCanStop(state, pending))
               throw new Error("The stack must stop at least as far from the nearest AP unit");
-          state.trenches[pending.current] = Math.min(2, (state.trenches[pending.current] || 0) + 1);
+          api.setTrench(state, pending.current, Math.min(2, api.trenchLevel(state, pending.current, api.CP) + 1), api.CP);
           pending.stage = "markers";
           return;
       }
@@ -382,7 +382,7 @@ function createMovementEventSystem(api) {
           state.markers.hindenburg ||= [];
           if (!state.markers.hindenburg.includes(pending.space))
               state.markers.hindenburg.push(pending.space);
-          state.trenches[pending.space] = Math.max(1, state.trenches[pending.space] || 0);
+          api.setTrench(state, pending.space, Math.max(1, api.trenchLevel(state, pending.space, api.CP)), api.CP);
       }
       if (pending.operation.key === "somme")
           state.markers.somme = {

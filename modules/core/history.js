@@ -112,6 +112,7 @@ function rollbackActionKey(entry) {
 function rollbackLabel(entry) {
   if (entry.kind === "unavailable") return "无效检查点";
   if (entry.kind === "turn_start") return `回合 ${entry.turn} 起始`;
+  if (entry.kind === "naval") return `回合 ${entry.turn} 海军阶段起始`;
   if (entry.kind === "pre_replacement") return `回合 ${entry.turn} 补员阶段前`;
   const faction = roleFaction(entry.active ?? entry.actor) === "ap" ? "协约国" : "同盟国";
   const action = `回合 ${entry.turn} ${faction} 第 ${entry.action ?? entry.round ?? 1} 行动轮`;
@@ -133,7 +134,7 @@ function makeRollbackEntry(state, kind, extra = {}) {
 
 function pruneRollbackHistory(state, snapshots) {
   const limits = rollbackLimits(state);
-  for (const [kind, limit] of [["turn_start", limits.max_turns], ["action_round", limits.max_action_rounds], ["pre_replacement", limits.max_turns]]) {
+  for (const [kind, limit] of [["naval", limits.max_turns], ["turn_start", limits.max_turns], ["action_round", limits.max_action_rounds], ["pre_replacement", limits.max_turns]]) {
     while (state.rollback.filter((entry) => entry.kind === kind).length > limit) {
       const index = state.rollback.findIndex((entry) => entry.kind === kind);
       const [removed] = state.rollback.splice(index, 1);
@@ -154,7 +155,7 @@ function pruneRollbackHistory(state, snapshots) {
 function saveRollbackPoint(state, kind, snapshot = null) {
   if (state.options?.no_supply_warnings) return;
   kind = ({ turn: "turn_start", "action-round": "action_round" })[kind] || kind;
-  if (!["turn_start", "action_round", "pre_replacement"].includes(kind))
+  if (!["naval", "turn_start", "action_round", "pre_replacement"].includes(kind))
     throw new Error(`Unknown rollback checkpoint kind: ${kind}`);
   delete state.combat_rollback_pending;
   const snapshots = rollbackSnapshots(state);
@@ -221,11 +222,12 @@ function migrateRollbackHistory(state) {
     entry.log_index = entry.log_cursor;
     entry.events ||= [];
     entry.turn_start = entry.kind === "turn_start";
-    const resumable = snapshot && activeFaction(snapshot) && snapshot.action_round >= 1 &&
-      ((entry.kind === "action_round" && snapshot.state === "action_card") ||
+    const resumable = snapshot && activeFaction(snapshot) &&
+      ((entry.kind === "naval" && snapshot.state === "naval_choice" && snapshot.action_round === 0) ||
+       (snapshot.action_round >= 1 && ((entry.kind === "action_round" && snapshot.state === "action_card") ||
        (legacyKind === "turn_start" && snapshot.state === "action_card" && snapshot.action_round === 1) ||
        (entry.kind === "combat" && snapshot.state === "rollback_combat_start") ||
-       (entry.kind === "pre_replacement" && snapshot.state === "rollback_turn_end"));
+       (entry.kind === "pre_replacement" && snapshot.state === "rollback_turn_end"))));
     if (!resumable) entry.available = false;
     entry.label = rollbackLabel(entry);
     if (snapshot) snapshot.version = 57;

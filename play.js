@@ -570,7 +570,7 @@ function renderMarkers() {
 	for (const [spaceId, level] of Object.entries(view.trenches || {})) {
 		const space = spaceById[spaceId]
 		if (!space || space.ui?.hidden) continue
-		const faction = view.control?.[spaceId] || space.faction || view.active
+		const faction = view.trench_owners?.[spaceId] || view.control?.[spaceId] || space.faction || view.active
 		const value = Math.min(2, Number(level) || 1)
 		const depth = (view.fortifications?.[spaceId] || 0) > 0 ? 2 : 1
 		const position = bottomStackMarkerPosition(spaceId, depth)
@@ -2262,13 +2262,13 @@ function renderActionRecords(selectedTurn) {
 	select.addEventListener("change", () => renderActionRecords(select.value))
 	const list = document.createElement("div")
 	list.className = "info-list"
-	const names = { ops: "OP", event: "事件", sr: "SR", rp: "RP", one_op: "1 OP", pass: "跳过" }
+	const names = { ops: "OP", event: "事件", sr: "SR", rp: "RP", one_op: "1 OP", pass: "跳过", naval_event: "海军事件 Event", naval_fleet: "舰队 Fleet" }
 	const entries = (view.action_history || []).filter(entry => entry.turn === Number(select.value))
 		.slice().sort((a, b) => a.round - b.round || (a.faction === b.faction ? 0 : a.faction === "cp" ? -1 : 1))
 	for (const entry of entries) {
 		const card = eog_data.cards.find(card => card.id === entry.card)
-		list.append(infoStat(`行动轮 ${entry.round} · ${entry.faction === "cp" ? "CP" : "AP"}`,
-			`${names[entry.type] || entry.type}${card ? ` · ${card.title}` : ""}`))
+		list.append(infoStat(`${entry.phase === "naval" ? "海军阶段" : `行动轮 ${entry.round}`} · ${entry.faction === "cp" ? "CP" : "AP"}`,
+			`${names[entry.type] || entry.type}${card ? ` · ${card.title}` : ""}${entry.phase === "naval" ? ` · ${entry.points}点海军点数` : ""}`))
 	}
 	if (!entries.length) list.textContent = "本回合尚无已记录行动；旧存档不补造历史。"
 	body.replaceChildren(select, list)

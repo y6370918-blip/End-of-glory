@@ -361,7 +361,7 @@ function createTurnSystem(api) {
               .filter((unit) => unit.faction === faction && unit.fort_limited_supply)
               .map((unit) => unit.id),
           fortifications: Object.keys(state.fortifications).filter((space) => state.control[space] === faction && state.fortifications[space] > 0),
-          trenches: Object.keys(state.trenches).filter((space) => state.control[space] === faction && state.trenches[space] > 0),
+          trenches: Object.keys(state.trenches).filter((space) => api.trenchLevel(state, space, faction) > 0),
       };
   }
 

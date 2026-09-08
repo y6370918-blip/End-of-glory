@@ -484,7 +484,7 @@ function createOperationsSystem(api) {
           const canCombine = armies.some((army) =>
               corps.some((unit) => combinationUnitsCompatible(army, unit)));
           const terrain = space.terrain;
-          const level = state.trenches[space.id] || 0;
+          const level = api.trenchLevel(state, space.id, state.active);
           const maximum = constructionMaximumTrench(state, space.id);
           const hindenburg = state.active === api.CP && api.activeRule(state, "hindenburg_line");
           const canEntrench = Boolean(trenchRule(state, state.active)) &&
@@ -544,7 +544,7 @@ function createOperationsSystem(api) {
       const terrain = api.spaceById[space]?.terrain;
       if (terrain === "swamp")
           return false;
-      const level = state.trenches[space] || 0;
+      const level = api.trenchLevel(state, space, state.active);
       const maximum = constructionMaximumTrench(state, space);
       const hindenburg = state.active === api.CP && api.activeRule(state, "hindenburg_line");
       if (terrain === "mountain")
@@ -2013,7 +2013,7 @@ function createOperationsSystem(api) {
           throw new Error("No fieldworks can be built here");
       api.snapshot(state, "修筑");
       const terrain = api.spaceById[space]?.terrain;
-      const level = state.trenches[space] || 0;
+      const level = api.trenchLevel(state, space, state.active);
       const maximum = constructionMaximumTrench(state, space);
       state.ops.entrench_attempted.push(space);
       const veteranCorps = activated.filter((unit) => unit.type === "corps" && api.pieceById[unit.piece]?.veteran).length;
@@ -2024,7 +2024,7 @@ function createOperationsSystem(api) {
           (activated.some((unit) => unit.type === "army" && api.pieceById[unit.piece]?.veteran) ||
               veteranCorps >= 2);
       if (veteranAuto) {
-          state.trenches[space] = 1;
+          api.setTrench(state, space, 1, state.active);
           delete state.fortifications[space];
       }
       else {
@@ -2038,7 +2038,7 @@ function createOperationsSystem(api) {
           const cap = terrain === "mountain" ? 2 : 6;
           const total = Math.min(cap, (state.fortifications[space] || 0) + points);
           if (total >= 6 && level < maximum) {
-              state.trenches[space] = level + 1;
+              api.setTrench(state, space, level + 1, state.active);
               delete state.fortifications[space];
           }
           else

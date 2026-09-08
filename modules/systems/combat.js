@@ -823,7 +823,7 @@ function createCombatSystem(api) {
           const enemyColumn = ownerIsAttacker ? "defense_column" : "attack_column";
           result[friendlyDrm] += effect.attack_drm || 0;
           result[enemyDrm] += effect.defense_drm || 0;
-          if (effect.attack_drm_if_trenched && (state.trenches[target] || 0) > 0)
+          if (effect.attack_drm_if_trenched && api.trenchLevel(state, target, api.other(attacker)) > 0)
               result[friendlyDrm] += Number(effect.attack_drm_if_trenched) || 0;
           if (effect.attack_drm_if_defender_nation &&
               defenders.some((unit) => unit.nation === effect.attack_drm_if_defender_nation))
@@ -928,7 +928,7 @@ function createCombatSystem(api) {
           if (effect.fortification_after)
               result.fortification_after = effect.fortification_after;
           if (effect.virtual_trench) {
-              if ((state.trenches[target] || 0) > 0) {
+              if (api.trenchLevel(state, target, api.other(attacker)) > 0) {
                   const amount = Number(effect.attack_column_if_trenched) || 0;
                   result.attack_column += amount;
                   if (amount)
@@ -1292,7 +1292,7 @@ function createCombatSystem(api) {
 
   function allOutAttackChoices(state, declaration = state.ops?.pending_attack) {
       if (!declaration || state.active !== api.AP || state.turn >= 12 ||
-          !(state.trenches[declaration.target] > 0))
+          !(api.trenchLevel(state, declaration.target, api.CP) > 0))
           return [];
       const rule = api.activeRule(state, "all_out_war");
       if (!rule?.selective_trench_nations)
@@ -1475,7 +1475,7 @@ function createCombatSystem(api) {
           delete state.fortifications[target];
       let attackDrm = modifiers.attack_drm;
       let defenseDrm = modifiers.defense_drm;
-      const trenchLevel = Math.max(state.trenches[target] || 0,
+      const trenchLevel = Math.max(api.trenchLevel(state, target, api.other(attacker)),
           modifiers.virtual_trench || 0);
       if (!modifiers.ignore_trench &&
           trenchLevel > 0 &&
@@ -1486,7 +1486,7 @@ function createCombatSystem(api) {
               side: "defender",
               kind: "column",
               amount: trenchLevel,
-              label: modifiers.virtual_trench && !(state.trenches[target] > 0)
+              label: modifiers.virtual_trench && !(api.trenchLevel(state, target, api.other(attacker)) > 0)
                   ? "1914年精神：视为一级战壕"
                   : `战壕等级 ${trenchLevel}`,
           });
@@ -1545,7 +1545,7 @@ function createCombatSystem(api) {
       const cavalryDefense = defenders.some((unit) => api.pieceById[unit.piece]?.cavalry);
       if (cavalryAttack &&
           !cavalryDefense &&
-          !state.trenches[target] &&
+          !api.trenchLevel(state, target, api.other(attacker)) &&
           !fortLossFactor) {
           attackDrm += 1;
           modifiers.modifier_sources.push({
@@ -1557,7 +1557,7 @@ function createCombatSystem(api) {
       }
       if (cavalryDefense &&
           !cavalryAttack &&
-          !state.trenches[target] &&
+          !api.trenchLevel(state, target, api.other(attacker)) &&
           !fortLossFactor) {
           defenseDrm += 1;
           modifiers.modifier_sources.push({
@@ -1866,7 +1866,7 @@ function createCombatSystem(api) {
           const occupiedFort = intactFort(state, target) &&
               api.unitsAt(state, target, api.other(state.active)).some(api.isCombatUnit);
           if (origins.length < 2 ||
-              state.trenches[target] ||
+              api.trenchLevel(state, target, api.other(state.active)) ||
               (intactFort(state, target) && !occupiedFort) ||
               !["clear", "forest"].includes(terrain) ||
               origins.some((origin) => api.connectionRule(origin, target, "alpine")) ||
@@ -2700,9 +2700,9 @@ function createCombatSystem(api) {
           state.state = forcedChoice ? "retreat" : "movement_retreat_choice";
       }
       else if (defenders.length &&
-          potentialAdvanceUnits.length &&
+          (rules.retreat_choice?.length || (potentialAdvanceUnits.length &&
           (combat.defense_loss > combat.attack_loss || rules.minimum_retreat > 0) &&
-          !rules.cancel_retreat.includes(api.other(combat.attacker))) {
+          !rules.cancel_retreat.includes(api.other(combat.attacker))))) {
           const margin = combat.defense_loss - combat.attack_loss;
           const marginProhibition = rules.cards.some((entry) => entry.effect.prohibit_damaged_retreat_cancel_if_margin &&
               margin >= entry.effect.prohibit_damaged_retreat_cancel_if_margin);
@@ -2736,8 +2736,8 @@ function createCombatSystem(api) {
               advanced: 0,
               retreat_paths: [],
               advance_max_steps: retreatSteps,
-              can_cancel_with_loss: (["forest", "mountain", "swamp"].includes(api.spaceById[combat.target]?.terrain) ||
-                  ((state.trenches[combat.target] || 0) > 0 && !rules.ignore_trench)),
+              can_cancel_with_loss: !rules.retreat_choice?.length && (["forest", "mountain", "swamp"].includes(api.spaceById[combat.target]?.terrain) ||
+                  (api.trenchLevel(state, combat.target, defenderFaction) > 0 && !rules.ignore_trench)),
               prohibit_damaged_cancel: Boolean(rules.prohibit_damaged_retreat_cancel) || marginProhibition,
           };
           api.setActiveFaction(state, defenders[0].faction);
@@ -2939,7 +2939,8 @@ function createCombatSystem(api) {
   function canCancelRetreatWithUnit(state, id) {
       const pending = state.pending_retreat;
       const unit = state.units.find((candidate) => candidate.id === id);
-      if (!pending?.can_cancel_with_loss || !retreatCancellationTerrainAllowed(state, pending) ||
+      if (state.combat?.modifiers?.retreat_choice?.length ||
+          !pending?.can_cancel_with_loss || !retreatCancellationTerrainAllowed(state, pending) ||
           !pending.units?.includes(id) || !unit || !api.isCombatUnit(unit))
           return false;
       if (pending.prohibit_damaged_cancel && unit.reduced)
@@ -2963,7 +2964,7 @@ function createCombatSystem(api) {
       const terrain = api.spaceById[space]?.terrain;
       if (["forest", "mountain", "swamp"].includes(terrain))
           return true;
-      return Number(state.trenches?.[space] || 0) > 0 &&
+      return api.trenchLevel(state, space, pending.faction) > 0 &&
           !state.combat?.modifiers?.ignore_trench;
   }
 

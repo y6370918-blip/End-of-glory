@@ -612,7 +612,7 @@ function createCombatCardSystem(api) {
       if (effect.requires_commitment &&
           state.commitment[owner] !== effect.requires_commitment)
           return false;
-      if (effect.requires_trench && !(state.trenches[declaration.target] > 0))
+      if (effect.requires_trench && !(api.trenchLevel(state, declaration.target, state.combat_window.defender) > 0))
           return false;
       if (effect.requires_trench &&
           state.combat_window.cards.some((id) => api.cardSpecById[id]?.combat?.ignore_trench))

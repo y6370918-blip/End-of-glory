@@ -59,6 +59,7 @@ function createNavalSystem(api) {
   function startNaval(state) {
       state.phase = "海军阶段";
       state.state = "naval_choice";
+      state.action_round = 0;
       api.setActiveFaction(state, api.CP);
       state.naval.selections = {};
       state.naval.points = { ap: 0, cp: 0 };
@@ -69,6 +70,7 @@ function createNavalSystem(api) {
       state.naval.disposition_order = [];
       delete state.naval.legacy_disposition_complete;
       api.log(state, "海军阶段：同盟国暗出 Event 或 Fleet。");
+      api.checkpoint(state, "naval");
   }
 
   function finishNavalDisposition(state) {
@@ -243,6 +245,13 @@ function createNavalSystem(api) {
           if (side === api.CP && uboatMinimumActive(state, selection))
               points = Math.max(4, points);
           state.naval.points[side] = points;
+          // Both choices are now revealed; never publish CP's secret choice early.
+          state.action_history ||= [];
+          state.action_history.push({
+              turn: state.turn, round: 0, faction: side, phase: "naval",
+              type: `naval_${selection.kind}`, card: selection.card,
+              points, log_cursor: state.log.length,
+          });
       }
       const difference = state.naval.points[api.CP] - state.naval.points[api.AP];
       state.naval.pending_difference = difference;

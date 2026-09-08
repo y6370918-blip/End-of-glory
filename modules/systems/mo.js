@@ -592,7 +592,7 @@ function createMoSystem(api) {
               if (entry === "intact_fort")
                   return api.intactFort(state, target) > 0;
               if (entry === "trench")
-                  return (state.trenches[target] || 0) > 0;
+                  return api.trenchLevel(state, target, api.other(state.active)) > 0;
               if (entry === "port")
                   return Boolean(api.spaceById[target]?.port);
               if (entry === "mountain")
