@@ -346,10 +346,10 @@ function createMovementEventSystem(api) {
       if (pending.operation.key === "somme")
           return api.data.spaces
               .filter((space) => api.unitsAt(state, space.id, api.CP).some((unit) => unit.nation === "ge" && unit.type === "army") &&
-              api.neighborsFor(space.id, "attack", api.AP).some((adjacent) =>
+              api.stateNeighborsFor(state, space.id, "attack", api.AP).some((adjacent) =>
                   api.unitsAt(state, adjacent, api.AP).some((unit) =>
                       api.isCombatUnit(unit) &&
-                      api.connectionAllows(unit.location, space.id, "attack", api.AP))))
+                      api.stateConnectionAllows(state, unit.location, space.id, "attack", api.AP))))
               .map((space) => space.id);
       if (pending.operation.key === "august_guns" &&
           pending.operation.destroy_adjacent_belgian_fort)
@@ -357,7 +357,7 @@ function createMovementEventSystem(api) {
               .filter((space) => space.fort &&
               space.nation === "be" &&
               !state.destroyed_forts.includes(space.id) &&
-              api.neighborsFor(space.id, "move", api.CP).some((adjacent) => api.unitsAt(state, adjacent, api.CP).length))
+              api.stateNeighborsFor(state, space.id, "move", api.CP).some((adjacent) => api.unitsAt(state, adjacent, api.CP).length))
               .filter((space) => api.unitsAt(state, space.id, api.AP)
                   .filter((unit) => unit.nation === "be" && unit.type === "corps")
                   .every((unit) => augustBelgianSpaces(state, {
@@ -437,7 +437,7 @@ function createMovementEventSystem(api) {
   function augustGunsUnits(state, pending) {
       if (!pending?.space)
           return [];
-      const adjacent = new Set(api.neighborsFor(pending.space, "move", api.CP));
+      const adjacent = new Set(api.stateNeighborsFor(state, pending.space, "move", api.CP));
       const selected = pending.selected_units || [];
       return state.units
           .filter((unit) => unit.faction === api.CP &&
@@ -453,7 +453,7 @@ function createMovementEventSystem(api) {
       if (destination !== pending.space ||
           !selected.length ||
           selected.some((id) => !state.units.some((unit) => unit.id === id) ||
-              !api.neighborsFor(pending.space, "move", api.CP).includes(state.units.find((unit) => unit.id === id).location)) ||
+              !api.stateNeighborsFor(state, pending.space, "move", api.CP).includes(state.units.find((unit) => unit.id === id).location)) ||
           !api.advanceGroupStackLegal(state, pending.space, selected, api.CP))
           throw new Error("Illegal August Guns reposition group");
       for (const id of selected) {

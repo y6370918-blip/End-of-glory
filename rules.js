@@ -65,7 +65,10 @@ const { createMoSystem } = require("./modules/systems/mo.js");
 const { createNavalSystem } = require("./modules/systems/naval.js");
 const { createReplacementSystem } = require("./modules/systems/replacement.js");
 const { createSupplySystem } = require("./modules/systems/supply.js");
-const { TEST_SCENARIOS, createSetupSystem } = require("./modules/systems/setup.js");
+const {
+  TEST_SCENARIOS,
+  createSetupSystem,
+} = require("./modules/systems/setup.js");
 const { createUnitSystem } = require("./modules/systems/units.js");
 const { createTurnSystem } = require("./modules/systems/turn.js");
 const { createActionSystem } = require("./modules/systems/action.js");
@@ -278,7 +281,8 @@ function ensureState(state) {
     }
     if (previousVersion < 49) {
       if (!Array.isArray(state.pending_retreat.selected_units))
-        state.pending_retreat.selected_units = state.pending_retreat.selected_unit
+        state.pending_retreat.selected_units = state.pending_retreat
+          .selected_unit
           ? [state.pending_retreat.selected_unit]
           : [];
     } else {
@@ -1198,7 +1202,12 @@ function ensureState(state) {
   if (!Array.isArray(state.rollback)) state.rollback = [];
   for (const [index, entry] of state.rollback.entries()) {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-      state.rollback[index] = { kind: "unavailable", label: "无效检查点", available: false, log_cursor: 0 };
+      state.rollback[index] = {
+        kind: "unavailable",
+        label: "无效检查点",
+        available: false,
+        log_cursor: 0,
+      };
       continue;
     }
     if (!Number.isInteger(entry.log_cursor))
@@ -1485,8 +1494,12 @@ function ensureState(state) {
       ];
     }
     const penalty = state.pending_event;
-    if (penalty?.kind === "mo_penalty" &&
-        ["forward_origin", "forward_leave", "forward_target"].includes(penalty.stage)) {
+    if (
+      penalty?.kind === "mo_penalty" &&
+      ["forward_origin", "forward_leave", "forward_target"].includes(
+        penalty.stage,
+      )
+    ) {
       penalty.stage = "mode";
       delete penalty.origin;
       delete penalty.leave;
@@ -1498,7 +1511,9 @@ function ensureState(state) {
         penalty.penalized,
         penalty.nation,
         2,
-      ) ? 2 : 0;
+      )
+        ? 2
+        : 0;
     }
     updateSupply(state);
   }
@@ -1518,8 +1533,14 @@ function ensureState(state) {
     const retreatStarted = Object.values(pending.paths || {}).some(
       (path) => Array.isArray(path) && path.length > 1,
     );
-    const stillSelectingRetreat = state.state === "retreat" && !pending.overstack;
-    if (!retreatStarted && stillSelectingRetreat && pending.faction && pending.from) {
+    const stillSelectingRetreat =
+      state.state === "retreat" && !pending.overstack;
+    if (
+      !retreatStarted &&
+      stillSelectingRetreat &&
+      pending.faction &&
+      pending.from
+    ) {
       const distance = Number(pending.steps || 0);
       const hqs = state.units.filter(
         (unit) =>
@@ -1554,29 +1575,46 @@ function ensureState(state) {
         Engine.attackModeForDeclaration(state, state.combat_window.declaration);
     }
     if (state.ops?.pending_attack) {
-      state.ops.pending_attack.attack_mode =
-        Engine.attackModeForDeclaration(state, state.ops.pending_attack);
+      state.ops.pending_attack.attack_mode = Engine.attackModeForDeclaration(
+        state,
+        state.ops.pending_attack,
+      );
     }
     if (state.pending_retreat) {
       const pending = state.pending_retreat;
-      const computedMode = state.combat?.attack_mode ||
+      const computedMode =
+        state.combat?.attack_mode ||
         (state.combat?.declaration
-          ? Engine.attackModeForDeclaration(state, state.combat.declaration, state.combat.participant_units)
+          ? Engine.attackModeForDeclaration(
+              state,
+              state.combat.declaration,
+              state.combat.participant_units,
+            )
           : "normal");
-      pending.mode = pending.optional && computedMode === "movement"
-        ? "movement_optional"
-        : "mandatory";
+      pending.mode =
+        pending.optional && computedMode === "movement"
+          ? "movement_optional"
+          : "mandatory";
       pending.declined_units ||= [];
-      pending.selected_unit = (pending.selected_units || [])
-        .find((id) => pending.units?.includes(id)) || null;
+      pending.selected_unit =
+        (pending.selected_units || []).find((id) =>
+          pending.units?.includes(id),
+        ) || null;
       delete pending.selected_units;
       delete pending.optional;
       const retreatStarted = Object.values(pending.paths || {}).some(
         (path) => Array.isArray(path) && path.length > 1,
       );
-      if (state.state === "retreat" && !retreatStarted && !pending.overstack &&
-          pending.mode === "mandatory" && pending.can_cancel_with_loss &&
-          (pending.units || []).some((id) => Engine.canCancelRetreatWithUnit(state, id)))
+      if (
+        state.state === "retreat" &&
+        !retreatStarted &&
+        !pending.overstack &&
+        pending.mode === "mandatory" &&
+        pending.can_cancel_with_loss &&
+        (pending.units || []).some((id) =>
+          Engine.canCancelRetreatWithUnit(state, id),
+        )
+      )
         state.state = "retreat_cancel";
     }
   }
@@ -1592,10 +1630,7 @@ function ensureState(state) {
     };
     const migrateUnit = (unit) => {
       if (!unit || typeof unit !== "object") return;
-      unit.piece = remapReinforcementPiece(
-        unit.piece,
-        unit.reinforcement_card,
-      );
+      unit.piece = remapReinforcementPiece(unit.piece, unit.reinforcement_card);
       // Rosenberg's counter is printed GE.  Older generated data marked the
       // HQ as AH, which left event 717 unable to proceed after its first LCU.
       if (unit.piece === "component-010") unit.nation = "ge";
@@ -1610,8 +1645,7 @@ function ensureState(state) {
       ...Object.values(state.entry_reserve || {}),
       ...(state.scheduled_events || []).map((entry) => entry.units),
     ];
-    for (const pool of pools)
-      for (const unit of pool || []) migrateUnit(unit);
+    for (const pool of pools) for (const unit of pool || []) migrateUnit(unit);
 
     const pending = state.pending_event;
     if ([637, 735].includes(Number(pending?.card))) {
@@ -1656,19 +1690,25 @@ function ensureState(state) {
   if (previousVersion < 50) {
     if (state.pending_event?.kind === "counterattack") {
       const pending = state.pending_event;
-      pending.origins = (pending.origins || []).filter((origin) =>
-        state.units.some((unit) =>
-          unit.location === origin &&
-          unit.faction === CP &&
-          ["army", "corps"].includes(unit.type),
-        ) &&
-        state.units.some((unit) =>
-          unit.faction === AP &&
-          ["army", "corps"].includes(unit.type) &&
-          attacksTarget(state, unit, origin),
-        ),
+      pending.origins = (pending.origins || []).filter(
+        (origin) =>
+          state.units.some(
+            (unit) =>
+              unit.location === origin &&
+              unit.faction === CP &&
+              ["army", "corps"].includes(unit.type),
+          ) &&
+          state.units.some(
+            (unit) =>
+              unit.faction === AP &&
+              ["army", "corps"].includes(unit.type) &&
+              attacksTarget(state, unit, origin),
+          ),
       );
-      if (pending.stage === "cards" && pending.index >= (pending.cards || []).length)
+      if (
+        pending.stage === "cards" &&
+        pending.index >= (pending.cards || []).length
+      )
         pending.stage = "cards_complete";
       if (pending.stage === "origin") setActiveFaction(state, AP);
       else if (pending.stage === "cards_complete") setActiveFaction(state, CP);
@@ -1682,23 +1722,29 @@ function ensureState(state) {
         const group = new Set(retreat.overstack.group || []);
         const paidEvent = [...(state.combat?.resolution_events || [])]
           .reverse()
-          .find((entry) =>
-            ["reduce", "eliminate", "replace"].includes(entry.kind) &&
-            (group.has(entry.unit) || group.has(entry.replacement)),
+          .find(
+            (entry) =>
+              ["reduce", "eliminate", "replace"].includes(entry.kind) &&
+              (group.has(entry.unit) || group.has(entry.replacement)),
           );
         retreat.overstack.loss_paid = Boolean(paidEvent);
       }
-      if (state.state === "retreat_overstack" && retreat.overstack.loss_paid &&
-          !state.pending_replacement) {
+      if (
+        state.state === "retreat_overstack" &&
+        retreat.overstack.loss_paid &&
+        !state.pending_replacement
+      ) {
         const overstack = retreat.overstack;
         const group = (overstack.group || []).filter((id) =>
           state.units.some((unit) => unit.id === id),
         );
-        const stillOverstacked = state.units.filter((unit) =>
-          unit.location === overstack.space &&
-          unit.faction === retreat.faction &&
-          ["army", "corps"].includes(unit.type),
-        ).length > 3;
+        const stillOverstacked =
+          state.units.filter(
+            (unit) =>
+              unit.location === overstack.space &&
+              unit.faction === retreat.faction &&
+              ["army", "corps"].includes(unit.type),
+          ).length > 3;
         retreat.overstack = null;
         retreat.selected_unit = null;
         if (stillOverstacked && group.length) {
@@ -1716,7 +1762,9 @@ function ensureState(state) {
             const path = retreat.paths?.[id];
             if (path?.length) retreat.retreat_paths.push(path.slice());
           }
-          retreat.units = (retreat.units || []).filter((id) => !group.includes(id));
+          retreat.units = (retreat.units || []).filter(
+            (id) => !group.includes(id),
+          );
         }
         state.state = "retreat";
         setActiveFaction(state, retreat.faction);
@@ -1770,7 +1818,9 @@ function ensureState(state) {
         );
         movement.paths_by_unit ||= Object.fromEntries(
           movement.units.map((id) => {
-            const unit = snapshot.units?.find((candidate) => candidate.id === id);
+            const unit = snapshot.units?.find(
+              (candidate) => candidate.id === id,
+            );
             return [id, (unit?.movement_path || movement.path).slice()];
           }),
         );
@@ -1794,14 +1844,16 @@ function ensureState(state) {
         delete pending.selected_advance_units;
         delete pending.advance_group;
       }
-      if (snapshot.state === "advance_destination") snapshot.state = "advance_select";
+      if (snapshot.state === "advance_destination")
+        snapshot.state = "advance_select";
       snapshot.version = 53;
     };
     migrateHqFlowState(state);
     for (const entry of state.undo || []) migrateHqFlowState(entry?.state);
     const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
     if (rollbackSnapshots.length) {
-      for (const snapshotState of rollbackSnapshots) migrateHqFlowState(snapshotState);
+      for (const snapshotState of rollbackSnapshots)
+        migrateHqFlowState(snapshotState);
       setRollbackSnapshots(state, rollbackSnapshots);
     }
   }
@@ -1814,7 +1866,9 @@ function ensureState(state) {
         return;
       }
       const live = new Set((snapshot.units || []).map((unit) => unit.id));
-      const uniqueLive = (ids) => [...new Set((ids || []).filter((id) => live.has(id)))];
+      const uniqueLive = (ids) => [
+        ...new Set((ids || []).filter((id) => live.has(id))),
+      ];
       pending.units = uniqueLive(pending.units);
       pending.waiting_hqs = uniqueLive(pending.waiting_hqs);
       pending.completed_units = uniqueLive(pending.completed_units);
@@ -1822,13 +1876,18 @@ function ensureState(state) {
       const active = new Set(pending.units);
       for (const id of Object.keys(pending.paths || {})) {
         const path = pending.paths[id] || [];
-        if (live.has(id) && !active.has(id) && !declined.has(id) &&
-            (Number(pending.remaining?.[id]) === 0 || path.length > 1) &&
-            !pending.completed_units.includes(id))
+        if (
+          live.has(id) &&
+          !active.has(id) &&
+          !declined.has(id) &&
+          (Number(pending.remaining?.[id]) === 0 || path.length > 1) &&
+          !pending.completed_units.includes(id)
+        )
           pending.completed_units.push(id);
       }
       for (const id of pending.waiting_hqs) {
-        if (!pending.completed_units.includes(id)) pending.completed_units.push(id);
+        if (!pending.completed_units.includes(id))
+          pending.completed_units.push(id);
         pending.units = pending.units.filter((unitId) => unitId !== id);
       }
       pending.overstack_spaces ||= [];
@@ -1842,9 +1901,13 @@ function ensureState(state) {
       const legacy = pending.overstack;
       if (legacy) {
         const group = uniqueLive(legacy.group || [legacy.unit].filter(Boolean));
-        const paid = Boolean(legacy.loss_paid) ||
+        const paid =
+          Boolean(legacy.loss_paid) ||
           snapshot.pending_replacement?.resume === "retreat_overstack";
-        if (paid && snapshot.pending_replacement?.resume === "retreat_overstack") {
+        if (
+          paid &&
+          snapshot.pending_replacement?.resume === "retreat_overstack"
+        ) {
           pending.overstack_space = legacy.space || null;
           pending.overstack_units = group;
           pending.overstack_loss_complete = true;
@@ -1854,12 +1917,16 @@ function ensureState(state) {
           pending.units = uniqueLive([...pending.units, ...group]);
           pending.phase = "overstack_extra";
           for (const id of group)
-            pending.remaining[id] = Math.max(1, Number(pending.remaining[id]) || 0);
+            pending.remaining[id] = Math.max(
+              1,
+              Number(pending.remaining[id]) || 0,
+            );
           snapshot.state = "retreat";
         } else {
           if (legacy.final) {
             for (const id of group)
-              if (!pending.completed_units.includes(id)) pending.completed_units.push(id);
+              if (!pending.completed_units.includes(id))
+                pending.completed_units.push(id);
             pending.units = pending.units.filter((id) => !group.includes(id));
           }
           pending.phase = "retreat";
@@ -1868,7 +1935,9 @@ function ensureState(state) {
         delete pending.overstack;
       }
 
-      const paidIds = uniqueLive(Object.keys(pending.overstack_loss_paid || {}));
+      const paidIds = uniqueLive(
+        Object.keys(pending.overstack_loss_paid || {}),
+      );
       if (paidIds.length) {
         pending.extra_retreat_units = uniqueLive([
           ...pending.extra_retreat_units,
@@ -1880,7 +1949,10 @@ function ensureState(state) {
       }
       delete pending.overstack_loss_paid;
       delete pending.deferred_hqs;
-      if (snapshot.state === "retreat_overstack" && !snapshot.pending_replacement)
+      if (
+        snapshot.state === "retreat_overstack" &&
+        !snapshot.pending_replacement
+      )
         snapshot.state = "retreat";
       snapshot.version = 54;
     };
@@ -1913,18 +1985,22 @@ function ensureState(state) {
       }
       pending.movement_attack = true;
       const modifierChoices = snapshot.combat?.modifiers?.retreat_choice;
-      const cardChoices = snapshot.combat?.modifiers?.cards?.find((entry) =>
-        Number(entry?.id) === 602 || Array.isArray(entry?.effect?.retreat_choice),
+      const cardChoices = snapshot.combat?.modifiers?.cards?.find(
+        (entry) =>
+          Number(entry?.id) === 602 ||
+          Array.isArray(entry?.effect?.retreat_choice),
       )?.effect?.retreat_choice;
-      const strategicChoices = Array.isArray(modifierChoices) && modifierChoices.length
-        ? modifierChoices.slice()
-        : Array.isArray(cardChoices) && cardChoices.length
-          ? cardChoices.slice()
-          : null;
+      const strategicChoices =
+        Array.isArray(modifierChoices) && modifierChoices.length
+          ? modifierChoices.slice()
+          : Array.isArray(cardChoices) && cardChoices.length
+            ? cardChoices.slice()
+            : null;
       const paths = Object.values(pending.paths || {}).filter(Array.isArray);
       const hasMoved = paths.some((path) => path.length > 1);
       const hasDeclined = (pending.declined_units || []).length > 0;
-      const activeRetreatPhase = snapshot.state === "retreat" &&
+      const activeRetreatPhase =
+        snapshot.state === "retreat" &&
         (!pending.phase || pending.phase === "retreat");
 
       if (strategicChoices) {
@@ -1933,19 +2009,25 @@ function ensureState(state) {
         pending.choices = strategicChoices;
         pending.selected_unit = null;
         for (const id of pending.units || [])
-          if ((pending.paths?.[id] || []).length <= 1) pending.remaining[id] = null;
+          if ((pending.paths?.[id] || []).length <= 1)
+            pending.remaining[id] = null;
         if (activeRetreatPhase || snapshot.state === "movement_retreat_choice")
           snapshot.state = "retreat";
       } else if (pending.mode === "movement_optional") {
-        const margin = Number(snapshot.combat?.defense_loss || 0) -
+        const margin =
+          Number(snapshot.combat?.defense_loss || 0) -
           Number(snapshot.combat?.attack_loss || 0);
         const steps = Math.min(2, Math.max(1, margin));
         pending.steps = steps;
         pending.choices = null;
         pending.selected_unit = null;
         for (const id of pending.units || [])
-          if ((pending.paths?.[id] || []).length <= 1) pending.remaining[id] = steps;
-        if (!activeRetreatPhase || (pending.phase && pending.phase !== "retreat")) {
+          if ((pending.paths?.[id] || []).length <= 1)
+            pending.remaining[id] = steps;
+        if (
+          !activeRetreatPhase ||
+          (pending.phase && pending.phase !== "retreat")
+        ) {
           pending.mode = "movement_mandatory";
         } else if (hasMoved) {
           pending.mode = "movement_mandatory";
@@ -1962,7 +2044,8 @@ function ensureState(state) {
       snapshot.version = 55;
     };
     migrateMovementRetreatChoice(state);
-    for (const entry of state.undo || []) migrateMovementRetreatChoice(entry?.state);
+    for (const entry of state.undo || [])
+      migrateMovementRetreatChoice(entry?.state);
     const rollbackSnapshots = decodeRollbackStates(state.rollback_state);
     if (rollbackSnapshots.length) {
       for (const snapshotState of rollbackSnapshots)
@@ -1979,7 +2062,9 @@ function ensureState(state) {
       snapshot.broken_sieges ||= [];
       const besieged = new Set(snapshot.besieged);
       const broken = new Set(snapshot.broken_sieges);
-      for (const space of data.spaces.filter((candidate) => Number(candidate.fort) > 0)) {
+      for (const space of data.spaces.filter(
+        (candidate) => Number(candidate.fort) > 0,
+      )) {
         if (snapshot.destroyed_forts.includes(space.id)) {
           besieged.delete(space.id);
           broken.delete(space.id);
@@ -1987,19 +2072,26 @@ function ensureState(state) {
         }
         const owner = space.faction;
         const besieger = owner && other(owner);
-        const occupants = (snapshot.units || []).filter((unit) =>
-          unit.location === space.id &&
-          unit.faction === besieger &&
-          ["army", "corps"].includes(unit.type || pieceById[unit.piece]?.type));
+        const occupants = (snapshot.units || []).filter(
+          (unit) =>
+            unit.location === space.id &&
+            unit.faction === besieger &&
+            ["army", "corps"].includes(
+              unit.type || pieceById[unit.piece]?.type,
+            ),
+        );
         if (!occupants.length) {
           besieged.delete(space.id);
           broken.delete(space.id);
           continue;
         }
-        const sufficient = occupants.some((unit) =>
-          (unit.type || pieceById[unit.piece]?.type) === "army") ||
-          occupants.filter((unit) =>
-            (unit.type || pieceById[unit.piece]?.type) === "corps").length >= Number(space.fort);
+        const sufficient =
+          occupants.some(
+            (unit) => (unit.type || pieceById[unit.piece]?.type) === "army",
+          ) ||
+          occupants.filter(
+            (unit) => (unit.type || pieceById[unit.piece]?.type) === "corps",
+          ).length >= Number(space.fort);
         if (sufficient) {
           besieged.add(space.id);
           broken.delete(space.id);
@@ -2034,9 +2126,36 @@ function ensureState(state) {
       setRollbackSnapshots(state, rollbackSnapshots);
     }
   }
-  state.version = 57;
+  if (previousVersion < 58) {
+    const migrateSeptemberBoard = (snapshot) => {
+      if (!snapshot || typeof snapshot !== "object") return;
+      if (snapshot.naval) {
+        // Preserve net advances from the old start; cap only at the new endpoints.
+        snapshot.naval.track = Math.max(
+          -5,
+          Math.min(3, 1 - (Number(snapshot.naval.track) || 0)),
+        );
+      }
+      snapshot.supply_dirty = true;
+      delete snapshot.supply_signature;
+      snapshot.version = 58;
+      if (snapshot.rp?.ap) {
+        snapshot.rp.ap.a ??= 0;
+        snapshot.legacy_mixed_rp = true;
+      }
+    };
+    migrateSeptemberBoard(state);
+    for (const entry of state.undo || []) migrateSeptemberBoard(entry?.state);
+    const snapshots = decodeRollbackStates(state.rollback_state);
+    for (const snapshot of snapshots) migrateSeptemberBoard(snapshot);
+    if (snapshots.length) setRollbackSnapshots(state, snapshots);
+  }
+  state.version = 58;
   repairRollbackHistory(state);
   Engine.ensureSupply(state);
+  // Preserve observable campaign milestones before a subsequent action can
+  // move or eliminate the unit. Undo/rollback retain their own snapshot flags.
+  Engine.recordCampaignVpMilestones(state);
   if (AUTO_CARD_CONSERVATION) CardZones.assertCardConservation(state);
   return state;
 }
@@ -2054,7 +2173,8 @@ function random(state) {
 function roll(state, sides = 6) {
   const result = Math.floor(random(state) * sides) + 1;
   const point = state.rollback?.at(-1);
-  if (point) (point.events ||= []).push(`T${state.turn} ${state.state}: 掷骰 ${result}`);
+  if (point)
+    (point.events ||= []).push(`T${state.turn} ${state.state}: 掷骰 ${result}`);
   return result;
 }
 
@@ -2110,7 +2230,9 @@ function advanceRestoringState(state) {
   try {
     Engine.advanceDeterministicStates(state, { restoring: true });
     if (!Engine.hasState(state.state))
-      throw new Error(`Unregistered stable state after restore: ${state.state}`);
+      throw new Error(
+        `Unregistered stable state after restore: ${state.state}`,
+      );
   } finally {
     undoActionContext = previous;
   }
@@ -2271,8 +2393,8 @@ function set_up_historical_scenario() {
   setup_piece("fr", "法国新兵", "Toul");
   setup_piece("fr", "法国新兵", "Verdun");
   setup_piece("fr", "法国新兵", "verdun");
-  setup_piece("fr", "法国新兵", "Sedan");
-  setup_piece("fr", "法国新兵", "Sedan");
+  setup_piece("fr", "法国新兵", "Sedan", true);
+  setup_piece("fr", "法国新兵", "Sedan", true);
   setup_piece("fr", "法国新兵", "Mezieres");
   setup_piece("fr", "法国新兵", "Vervins");
   setup_piece("fr", "法国新兵", "Vervins");
@@ -2408,7 +2530,7 @@ function createState(seed, options = {}) {
     (unit) => unit.nation === "it",
   );
   return {
-    version: 57,
+    version: 58,
     seed: Number(seed) >>> 0,
     scenario: HISTORICAL,
     options: {
@@ -2474,7 +2596,7 @@ function createState(seed, options = {}) {
     commitment: { ap: "mobilization", cp: "mobilization" },
     war_status: { ap: 0, cp: 0, combined: 0 },
     rp: {
-      ap: { br: 0, fr: 0, it: 0, us: 0 },
+      ap: { br: 0, fr: 0, it: 0, a: 0, us: 0 },
       cp: { ge: 0, ah: 0, east: 0 },
     },
     mo: {
@@ -2500,7 +2622,7 @@ function createState(seed, options = {}) {
       front_commitments: {},
     },
     naval: {
-      track: 0,
+      track: 1,
       selections: {},
       points: { ap: 0, cp: 0 },
       event_queue: [],
@@ -2882,14 +3004,18 @@ exports.query = function (state, current, query) {
   if (query === "supply") {
     ensureSupply(queried);
     const networks = {
-      ap: Object.fromEntries(["be", "br", "fr", "it", "us"].map((nation) => [
-        nation,
-        [...suppliedSpaces(queried, AP, nation)],
-      ])),
-      cp: Object.fromEntries(["ah", "ge"].map((nation) => [
-        nation,
-        [...suppliedSpaces(queried, CP, nation)],
-      ])),
+      ap: Object.fromEntries(
+        ["be", "br", "fr", "it", "us"].map((nation) => [
+          nation,
+          [...suppliedSpaces(queried, AP, nation)],
+        ]),
+      ),
+      cp: Object.fromEntries(
+        ["ah", "ge"].map((nation) => [
+          nation,
+          [...suppliedSpaces(queried, CP, nation)],
+        ]),
+      ),
     };
     return {
       ap: [...suppliedSpaces(queried, AP)],
@@ -2897,8 +3023,8 @@ exports.query = function (state, current, query) {
       networks,
       units: Object.fromEntries(
         queried.units.map((unit) => [
-            unit.id,
-            ViewExplanations.supplyStatus(unit),
+          unit.id,
+          ViewExplanations.supplyStatus(unit),
         ]),
       ),
     };
@@ -2926,7 +3052,7 @@ exports.dont_snap = function (state) {
     state?.combat ||
     state?.combat_window ||
     state?.post_combat_window ||
-    state?.pending_combat_card_disposition
+    state?.pending_combat_card_disposition,
   );
 };
 

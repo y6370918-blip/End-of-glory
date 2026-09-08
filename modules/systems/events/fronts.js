@@ -101,7 +101,7 @@ function createFrontEventSystem(api) {
           api.log(state, `T${state.turn} 不检查战争状态。`);
           return;
       }
-      resolveCommitmentStage(state, "limited", 4, 6);
+      resolveCommitmentStage(state, "limited", 4, 5);
       resolveCommitmentStage(state, "total", 11, 13);
   }
 

@@ -694,6 +694,7 @@ function createViewSystem(api) {
               ? api.openingCardCandidates(state)
               : [],
           vp: state.vp,
+          victory_breakdown: api.victoryBreakdown(state),
           war_status: api.clone(state.war_status),
           commitment: api.clone(state.commitment),
           card_values: Object.fromEntries(api.data.cards

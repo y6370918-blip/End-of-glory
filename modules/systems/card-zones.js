@@ -83,9 +83,13 @@ function createCardZoneSystem(api) {
       state.pending_event?.resume === "finish_delayed_event"
         ? optionalCardId(state.pending_event.resume_card)
         : null;
-    const pendingId = optionalCardId(state.pending_event?.card) ?? delayedResumeId;
+    // Killing Ground first grants two event SR points and only creates its
+    // pending_event after that SR is finished.  During this interval the
+    // source card is owned by the SR resume context, not by a concrete pile.
+    const srResumeId = optionalCardId(state.sr?.resume_event?.card);
+    const pendingId = optionalCardId(state.pending_event?.card) ?? delayedResumeId ?? srResumeId;
     if (pendingId != null && !(inventory[pendingId] || []).length) {
-      const owner = delayedResumeId != null
+      const owner = delayedResumeId != null || srResumeId != null
         ? state.card_owners?.[pendingId] || api.cardById[pendingId]?.faction
         : state.pending_event.owner || state.pending_event.faction ||
           state.card_owners?.[pendingId] || api.cardById[pendingId]?.faction;

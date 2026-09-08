@@ -17,6 +17,9 @@
 		<script defer src="play.js?v=1.0.1"></script>
 	</head>
 	<body class="bevel">
+		<div id="action-records" class="dialog" hidden role="dialog" aria-label="回合与行动记录">
+			<div class="dialog_header">回合与行动记录（只读）</div><button class="dialog_x" type="button" aria-label="关闭">×</button><div class="dialog_body"></div>
+		</div>
 		<div id="activation-popup" class="map-popup" hidden role="menu" aria-label="地区激活"></div>
 		<menu id="card-popup" class="card-popup" hidden role="menu" aria-label="卡牌动作"></menu>
 
@@ -55,6 +58,7 @@
 					<menu><li id="flag-supply-warnings">标记补给警告</li><li id="propose-rollback">提议回滚</li><li id="report-bug">反馈问题</li><li class="separator"></li><li id="show-ap-supply">显示协约国总体补给</li><li id="show-ap-br-supply">显示英国补给</li><li id="show-ap-be-supply">显示比利时补给</li><li id="show-ap-fr-supply">显示法国补给</li><li id="show-ap-us-supply">显示美国补给</li><li id="show-ap-it-supply">显示意大利补给</li><li class="separator"></li><li id="show-cp-supply">显示同盟国总体补给</li><li id="show-cp-ge-supply">显示德国补给</li><li id="show-cp-ah-supply">显示奥匈补给</li></menu>
 				</details>
 				<button id="piece-button" title="切换棋子与标记显示" aria-label="切换棋子与标记显示"><img src="/images/earth-america.svg" alt="" /></button>
+				<button id="show-action-records" title="回合与行动记录" aria-label="回合与行动记录">记录</button>
 			</div>
 		</header>
 

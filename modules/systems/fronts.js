@@ -126,7 +126,7 @@ function createFrontSystem(api) {
           return { east: 1, ge: 1, ah: 0.5 };
       if (pool === "ah")
           return { ah: 1, ge: 2, east: 2 };
-      return { br: 1, us: 1 };
+      return { br: 1, a: 1 };
   }
 
   function frontPaymentIncrement(rate) {
@@ -263,7 +263,7 @@ function createFrontSystem(api) {
       const rp = state.rp[faction] || {};
       const allocation = allocateEquivalent([
           { key: "br", rate: 1, amount: rp.br || 0 },
-          { key: "us", rate: 1, amount: rp.us || 0 },
+          { key: "a", rate: 1, amount: rp.a || 0 },
       ], maintenanceNeed, advanceNeed);
       if (!allocation)
           return null;
@@ -415,7 +415,7 @@ function createFrontSystem(api) {
       if (obligation.pool === "ne" && obligation.remaining > 0) {
           // The Turkish front has no separate NE pool.  Its printed
           // maintenance is paid automatically from BR first, then A/US.
-          for (const key of ["br", "us"]) {
+          for (const key of ["br", "a"]) {
               if (obligation.remaining <= 1e-9) break;
               const paid = Math.min(
                   state.rp[obligation.faction][key] || 0,
@@ -763,7 +763,7 @@ function createFrontSystem(api) {
               : used > 0 && allenby?.extra_front_step_rp?.costs
                   ? Object.fromEntries(Object.entries(allenby.extra_front_step_rp.costs)
                       .map(([nation, amount]) => [nation, 1 / amount]))
-                  : { br: 1, us: 1 },
+                  : { br: 1, a: 1 },
           creditKey: track === "turkish" ? `turkish_front_steps:${state.turn}` : null,
           mo: mo?.id || null,
           allow_unit_payment: Boolean(used > 0 && hindenburg?.allow_unit_payment),

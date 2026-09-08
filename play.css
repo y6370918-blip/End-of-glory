@@ -2071,3 +2071,24 @@ body footer#status {
 	width: 100%;
 	border: 1px solid #2c261e;
 }
+
+#action-records select { margin: 12px 0; min-height: 44px; max-width: 100%; }
+@media (max-width: 800px) {
+	.dialog, dialog.modal-dialog, dialog.detail-dialog {
+		position: fixed !important;
+		inset: 64px 8px 12px !important;
+		width: auto !important;
+		min-width: 0 !important;
+		max-width: none !important;
+		height: auto !important;
+		max-height: calc(100dvh - 76px) !important;
+		margin: 0;
+		overflow: auto;
+		overscroll-behavior: contain;
+		touch-action: pan-y;
+		box-sizing: border-box;
+	}
+	.dialog_body { max-height: calc(100dvh - 140px); overflow: auto; overscroll-behavior: contain; }
+	.dialog button, dialog button { min-height: 44px; }
+	dialog textarea { box-sizing: border-box; max-width: 100%; }
+}

@@ -1,6 +1,36 @@
 "use strict";
 
 function createNavalSystem(api) {
+  function navalBlockedPorts(state) {
+    const position = Number(state.naval?.track) || 0;
+    return [
+      ...(position <= -1 ? ["calais", "boulogne"] : []),
+      ...(position <= -3 ? ["dieppe"] : []),
+      ...(position <= -5 ? ["le_havre"] : []),
+    ];
+  }
+
+  function navalConnectionAllowed(state, from, to, faction) {
+    if (faction !== api.AP) return true;
+    const ports = navalBlockedPorts(state);
+    return !((from === "dover" && ports.includes(to)) ||
+      (to === "dover" && ports.includes(from)) ||
+      (from === "brighton" && ports.includes(to)) ||
+      (to === "brighton" && ports.includes(from)));
+  }
+  function navalTrackSlot(state, track = state.naval.track) {
+    const board = api.data.ui.tracks.naval;
+    const position = Math.max(board.min, Math.min(board.max, Number(track) || 0));
+    const index = position - board.min;
+    return {
+      position,
+      value: board.printed_values[index],
+      us_rp: board.us_rp[index],
+      br_loss: board.br_rp_loss[index],
+      ge_loss: board.ge_rp_loss[index],
+    };
+  }
+
   function navalEventLegal(state, card, eventLegal) {
     return Boolean(card && card.color === "blue" && eventLegal(state, card));
   }
@@ -17,7 +47,9 @@ function createNavalSystem(api) {
 
   function fleetPoints(state, card, track) {
     if (!card) return 0;
-    return api.cardValues(state, card).ops + Math.abs(track) +
+    const value = navalTrackSlot(state, track).value;
+    const bonus = card.faction === api.CP ? Math.max(0, value) : Math.max(0, -value);
+    return api.cardValues(state, card).ops + bonus +
       (card.color === "blue" ? 1 : 0) + navalUseBonus(card);
   }
 
@@ -28,6 +60,7 @@ function createNavalSystem(api) {
       state.state = "naval_choice";
       api.setActiveFaction(state, api.CP);
       state.naval.selections = {};
+      state.naval.points = { ap: 0, cp: 0 };
       state.naval.event_queue = [];
       state.naval.resolving = false;
       state.naval.pending_fleet_cards = {};
@@ -93,7 +126,9 @@ function createNavalSystem(api) {
           state.naval.resolving = false;
           const difference = state.naval.pending_difference || 0;
           const previousTrack = state.naval.track;
-          state.naval.track = Math.max(-9, Math.min(9, previousTrack + Math.sign(difference)));
+          const board = api.data.ui.tracks.naval;
+          // CP pushes toward red; AP pushes toward black. Indices are not printed values.
+          state.naval.track = Math.max(board.min, Math.min(board.max, previousTrack - Math.sign(difference)));
           if (state.naval.track !== previousTrack)
               api.log(state, `海军轨：${previousTrack} → ${state.naval.track}。`);
           else if (difference)
@@ -222,10 +257,9 @@ function createNavalSystem(api) {
           faction: side,
           card: state.naval.selections[side].card,
       }));
+      api.log(state, `海军点数 CP ${state.naval.points[api.CP]} / AP ${state.naval.points[api.AP]}。`);
       if (difference === 0)
           api.log(state, "海军平局，U艇轨不移动。");
-      else
-          api.log(state, `海军点数 CP ${state.naval.points[api.CP]} / AP ${state.naval.points[api.AP]}。`);
       continueNavalEvents(state);
   }
 return Object.freeze({
@@ -235,6 +269,9 @@ return Object.freeze({
     navalChoice,
     navalDisposition,
     navalEventLegal,
+    navalTrackSlot,
+    navalBlockedPorts,
+    navalConnectionAllowed,
     startNaval,
     startNavalDisposition,
   });

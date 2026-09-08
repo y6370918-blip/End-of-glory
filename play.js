@@ -323,6 +323,7 @@ function onSpace(space, event) {
 function renderControls() {
 	const layer = byId("control-layer")
 	const activeKeys = new Set()
+	const destroyed = new Set(view.destroyed_forts || [])
 	for (const space of eog_data.spaces) {
 		if (space.ui?.hidden) continue
 		const faction = view.control?.[space.id]
@@ -343,6 +344,13 @@ function renderControls() {
 		marker.title = `${space.name}：${image.alt}`
 		marker.setAttribute("aria-label", marker.title)
 		Object.assign(marker.style, mapPosition(space))
+		// The destroyed-fort counter sits above the control layer at the same
+		// center. Offset occupation control so both symbols remain readable.
+		if (space.fort && destroyed.has(space.id)) {
+			const offset = counterMetrics.standardMarker * 0.65
+			marker.style.left = `${sourceToDisplay(space.ui.x) + offset}px`
+			marker.style.top = `${sourceToDisplay(space.ui.y) + offset}px`
+		}
 		if (marker.parentNode !== layer) layer.append(marker)
 	}
 	for (const [key, marker] of controlElements)
@@ -362,7 +370,7 @@ const rpTrackMarkers = [
 		id: "a",
 		label: "A:RP",
 		image: trackMarkerImages.rp_a,
-		value: () => view.rp?.ap?.a ?? (view.events?.entry_us ? 0 : view.rp?.ap?.us || 0)
+        value: () => view.rp?.ap?.a || 0
 	},
 	{ id: "ah", label: "AH:RP", image: trackMarkerImages.rp_ah, value: () => view.rp?.cp?.ah || 0 },
 	{
@@ -469,7 +477,7 @@ function generalTrackFrames() {
 			id: "entry-armistice",
 			label: "停战协议",
 			image: trackMarkerImages.entry_armistice,
-			value: view.entry_tracks?.armistice || 0
+			value: 40 + (view.entry_tracks?.armistice || 0)
 		},
 		...rpTrackMarkers.map((definition) => ({ ...definition, value: definition.value(), rp: true }))
 	]
@@ -495,7 +503,7 @@ function generalTrackFrames() {
 			key: `track:general:${entry.id}`,
 			className: `marker image-marker track-marker${entry.rp ? " rp-track-marker" : ""}`,
 			label: entry.label,
-			title: `${entry.label}：${entry.position.value}`,
+			title: `${entry.label}：${entry.id === "entry-armistice" ? entry.value : entry.position.value}`,
 			image: entry.image,
 			value: entry.position.value,
 			x: entry.position.x + offset * step,
@@ -1538,7 +1546,7 @@ function renderOverviewInfo() {
 			? [infoStat("土耳其战线", view.fronts?.turkish || 0), infoStat("土耳其战线储存", view.front_storage?.turkish || 0)]
 			: []),
 		infoStat("U艇轨", view.naval?.track || 0), infoStat("美国参战", view.entry_tracks?.us || 0),
-		infoStat("停战协议", view.entry_tracks?.armistice || 0)
+		infoStat("停战协议阈值", 40 + (view.entry_tracks?.armistice || 0))
 	)
 	const cards = infoSection("卡牌", "info-summary-grid")
 	for (const faction of ["ap", "cp"])
@@ -1571,7 +1579,14 @@ function renderOverviewInfo() {
 	for (const entry of logEntries) recentLog.append(onLog(entry))
 	if (!recentLog.children.length) recentLog.textContent = "暂无记录。"
 	recent.append(recentLog)
-	detail.replaceChildren(state, war, mo, moHistory, resources, cards, events, recent)
+	const scoring = infoSection("若现在结束：暂计终局修正", "info-summary-grid")
+	const breakdown = view.victory_breakdown
+	if (breakdown) {
+		for (const row of breakdown.rows)
+			scoring.append(infoStat(row.label, `${row.amount > 0 ? "+" : ""}${row.amount}`))
+		scoring.append(infoStat("修正合计", breakdown.adjustment), infoStat("暂计最终VP（不是已入账VP）", breakdown.total))
+	}
+	detail.replaceChildren(state, scoring, war, mo, moHistory, resources, cards, events, recent)
 }
 
 function ensureCardTooltip() {
@@ -1796,6 +1811,7 @@ function locateUnitPools(faction) {
 
 function renderOpenDialogs() {
 	if (!byId("score").hidden) renderOverviewInfo()
+	if (!byId("action-records").hidden) renderActionRecords()
 	for (const faction of ["ap", "cp"]) {
 		if (!byId(`${faction}_card_dialog`).hidden) renderCardInfo(faction)
 		if (!byId(`${faction}_discard_dialog`).hidden) renderCardInfo(faction, true)
@@ -2230,18 +2246,62 @@ function review_rollback_accept() {
 	document.getElementById("review_rollback_dialog").close()
 }
 
+function renderActionRecords(selectedTurn) {
+	const body = byId("action-records").querySelector(".dialog_body")
+	const chosen = Number(selectedTurn || body.querySelector("select")?.value || view.turn)
+	const select = document.createElement("select")
+	select.setAttribute("aria-label", "查看回合")
+	const turns = [...new Set([view.turn, ...(view.action_history || []).map(entry => entry.turn)])].sort((a, b) => b - a)
+	for (const turn of turns) {
+		const option = document.createElement("option")
+		option.value = turn
+		option.textContent = `T${turn}${turn === view.turn ? " · 当前" : ""}`
+		select.append(option)
+	}
+	select.value = turns.includes(chosen) ? chosen : view.turn
+	select.addEventListener("change", () => renderActionRecords(select.value))
+	const list = document.createElement("div")
+	list.className = "info-list"
+	const names = { ops: "OP", event: "事件", sr: "SR", rp: "RP", one_op: "1 OP", pass: "跳过" }
+	const entries = (view.action_history || []).filter(entry => entry.turn === Number(select.value))
+		.slice().sort((a, b) => a.round - b.round || (a.faction === b.faction ? 0 : a.faction === "cp" ? -1 : 1))
+	for (const entry of entries) {
+		const card = eog_data.cards.find(card => card.id === entry.card)
+		list.append(infoStat(`行动轮 ${entry.round} · ${entry.faction === "cp" ? "CP" : "AP"}`,
+			`${names[entry.type] || entry.type}${card ? ` · ${card.title}` : ""}`))
+	}
+	if (!entries.length) list.textContent = "本回合尚无已记录行动；旧存档不补造历史。"
+	body.replaceChildren(select, list)
+}
+
+const reportErrors = []
+window.addEventListener("error", event => {
+	// Do not export arbitrary exception messages or stacks containing private data.
+	reportErrors.push({ type: "error", file: String(event.filename || "").split(/[/?#]/).filter(Boolean).pop(), line: event.lineno, column: event.colno })
+	if (reportErrors.length > 8) reportErrors.shift()
+})
+window.addEventListener("unhandledrejection", () => {
+	reportErrors.push({ type: "unhandledrejection" })
+	if (reportErrors.length > 8) reportErrors.shift()
+})
+
 function buildBugReport(note) {
 	return [
 		"End of Glory bug report",
 		`time=${new Date().toISOString()}`,
+		`game=${window.params?.game_id || "local"}`,
+		`viewport=${window.innerWidth}x${window.innerHeight}`,
+		`online=${window.navigator.onLine}`,
+		`visibility=${document.visibilityState}`,
+		`client_errors=${JSON.stringify(reportErrors)}`,
 		`role=${window.params?.role || "Observer"}`,
 		`state=${view.state}`,
 		`turn=${view.turn}`,
 		`action_round=${view.action_round}`,
 		`active=${view.active}`,
 		`note=${note}`,
-		`actions=${JSON.stringify(view.actions || {})}`,
-		`recent_log=${JSON.stringify((view.log || []).slice(-20))}`
+		`actions=${JSON.stringify(Object.fromEntries(Object.entries(view.actions || {}).map(([name, value]) => [name, Array.isArray(value) ? { count: value.length } : value])))}`,
+		"privacy=不含动作参数、日志、手牌、牌库、MO或随机种子；问题说明由用户自行填写。"
 	].join("\n")
 }
 
@@ -2621,6 +2681,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	setCounterStyle(localStorage.getItem(`${preferenceKey}/style`) || "bevel")
 	setMouseFocus(localStorage.getItem(`${preferenceKey}/mouse-focus`) === "1")
 	byId("show-score").addEventListener("click", () => showInfo("score"))
+	byId("show-action-records").addEventListener("click", () => {
+		byId("action-records").hidden = false
+		renderActionRecords()
+	})
 	byId("show-reinforcements").addEventListener("click", showReinforcements)
 	byId("show-ap-cards").addEventListener("click", () => showInfo("ap_cards"))
 	byId("show-cp-cards").addEventListener("click", () => showInfo("cp_cards"))

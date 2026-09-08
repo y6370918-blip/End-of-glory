@@ -7,6 +7,7 @@ function createSupplySystem(api) {
   });
 
   function portSupplyAllowed(state, faction, space) {
+    if (faction === api.CP || api.navalBlockedPorts(state).includes(space.id)) return false;
     const blockade = api.activeRule(state, "channel_blockade");
     return !(
       faction === blockade?.blocked_faction &&
@@ -118,7 +119,7 @@ function createSupplySystem(api) {
     const queue = sources.slice();
     while (queue.length) {
       const current = queue.shift();
-      for (const next of api.neighborsFor(current, "supply", faction)) {
+      for (const next of api.stateNeighborsFor(state, current, "supply", faction)) {
         if (seen.has(next) || !api.friendlySpace(state, next, faction)) continue;
         seen.add(next);
         queue.push(next);
@@ -157,7 +158,7 @@ function createSupplySystem(api) {
     const besieged = [...(state.besieged || [])].sort().join(",");
     const brokenSieges = [...(state.broken_sieges || [])].sort().join(",");
     const blockade = JSON.stringify(api.activeRule(state, "channel_blockade") || null);
-    return `${control}#${units}#${forts}#${besieged}#${brokenSieges}#${blockade}`;
+    return `${control}#${units}#${forts}#${besieged}#${brokenSieges}#${blockade}#${state.naval?.track}`;
   }
 
   function markSupplyDirty(state) {

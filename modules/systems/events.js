@@ -306,11 +306,12 @@ function createEventSystem(api) {
       const rule = api.cardSpecById[card?.id]?.entry_gap_vp_cost;
       if (!rule)
           return 0;
-      const track = Number(state.entry_tracks?.[rule.track]) || 0;
+      const track = (Number(state.entry_tracks?.[rule.track]) || 0) +
+          (rule.track === "us" ? api.navalTrackSlot(state).value : 0);
       const comparison = rule.compare === "combined_war_status"
           ? Number(state.war_status?.combined) || 0
           : 0;
-      const gap = Math.max(0, comparison - track);
+      const gap = Math.max(0, track - comparison);
       const divisor = Math.max(1, Number(rule.divisor) || 1);
       return rule.round === "ceil"
           ? Math.ceil(gap / divisor)
@@ -384,7 +385,8 @@ function createEventSystem(api) {
               }
           }
           else
-              state.entry_tracks[operation.track] = Math.max(0, (state.entry_tracks[operation.track] || 0) + operation.amount);
+              state.entry_tracks[operation.track] = Math.max(operation.track === "armistice" ? -40 : 0,
+                  (state.entry_tracks[operation.track] || 0) + operation.amount);
       }
       else if (operation.type === "cancel_event")
           delete state.events[operation.event];
@@ -1926,6 +1928,8 @@ function createEventSystem(api) {
           throw new Error("No pending event");
       if (state.active !== pending.owner)
           throw new Error("The responding player cannot cancel this event");
+      if (state.naval.resolving)
+          throw new Error("A revealed naval event cannot be returned to hand");
       if (eventHasFinished(state))
           throw new Error("A resolved event cannot be canceled");
       if (Number.isInteger(pending.next_unit_id_before))

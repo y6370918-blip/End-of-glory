@@ -78,6 +78,16 @@ function createReplacementSystem(api) {
           return;
       const incomeKey = `replacement_income:${state.turn}`;
       if (!state.usage_limits[incomeKey]) {
+          const naval = api.navalTrackSlot(state);
+          if (state.events.entry_us) {
+              state.rp.ap.us = (state.rp.ap.us || 0) + naval.us_rp;
+              api.log(state, `海军轨补员：+${naval.us_rp} US:RP。`);
+          }
+          const brLoss = Math.min(naval.br_loss, Math.max(0, (state.rp.ap.br || 0) - api.frontMoReservedRp(state, api.AP, "br")));
+          const geLoss = Math.min(naval.ge_loss, Math.max(0, (state.rp.cp.ge || 0) - api.frontMoReservedRp(state, api.CP, "ge")));
+          state.rp.ap.br -= brLoss;
+          state.rp.cp.ge -= geLoss;
+          if (brLoss || geLoss) api.log(state, `海军轨消耗：-${brLoss} BR:RP，-${geLoss} GE:RP。`);
           for (const [event, status] of Object.entries(state.events)) {
               const bonus = status?.replacement_bonus || api.data.events[event]?.replacement_bonus;
               if (!status || !bonus)
@@ -648,7 +658,7 @@ function createReplacementSystem(api) {
       if (unit.nation === "us")
           return ["us"];
       if (unit.nation === "be")
-          return ["us"];
+          return ["a"];
       if ([
           "component-089",
           "component-090",
@@ -656,7 +666,7 @@ function createReplacementSystem(api) {
           "component-100",
           "component-101",
       ].includes(unit.piece))
-          return ["br", "us"];
+          return ["br", "a"];
       return ["br"];
   }
 

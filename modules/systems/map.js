@@ -1,6 +1,7 @@
 "use strict";
 
-function createMapSystem({ data, ConnectionData, cardById }) {
+function createMapSystem(api) {
+  const { data, ConnectionData, cardById } = api;
   const spaceById = Object.fromEntries(
     data.spaces.map((space) => [space.id, space]),
   );
@@ -25,6 +26,14 @@ function createMapSystem({ data, ConnectionData, cardById }) {
   const neighborsFor = (space, mode, faction) =>
     ConnectionData.neighborsFor(index, space, mode, faction);
   const landNeighbors = (space) => ConnectionData.landNeighbors(index, space);
+  function stateConnectionAllows(state, from, to, mode, faction) {
+    return connectionAllows(from, to, mode, faction) &&
+      api.navalConnectionAllowed(state, from, to, faction);
+  }
+  function stateNeighborsFor(state, space, mode, faction) {
+    return neighborsFor(space, mode, faction).filter((next) =>
+      api.navalConnectionAllowed(state, space, next, faction));
+  }
 
   function theaterOf(space) {
     return ["it", "ah"].includes(spaceById[space]?.nation)
@@ -55,6 +64,8 @@ function createMapSystem({ data, ConnectionData, cardById }) {
     connectionRule,
     isLandConnection,
     connectionAllows,
+    stateConnectionAllows,
+    stateNeighborsFor,
     neighborsFor,
     landNeighbors,
     theaterOf,

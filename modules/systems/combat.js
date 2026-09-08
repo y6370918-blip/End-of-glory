@@ -10,7 +10,7 @@ function createCombatSystem(api) {
   }
 
   function explainSpace(state, destination, origins) {
-    if (![...origins].some((origin) => api.connectionAllows(origin, destination, "attack", state.active)))
+    if (![...origins].some((origin) => api.stateConnectionAllows(state, origin, destination, "attack", state.active)))
       return reason("connection_mode");
     if (!api.unitsAt(state, destination, api.other(state.active)).some(api.isCombatUnit) && !intactFort(state, destination))
       return reason("enemy_blocked", "目标地区没有可攻击的敌军或完整要塞");
@@ -1097,7 +1097,7 @@ function createCombatSystem(api) {
           intactFort(state, target) &&
           api.spaceById[target]?.faction !== unit.faction)
           return false;
-      return api.connectionAllows(unit.location, target, "attack", unit.faction);
+      return api.stateConnectionAllows(state, unit.location, target, "attack", unit.faction);
   }
 
   function defendedAttackTarget(state, target) {
@@ -1114,7 +1114,7 @@ function createCombatSystem(api) {
           return [];
       let targets = null;
       for (const unit of attackingUnits) {
-          const candidates = [...api.neighborsFor(unit.location, "attack", unit.faction)];
+          const candidates = [...api.stateNeighborsFor(state, unit.location, "attack", unit.faction)];
           if (state.besieged.includes(unit.location) &&
               intactFort(state, unit.location) &&
               api.spaceById[unit.location]?.faction !== unit.faction)
@@ -1154,7 +1154,7 @@ function createCombatSystem(api) {
               : api.unitIsActivated(state, unit, ["attack"]) ||
                   unit.attack_eligible));
       const combatUnits = eligible.filter((unit) => api.isCombatUnit(unit) &&
-          api.neighborsFor(unit.location, "attack", unit.faction)
+          api.stateNeighborsFor(state, unit.location, "attack", unit.faction)
               .some((target) => attacksTarget(state, unit, target) && defendedAttackTarget(state, target)));
       const hqs = eligible.filter((unit) => unit.type === "hq" &&
           combatUnits.some((combatUnit) => combatUnit.location === unit.location &&
@@ -1807,6 +1807,8 @@ function createCombatSystem(api) {
           .filter(Boolean);
       const combatUnits = attackingUnits.filter(api.isCombatUnit);
       const attackingHqs = attackingUnits.filter((unit) => unit.type === "hq");
+      if (state.turn <= 3 && new Set(combatUnits.map((unit) => unit.location)).size > 1)
+          throw new Error("T1–T3 attacks must be resolved from one space at a time");
       if (attackingUnits.length !== attackers.length ||
           !combatUnits.length ||
           attackingUnits.some((unit) => unit.faction !== state.active || !api.isAttackParticipant(unit)))
@@ -2267,6 +2269,7 @@ function createCombatSystem(api) {
 
   function hqRelocationSpaces(state, hq) {
       return api.supplySources(state, hq.faction, hq).filter((space) =>
+          (api.theaterOf(hq.location) !== "western" || api.theaterOf(space) !== "italian") &&
           api.spaceCanActivate(state, space) && api.stackLegal(state, space, hq) &&
           api.hqEndLegal(state, hq, space));
   }
@@ -2386,6 +2389,7 @@ function createCombatSystem(api) {
           throw new Error("HQ is no longer on the map");
       const index = state.units.findIndex((unit) => unit.id === hq.id);
       state.units.splice(index, 1);
+      hq.return_theater = api.theaterOf(hq.location);
       delete hq.location;
       hq.moved = false;
       hq.attacked = false;
@@ -2421,7 +2425,7 @@ function createCombatSystem(api) {
       const miracleResume = api.clone(combat?.counterattack_resume || null);
       const moCounterattack = combat?.mo_counterattack;
       const counterattackUnits = (moCounterattack?.units || []).filter((id) => state.units.some((unit) => unit.id === id && unit.location === moCounterattack.origin));
-      const counterattackTargets = api.neighborsFor(moCounterattack?.origin, "attack", api.AP).filter((space) => api.unitsAt(state, space, api.CP).length || api.spaceById[space]?.fort);
+      const counterattackTargets = api.stateNeighborsFor(state, moCounterattack?.origin, "attack", api.AP).filter((space) => api.unitsAt(state, space, api.CP).length || api.spaceById[space]?.fort);
       const counterattackResume = moCounterattack && counterattackUnits.length && counterattackTargets.length
           ? {
               active: combat.attacker,
@@ -2499,7 +2503,7 @@ function createCombatSystem(api) {
                   unit.location === origin &&
                   unit.faction === state.active &&
                   api.isCombatUnit(unit));
-              const targets = [origin, ...api.neighborsFor(origin, "attack", state.active)];
+              const targets = [origin, ...api.stateNeighborsFor(state, origin, "attack", state.active)];
               const hasTarget = targets.some((target) => attackers.every((unit) => attacksTarget(state, unit, target)) &&
                   (api.unitsAt(state, target, api.other(state.active)).some(api.isCombatUnit) ||
                       (intactFort(state, target) &&
@@ -2546,7 +2550,7 @@ function createCombatSystem(api) {
               api.isCombatUnit(unit) &&
               !movedAttackers.has(unit.id) &&
               (rules.damaged_advance || !unit.reduced) &&
-              api.connectionAllows(unit.location, combat.target, "advance", combat.attacker) &&
+              api.stateConnectionAllows(state, unit.location, combat.target, "advance", combat.attacker) &&
               api.spaceCanActivate(state, combat.target));
       const targetUnits = api.unitsAt(state, combat.target, combat.attacker).filter(api.isCombatUnit);
       const stackSlots = api.spaceById[combat.target]?.large_area
@@ -2581,7 +2585,7 @@ function createCombatSystem(api) {
           .map((id) => state.units.find((unit) => unit.id === id))
           .filter((unit) => unit?.type === "hq" &&
               unit.faction === combat.attacker &&
-              api.connectionAllows(unit.location, combat.target, "advance", combat.attacker) &&
+              api.stateConnectionAllows(state, unit.location, combat.target, "advance", combat.attacker) &&
               eligibleOrigins.get(unit.location)?.has(api.nationalityGroup(unit.nation)));
       return [...result, ...hqs].map((unit) => unit.id);
   }
@@ -2654,7 +2658,8 @@ function createCombatSystem(api) {
               return;
           state.state = "advance_select";
       }
-      else if (retreaters.length && attackMode === "movement") {
+      else if (retreaters.length && attackMode === "movement" &&
+          (combat.defense_loss > combat.attack_loss || rules.retreat_choice?.length)) {
           const margin = combat.defense_loss - combat.attack_loss;
           const retreatSteps = Math.min(2, Math.max(1, margin));
           const forcedChoice = Array.isArray(rules.retreat_choice) && rules.retreat_choice.length > 0;
@@ -2820,7 +2825,7 @@ function createCombatSystem(api) {
       const attackerOrigins = new Set((state.combat?.attackers || [])
           .map((id) => state.combat?.origins?.[id])
           .filter(Boolean));
-      let options = api.neighborsFor(space, "retreat", faction).filter((destination) => !visited.has(destination) &&
+      let options = api.stateNeighborsFor(state, space, "retreat", faction).filter((destination) => !visited.has(destination) &&
           !attackerOrigins.has(destination) &&
           api.spaceCanActivate(state, destination) &&
           !api.unitsAt(state, destination, api.other(faction)).length &&
@@ -3119,7 +3124,7 @@ function createCombatSystem(api) {
   function advanceHqCanFollowTo(state, pending, hq, destination) {
       if (!pending?.units?.includes(hq.id) && !pending?.follow_units?.includes(hq.id))
           return false;
-      if (!api.connectionAllows(hq.location, destination, "advance", hq.faction))
+      if (!api.stateConnectionAllows(state, hq.location, destination, "advance", hq.faction))
           return false;
       const origin = hq.location;
       try {
@@ -3153,7 +3158,7 @@ function createCombatSystem(api) {
       const possible = (pending.units || [])
           .map((id) => state.units.find((unit) => unit.id === id))
           .filter((unit) => unit && api.isCombatUnit(unit) &&
-              api.connectionAllows(unit.location, destination, "advance", unit.faction));
+              api.stateConnectionAllows(state, unit.location, destination, "advance", unit.faction));
       const armies = possible.filter((unit) => unit.type === "army");
       const corps = possible.filter((unit) => unit.type === "corps");
       const additions = Number.isFinite(remainingSlots)
@@ -3165,7 +3170,7 @@ function createCombatSystem(api) {
   function advancePieceCanEnter(state, pending, id, destination, follow = false) {
       const unit = state.units.find((candidate) => candidate.id === id);
       if (!unit || unit.faction !== state.combat?.attacker ||
-          !api.connectionAllows(unit.location, destination, "advance", unit.faction) ||
+          !api.stateConnectionAllows(state, unit.location, destination, "advance", unit.faction) ||
           !api.canOccupyByEarlyWarDepth(state, unit.faction, destination) ||
           !api.spaceCanActivate(state, destination) ||
           api.unitsAt(state, destination, api.other(unit.faction)).some(api.isCombatUnit))

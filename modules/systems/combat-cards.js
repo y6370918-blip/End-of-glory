@@ -656,7 +656,7 @@ function createCombatCardSystem(api) {
               !attackers.some((unit) => unit.nation === "ge") ||
               ![...new Set(attackers.map((unit) => unit.location))].some((origin) => state.units.some((unit) => unit.faction === api.AP &&
                   ["army", "corps"].includes(unit.type) &&
-                  api.connectionAllows(unit.location, origin, "attack", api.AP)))))
+                  api.stateConnectionAllows(state, unit.location, origin, "attack", api.AP)))))
           return false;
       if (effect.adjacent_hq_required) {
           if (owner !== state.combat_window.attacker)

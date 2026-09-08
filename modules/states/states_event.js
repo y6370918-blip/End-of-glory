@@ -848,7 +848,7 @@ function createEventStates(api) {
       if (
         state.active === pending.owner &&
         !pending.locked &&
-        !eventHasFinished(state) &&
+        !eventHasFinished(state) && !state.naval.resolving &&
         ![
           "scheduled_return",
           "ohl",

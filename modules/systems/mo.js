@@ -171,13 +171,8 @@ function createMoSystem(api) {
               }
           }
       }
-      const factions = [api.AP, api.CP].filter((faction) => byFaction[faction].length);
-      if (factions.length < 2)
-          return factions.flatMap((faction) => byFaction[faction]);
-      const chooserFirst = byFaction[api.AP].length < byFaction[api.CP].length
-          ? api.AP : byFaction[api.CP].length < byFaction[api.AP].length
-          ? api.CP : state.first_player;
-      return [api.other(chooserFirst), chooserFirst].flatMap((faction) => byFaction[faction]);
+      // September rules: CP resolves every AP obligation before AP resolves CP's.
+      return [...byFaction[api.AP], ...byFaction[api.CP]];
   }
 
   function moPenaltyAttackOptions(state, faction, excluded = [], excludedTargets = []) {

@@ -168,6 +168,15 @@ function createTurnSystem(api) {
 
   function enterFactionAction(state, faction) {
       api.setActiveFaction(state, faction);
+      // Defensive replacements, counterattacks and HQ relocation can spend
+      // units during the opponent's action. A new formal action renews the
+      // incoming side, not every temporary change of the active player.
+      for (const unit of state.units) {
+          if (unit.faction !== faction) continue;
+          unit.moved = false;
+          unit.attacked = false;
+          unit.attack_eligible = false;
+      }
       state.state = "action_card";
       state.activations = {};
       state.ops = null;
@@ -386,10 +395,15 @@ function createTurnSystem(api) {
       const usageKey = `entry_tracks:${state.turn}`;
       if (state.usage_limits[usageKey])
           return;
+      const oldArmistice = 40 + Number(state.entry_tracks.armistice || 0);
       for (const status of Object.values(state.events))
           for (const adjustment of status?.recurring_entry_tracks || [])
               if (!adjustment.unless_event || !state.events[adjustment.unless_event])
-                  state.entry_tracks[adjustment.track] = Math.max(0, (state.entry_tracks[adjustment.track] || 0) + adjustment.amount);
+                  state.entry_tracks[adjustment.track] = Math.max(adjustment.track === "armistice" ? -40 : 0,
+                      (state.entry_tracks[adjustment.track] || 0) + adjustment.amount);
+      const newArmistice = 40 + Number(state.entry_tracks.armistice || 0);
+      if (newArmistice !== oldArmistice)
+          api.log(state, `停战协议阈值：${oldArmistice} → ${newArmistice}（综合WS ${state.war_status.combined}）。`);
       state.usage_limits[usageKey] = 1;
   }
 
@@ -479,6 +493,7 @@ function createTurnSystem(api) {
           operation.restriction_scope === "generated_army_hq");
       return api.data.spaces
           .filter((space) => api.spaceCanActivate(state, space.id))
+          .filter((space) => hq.return_theater !== "western" || api.theaterOf(space.id) !== "italian")
           .filter((space) => !reinforcement?.rebuild_theater ||
           api.theaterOf(space.id) === reinforcement.rebuild_theater)
           .filter((space) => state.control[space.id] === hq.faction)
@@ -739,7 +754,7 @@ function createTurnSystem(api) {
       const blockade = api.activeRule(state, "channel_blockade");
       const jutland = api.activeRule(state, "jutland");
       if (blockade &&
-          blockade.turns.includes(state.turn) &&
+          state.turn >= 3 && state.turn <= 15 && state.turn % 3 === 0 &&
           !(jutland?.suppress_blockade_vp &&
               state.events[api.cardById[755].event]?.turn === state.turn))
           api.adjustVp(state, blockade.periodic_vp);
@@ -768,7 +783,7 @@ function createTurnSystem(api) {
           vp -= 1;
       if (controlledCount("ge", api.AP) >= 3)
           vp -= 1;
-      if (state.naval.track <= -2)
+      if (api.navalTrackSlot(state).value === 2)
           vp -= 1;
       return vp;
   }
@@ -795,30 +810,48 @@ function createTurnSystem(api) {
       return false;
   }
 
+  function recordCampaignVpMilestones(state) {
+      if (state.state === "game_over") return;
+      state.campaign_flags ||= {};
+      if (!state.campaign_flags.cp_army_near_paris && cpArmyNearParis(state))
+          state.campaign_flags.cp_army_near_paris = true;
+  }
+
   function checkVictory(state, options = {}) {
+      if (state.state === "game_over") return true;
+      recordCampaignVpMilestones(state);
       const armisticeThreshold = 40 + Number(state.entry_tracks?.armistice || 0);
-      if ((state.war_status?.combined || 0) >= armisticeThreshold)
-          return gameOver(state, state.vp > 10 ? api.CP : api.AP,
-              `停战协议：VP ${state.vp}`);
-      if (options.armisticeOnly || state.turn < 15)
+      const armistice = (state.war_status?.combined || 0) >= armisticeThreshold;
+      if (!armistice && (options.armisticeOnly || state.turn < 15))
           return false;
-      let endVp = Object.entries(state.events).reduce((sum, [event, status]) => sum + (status?.end_vp || api.data.events[event]?.end_vp || 0), 0);
+      const { adjustment: endVp, total: finalVp } = victoryBreakdown(state);
+      const winner = finalVp > 10 ? api.CP : api.AP;
+      api.log(state, `终局计分：基础 VP ${state.vp}，终局修正 ${endVp >= 0 ? "+" : ""}${endVp}，最终 VP ${finalVp}。`);
+      return gameOver(state, winner, `${armistice ? `停战协议（综合WS ${state.war_status.combined} / 阈值 ${armisticeThreshold}）` : "第15回合终局"}：VP ${finalVp}`);
+  }
+
+  function victoryBreakdown(state) {
+      const rows = [];
+      const add = (label, amount) => rows.push({ label, amount });
+      for (const [event, status] of Object.entries(state.events)) {
+          const amount = status?.end_vp || api.data.events[event]?.end_vp || 0;
+          if (amount) add(api.data.cards.find(card => card.event === event)?.title || "事件终局修正", amount);
+      }
       const burgfrieden = api.activeRule(state, "burgfrieden");
       if (burgfrieden && state.events[api.cardById[burgfrieden.canceled_by_card].event])
-          endVp += burgfrieden.end_vp_after_cancel;
-      for (const marker of state.markers.salients || [])
-          if (state.control[marker.space] === api.CP)
-              endVp += 1;
+          add("城堡和平", burgfrieden.end_vp_after_cancel);
+      add("CP仍控制的突出部", (state.markers.salients || []).filter(marker => state.control[marker.space] === api.CP).length);
       const hindenburg = api.activeRule(state, "hindenburg_line");
-      endVp +=
+      add("兴登堡防线",
           (state.markers.hindenburg || []).length *
-              (hindenburg?.end_vp_per_marker || 0);
-      endVp += finalTerritoryVp(state);
-      if (cpArmyNearParis(state)) endVp += 1;
-      if (state.campaign_flags?.paris_attacked) endVp += 1;
-      const finalVp = state.vp + endVp;
-      const winner = finalVp > 10 ? api.CP : api.AP;
-      return gameOver(state, winner, `第15回合终局：VP ${finalVp}`);
+              (hindenburg?.end_vp_per_marker || 0));
+      const navy = api.navalTrackSlot(state).value === 2 ? -1 : 0;
+      add("领土控制合计", finalTerritoryVp(state) - navy);
+      add("海军黑2", navy);
+      add("CP LCU曾到达巴黎两格内", state.campaign_flags?.cp_army_near_paris ? 1 : 0);
+      add("CP曾进攻巴黎", state.campaign_flags?.paris_attacked ? 1 : 0);
+      const adjustment = rows.reduce((sum, row) => sum + row.amount, 0);
+      return { base: state.vp, rows, adjustment, total: state.vp + adjustment };
   }
 
   function gameOver(state, winner, reason) {
@@ -852,6 +885,7 @@ return Object.freeze({
     continueTurnEnd,
     discardRetainedCombatCards,
     drawCards,
+    enterFactionAction,
     finalTerritoryVp,
     finishAefReplacements,
     finishAttritionPhases,
@@ -869,11 +903,13 @@ return Object.freeze({
     resolveAttrition,
     resolveFactionAttrition,
     resolvePendingCommitmentShuffle,
+    recordCampaignVpMilestones,
     setupDeck,
     selectOpeningCard,
     skipAugustGuns,
     startActionRound,
     voluntaryCleanupOptions,
+    victoryBreakdown,
   });
 }
 

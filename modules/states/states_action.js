@@ -117,12 +117,12 @@ function createActionStates(api) {
           builder.addAll("card_sr", state.hands[state.active]);
         if (state.last_action_use?.[state.active] !== "rp")
           builder.addAll("card_rp", state.hands[state.active]);
-        builder.addAll(
-          "card_event",
-          state.hands[state.active].filter(
+        for (const id of state.hands[state.active].filter(
             (id) => !api.cardById[id]?.combat_card && api.eventLegal(state, api.cardById[id]),
-          ),
-        );
+          )) {
+          const cost = api.entryGapVpCost(state, api.cardById[id]);
+          builder.add("card_event", id, cost ? `事件（+${cost} VP）` : "事件");
+        }
       },
       card_ops: (state, id) => api.cardUse(state, id, "ops"),
       card_sr: (state, id) => api.cardUse(state, id, "sr"),

@@ -35,7 +35,7 @@ function createOperationsSystem(api) {
     if (!api.spaceCanActivate(state, destination)) return reason("theater_inactive", null, "important");
     if (action === "move") {
       const movement = movementContext(state);
-      if (![...origins].some((origin) => api.connectionAllows(origin, destination, "move", faction)))
+      if (![...origins].some((origin) => api.stateConnectionAllows(state, origin, destination, "move", faction)))
         return reason("connection_mode");
       if (!canOccupyByEarlyWarDepth(state, faction, destination))
         return reason("early_occupation_depth", "超出占领纵深", "important");
@@ -75,7 +75,7 @@ function createOperationsSystem(api) {
       return reason("rule_forbidden", "目的地不在该单位的合法补给或运输网络中");
     }
     if (action === "retreat_destination") {
-      if (![...origins].some((origin) => api.connectionAllows(origin, destination, "retreat", faction)))
+      if (![...origins].some((origin) => api.stateConnectionAllows(state, origin, destination, "retreat", faction)))
         return reason("connection_mode");
       if (api.unitsAt(state, destination, api.other(faction)).length)
         return reason("enemy_blocked");
@@ -386,7 +386,7 @@ function createOperationsSystem(api) {
           state.markers.somme?.space &&
           api.cardSpecById[state.markers.somme.source_card]?.combat
               ?.ignore_nationality_at_marker &&
-          api.connectionAllows(spaceId, state.markers.somme.space, "attack", api.AP);
+          api.stateConnectionAllows(state, spaceId, state.markers.somme.space, "attack", api.AP);
       const ignoresNationality = Object.entries(state.events).some(([event, status]) => {
           if (status?.faction !== state.active)
               return false;
@@ -640,10 +640,11 @@ function createOperationsSystem(api) {
       const italyOffset = italy && state.commitment[state.active] === "total"
           ? (italy.total_war_free_ops_offset ?? italy.free_ops_offset)
           : italy?.free_ops_offset;
-      // These modifiers belong to OP granted by the card's event (including
-      // 649/650 and Trentino), never to spending the card for ordinary OP.
-      const opsEffect = options.event
-          ? api.clone(api.cardSpecById[card?.id]?.ops || null)
+      // Ordinary OP inherits modifiers only when the printed card explicitly
+      // allows it. Event-only restrictions such as Trentino remain separate.
+      const spec = api.cardSpecById[card?.id];
+      const opsEffect = !oneOp && (options.event || spec?.ops_on_play)
+          ? api.clone(spec?.ops || null)
           : null;
       state.ops = {
           card: card?.id || null,
@@ -719,8 +720,7 @@ function createOperationsSystem(api) {
           return;
       }
       if (returnAfterForced === "ap_action") {
-          api.setActiveFaction(state, api.AP);
-          state.state = "action_card";
+          api.enterFactionAction(state, api.AP);
           return;
       }
       if (returnAfterForced === "mo_penalty") {
@@ -763,7 +763,7 @@ function createOperationsSystem(api) {
                   (options.requireSupply && combatUnits.some((unit) =>
                       !unit.supplied && !unit.limited_supply && !unit.fort_limited_supply)))
                   return false;
-              return api.neighborsFor(space.id, "attack", faction).some((target) =>
+              return api.stateNeighborsFor(state, space.id, "attack", faction).some((target) =>
                   combatUnits.every((unit) => api.attacksTarget(state, unit, target)) &&
                   (api.unitsAt(state, target, api.other(faction)).some(api.isCombatUnit) ||
                       (api.intactFort(state, target) && api.spaceById[target]?.faction !== faction)));
@@ -1130,7 +1130,7 @@ function createOperationsSystem(api) {
       while (queue.length) {
           const current = queue.shift();
           const depth = depths.get(current);
-          for (const next of api.neighborsFor(current, "move", faction)) {
+          for (const next of api.stateNeighborsFor(state, current, "move", faction)) {
               if (depths.has(next) || !api.spaceCanActivate(state, next))
                   continue;
               depths.set(next, depth + 1);
@@ -1229,7 +1229,7 @@ function createOperationsSystem(api) {
               api.spaceById[current]?.faction === api.other(unit.faction);
           if (currentFort)
               continue;
-          for (const next of api.neighborsFor(current, "move", unit.faction)) {
+          for (const next of api.stateNeighborsFor(state, current, "move", unit.faction)) {
               if (seen.has(next))
                   continue;
               if (!api.spaceCanActivate(state, next))
@@ -1296,7 +1296,7 @@ function createOperationsSystem(api) {
               api.spaceById[current]?.faction === api.other(unit.faction);
           if (currentFort)
               continue;
-          for (const next of api.neighborsFor(current, "move", unit.faction)) {
+          for (const next of api.stateNeighborsFor(state, current, "move", unit.faction)) {
               if (!api.spaceCanActivate(state, next))
                   continue;
               if (api.unitsAt(state, next, api.other(unit.faction)).some(api.isCombatUnit))
@@ -1358,7 +1358,7 @@ function createOperationsSystem(api) {
               throw new Error("A unit leaving an isolated fort must stop unless it regains supply");
           if (!api.MapRules.connectionBetween(current, next))
               throw new Error("Movement path is not connected");
-          if (!api.connectionAllows(current, next, "move", unit.faction))
+          if (!api.stateConnectionAllows(state, current, next, "move", unit.faction))
               throw new Error("This faction cannot use the connection");
           if (!canOccupyByEarlyWarDepth(state, unit.faction, next, occupationDepthBySpace))
               throw new Error("Movement exceeds the occupation depth");
@@ -1789,7 +1789,7 @@ function createOperationsSystem(api) {
       const current = activeUnits[0]?.location;
       if (!api.MapRules.connectionBetween(current, requested))
           throw new Error("Movement must be executed one adjacent space at a time");
-      if (!api.connectionAllows(current, requested, "move", unit.faction))
+      if (!api.stateConnectionAllows(state, current, requested, "move", unit.faction))
           throw new Error("This faction cannot use the connection");
       if (!movementStepDestinations(state).includes(requested))
           throw new Error("Illegal movement step");
@@ -1896,7 +1896,7 @@ function createOperationsSystem(api) {
       const queue = [unit.location];
       while (queue.length) {
           const current = queue.shift();
-          for (const next of api.neighborsFor(current, "sr", unit.faction)) {
+          for (const next of api.stateNeighborsFor(state, current, "sr", unit.faction)) {
               if (seen.has(next) ||
                   !api.spaceCanActivate(state, next) ||
                   !api.friendlySpace(state, next, unit.faction))
@@ -2108,7 +2108,7 @@ function createOperationsSystem(api) {
       if (normalCost > state.ops.remaining)
           throw new Error("Insufficient OP");
       api.snapshot(state, "激活");
-      state.ops.italian_bonus = Math.max(0, italianBonus - bonusSpent);
+      state.ops.italian_bonus = Math.max(0, (Number(state.ops.italian_bonus) || 0) - bonusSpent);
       state.ops.remaining -= normalCost;
       if (api.spaceById[space]?.large_area) {
           const regions = ensureRegionActivations(state);

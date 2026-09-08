@@ -36,7 +36,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -63,7 +63,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -90,7 +90,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -117,7 +117,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -144,7 +144,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "white",
 			"combat_card": false,
@@ -171,7 +171,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "white",
 			"combat_card": false,
@@ -198,7 +198,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -225,7 +225,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -252,7 +252,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -279,7 +279,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -306,7 +306,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -333,7 +333,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "white",
 			"combat_card": false,
@@ -360,7 +360,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -387,7 +387,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -414,7 +414,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -441,7 +441,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -468,7 +468,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -495,7 +495,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -522,7 +522,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -549,7 +549,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -576,7 +576,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -603,7 +603,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -630,7 +630,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -657,7 +657,7 @@ const data = {
 				"br": 5,
 				"fr": 5,
 				"it": 4,
-				"us": 3
+				"a": 3
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -684,7 +684,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -711,7 +711,7 @@ const data = {
 				"br": 5,
 				"fr": 5,
 				"it": 4,
-				"us": 3
+				"a": 3
 			},
 			"color": "white",
 			"combat_card": false,
@@ -738,7 +738,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -765,7 +765,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -792,7 +792,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -819,7 +819,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -846,7 +846,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -873,7 +873,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -900,7 +900,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "red",
 			"combat_card": true,
@@ -927,7 +927,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -954,7 +954,7 @@ const data = {
 				"br": 5,
 				"fr": 5,
 				"it": 4,
-				"us": 3
+				"a": 3
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -981,7 +981,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1008,7 +1008,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -1035,7 +1035,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1062,7 +1062,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1089,7 +1089,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -1116,7 +1116,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1143,7 +1143,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": false,
@@ -1170,7 +1170,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1197,7 +1197,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -1224,7 +1224,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1251,7 +1251,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1278,7 +1278,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -1305,7 +1305,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1332,7 +1332,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1359,7 +1359,7 @@ const data = {
 				"br": 5,
 				"fr": 5,
 				"it": 4,
-				"us": 3
+				"a": 3
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1386,7 +1386,7 @@ const data = {
 				"br": 5,
 				"fr": 5,
 				"it": 4,
-				"us": 3
+				"a": 3
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1413,7 +1413,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1440,7 +1440,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1467,7 +1467,7 @@ const data = {
 				"br": 4,
 				"fr": 4,
 				"it": 3,
-				"us": 2
+				"a": 2
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -1494,7 +1494,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "red",
 			"combat_card": true,
@@ -1521,7 +1521,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -1548,7 +1548,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "blue",
 			"combat_card": false,
@@ -1575,7 +1575,7 @@ const data = {
 				"br": 2,
 				"fr": 2,
 				"it": 1,
-				"us": 1
+				"a": 1
 			},
 			"color": "yellow",
 			"combat_card": false,
@@ -1602,7 +1602,7 @@ const data = {
 				"br": 3,
 				"fr": 3,
 				"it": 2,
-				"us": 1
+				"a": 1
 			},
 			"color": "white",
 			"combat_card": false,
@@ -3572,9 +3572,11 @@ const data = {
 					"blocked_faction": "cp",
 					"periodic_vp": -1,
 					"turns": [
-						4,
-						8,
-						12
+						3,
+						6,
+						9,
+						12,
+						15
 					]
 				}
 			],
@@ -5793,7 +5795,7 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "美国参战轨低于综合战争状态时，AP先支付差值一半向上取整的VP。随后-1 VP，增援1个美国新兵SCU和潘兴HQ。每回合补员阶段生成3个美国SCU，共9个；T9起每枚可选择进入预备区或合法AP港口。"
+			"source_text": "美国参战轨高于综合战争状态时，AP先支付差值一半向上取整的VP；综合战争状态达到或超过美国参战轨时不支付差额VP。随后-1 VP，增援1个美国新兵SCU和潘兴HQ。每回合补员阶段生成3个美国SCU，共9个；T9起每枚可选择进入预备区或合法AP港口。"
 		},
 		"647": {
 			"card_id": 647,
@@ -5951,7 +5953,8 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "需要美国远征军已事件。美国MO池加入1枚“本次进攻获胜，奖励1 US RP”，以后每回合美国MO固定抽1枚。增援3个美国新兵LCU。仅使用本牌事件给予的OP发起进攻时右移一列；有美国战斗单位参战时额外忽略战壕。作为普通OP打出时不获得上述战斗加成。"
+			"ops_on_play": true,
+			"source_text": "需要美国远征军已事件。美国MO池加入1枚“本次进攻获胜，奖励1 US RP”，以后每回合美国MO固定抽1枚。增援3个美国新兵LCU。将本牌作为事件或行动点数发起的进攻，AP右移一列；有美国战斗单位参战时额外忽略战壕。"
 		},
 		"650": {
 			"card_id": 650,
@@ -6011,7 +6014,8 @@ const data = {
 			"duration": "instant",
 			"cleanup": null,
 			"disposition": "remove",
-			"source_text": "需要“美国远征军”。在美国MO池加入“一场美国防御胜利，且可在战斗后立刻令此堆叠进攻”；每回合仅抽取一个美国MO。\n增援：3个美国新兵LCU。仅使用本牌事件给予的OP发起进攻时，AP右移一列；若有美国单位参与，额外取消战壕修正。作为普通OP打出时不获得上述战斗加成。"
+			"ops_on_play": true,
+			"source_text": "需要“美国远征军”。在美国MO池加入“一场美国防御胜利，且可在战斗后立刻令此堆叠进攻”；每回合仅抽取一个美国MO。\n增援：3个美国新兵LCU。将本牌作为事件或行动点数发起的进攻，AP右移一列；若有美国单位参与，额外取消战壕修正。"
 		},
 		"651": {
 			"card_id": 651,
@@ -8471,6 +8475,10 @@ const data = {
 				}
 			],
 			"combat": {
+				"required_attacker_faction": "ap",
+				"attacker_nations_any": [
+					"fr"
+				],
 				"french_attack_column": -1,
 				"forced_french_attacks_after": 2,
 				"forced_attack_loss_adjust": -1,
@@ -12047,7 +12055,7 @@ const data = {
 			"name": "Metz",
 			"nation": "ge",
 			"faction": "cp",
-			"terrain": "clear",
+			"terrain": "forest",
 			"fort": 3,
 			"supply": false,
 			"port": false,
@@ -12183,7 +12191,7 @@ const data = {
 			"name": "Strasbourg",
 			"nation": "ge",
 			"faction": "cp",
-			"terrain": "clear",
+			"terrain": "forest",
 			"fort": 3,
 			"supply": false,
 			"port": false,
@@ -15495,7 +15503,7 @@ const data = {
 			"name": "Arlon",
 			"nation": "be",
 			"faction": "ap",
-			"terrain": "clear",
+			"terrain": "forest",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -15705,7 +15713,7 @@ const data = {
 			"name": "Peronne",
 			"nation": "fr",
 			"faction": "ap",
-			"terrain": "clear",
+			"terrain": "swamp",
 			"supply": false,
 			"port": false,
 			"ui": {
@@ -35249,84 +35257,89 @@ const data = {
 				]
 			},
 			"naval": {
-				"min": -9,
-				"max": 9,
+				"min": -5,
+				"max": 3,
+				"initial": 1,
+				"printed_values": [
+					-2,
+					-2,
+					-2,
+					-1,
+					-1,
+					0,
+					1,
+					2,
+					2
+				],
+				"us_rp": [
+					1,
+					2,
+					2.5,
+					3,
+					3.5,
+					4,
+					5,
+					6,
+					7
+				],
+				"br_rp_loss": [
+					0,
+					1,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				],
+				"ge_rp_loss": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					1,
+					2
+				],
 				"slots": [
 					[
-						855,
-						650
+						498,
+						879
 					],
 					[
-						900,
-						610
+						670,
+						734
 					],
 					[
-						945,
-						570
+						873,
+						635
 					],
 					[
-						990,
-						530
+						1071,
+						507
 					],
 					[
-						1035,
-						490
+						1228,
+						346
 					],
 					[
-						1080,
-						450
+						1436,
+						245
 					],
 					[
-						1125,
-						410
+						1655,
+						221
 					],
 					[
-						1170,
-						370
+						1861,
+						168
 					],
 					[
-						1215,
-						330
-					],
-					[
-						1485,
-						256
-					],
-					[
-						1370,
-						225
-					],
-					[
-						1435,
-						205
-					],
-					[
-						1500,
-						180
-					],
-					[
-						1565,
-						155
-					],
-					[
-						1630,
-						130
-					],
-					[
-						1695,
-						105
-					],
-					[
-						1760,
-						80
-					],
-					[
-						1825,
-						55
-					],
-					[
-						1890,
-						30
+						2064,
+						151
 					]
 				]
 			},
