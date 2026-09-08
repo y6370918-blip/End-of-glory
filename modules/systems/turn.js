@@ -216,6 +216,13 @@ function createTurnSystem(api) {
       // A unilateral undo is local to one player's current action.  Crossing
       // this boundary requires the existing mutual rollback workflow.
       api.clearUndo(state);
+      if (state.active === api.AP && state.markers.somme) {
+          if (state.control[state.markers.somme.space] === api.AP) {
+              api.adjustVp(state, -1);
+              api.log(state, "索姆河战役：行动轮结束时AP控制目标，-1 VP。");
+          }
+          delete state.markers.somme;
+      }
       if (state.active === api.CP) {
           if (state.action_round >= (api.data.title.action_rounds || 6)) {
               resolveFactionAttrition(state, api.CP);
@@ -231,9 +238,11 @@ function createTurnSystem(api) {
       api.cleanupEmptyFortifications(state);
       if (state.action_round < (api.data.title.action_rounds || 6))
           startActionRound(state);
-      else if (checkVictory(state))
-          return;
       else {
+          // T15 ends at the action-phase boundary, before the usual draw-phase
+          // annual scoring entry. Pay the final blockade before victory here.
+          if (state.turn >= 15) applyEndTurnVp(state);
+          if (checkVictory(state)) return;
           const snapshot = api.compactHistoryState(state);
           snapshot.state = "rollback_turn_end";
           api.checkpoint(state, "pre_replacement", null, snapshot);
@@ -270,11 +279,6 @@ function createTurnSystem(api) {
   }
 
   function beginAttrition(state) {
-      if (state.markers.somme) {
-          if (state.control[state.markers.somme.space] === api.AP)
-              api.adjustVp(state, -1);
-          delete state.markers.somme;
-      }
       const ohl = api.activeRule(state, "ohl");
       const usageKey = `ohl:${state.turn}`;
       const paymentCards = api.ohlDiscardCandidates(state);
@@ -751,13 +755,18 @@ function createTurnSystem(api) {
   }
 
   function applyEndTurnVp(state) {
+      const key = `annual_vp:${state.turn}`;
+      if (state.usage_limits[key]) return;
       const blockade = api.activeRule(state, "channel_blockade");
       const jutland = api.activeRule(state, "jutland");
       if (blockade &&
           state.turn >= 3 && state.turn <= 15 && state.turn % 3 === 0 &&
           !(jutland?.suppress_blockade_vp &&
-              state.events[api.cardById[755].event]?.turn === state.turn))
+              state.events[api.cardById[755].event]?.turn === state.turn)) {
           api.adjustVp(state, blockade.periodic_vp);
+          api.log(state, `皇家海军封锁：T${state.turn}年度结算，${blockade.periodic_vp} VP。`);
+      }
+      state.usage_limits[key] = 1;
   }
 
   function finalTerritoryVp(state) {

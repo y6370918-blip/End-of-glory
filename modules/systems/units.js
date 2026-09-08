@@ -108,8 +108,12 @@ function createUnitSystem(context) {
     }
   }
 
-  function captureSpace(state, space, faction) {
+  function captureSpace(state, space, faction, { scoreVp = true } = {}) {
     if (state.control[space] !== faction) {
+      if (scoreVp && spaceById[space]?.vp && [AP, CP].includes(faction)) {
+        const change = adjustVp(state, faction === CP ? 1 : -1);
+        context.log(state, `[[space:${space}]]控制权转为${faction.toUpperCase()}：${change >= 0 ? "+" : ""}${change} VP。`);
+      }
       delete state.fortifications[space];
       // POG capture handling: a captured level-2 trench survives as a
       // level-1 trench for the new controller; a level-1 trench is removed.

@@ -1194,7 +1194,8 @@ function ensureState(state) {
         .map((unit) => unit.faction),
     );
     if (occupiers.length === 1 && state.control[space] !== occupiers[0]) {
-      captureSpace(state, space, occupiers[0]);
+      // Repair legacy control only; historical occupation VP cannot be inferred.
+      captureSpace(state, space, occupiers[0], { scoreVp: false });
       repairedDestroyedFortControl = true;
     }
   }
